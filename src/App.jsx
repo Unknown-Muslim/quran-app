@@ -1,7 +1,6 @@
 // --- Initial Setup and Data ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
-import { getPrayerTimes } from './prayerTimesCalc'; // We'll assume this utility exists or create a simple one if needed
 
 // Placeholder for quranData if not defined elsewhere.
 // In a real app, this would be fetched from an API or a large data file.
@@ -748,4 +747,4 @@ const ListenPage = ({ points, unlockedReciters, handleUnlockReciter, showNotific
   const [selectedSurahForListening, setSelectedSurahForListening] = useState(null);
   const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
 
-  const handleSelect�
+const handleSelect = (
