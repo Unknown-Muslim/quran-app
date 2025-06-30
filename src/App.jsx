@@ -747,4 +747,4 @@ const ListenPage = ({ points, unlockedReciters, handleUnlockReciter, showNotific
   const [selectedSurahForListening, setSelectedSurahForListening] = useState(null);
   const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
 
-const handleSelect = (
+const handleSelect = () => }
