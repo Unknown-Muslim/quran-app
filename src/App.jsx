@@ -31,22 +31,22 @@ const quranData = {
     { id: 22, name: 'الحج', englishName: 'Al-Hajj', numberOfVerses: 78 },
     { id: 23, name: 'المؤمنون', englishName: 'Al-Muminun', numberOfVerses: 118 },
     { id: 24, name: 'النور', englishName: 'An-Nur', numberOfVerses: 64 },
-    { id: 25, name: 'الفرقان', englishName: 'Al-Furqan', numberOfVerses: 77 },
-    { id: 26, name: 'الشعراء', englishName: 'Ash-Shuara', numberOfVerses: 227 },
-    { id: 27, name: 'النمل', englishName: 'An-Naml', numberOfVerses: 93 },
-    { id: 28, name: 'القصص', englishName: 'Al-Qasas', numberOfVerses: 88 },
-    { id: 29, name: 'العنكبوت', englishName: 'Al-Ankabut', numberOfVerses: 69 },
-    { id: 30, name: 'الروم', englishName: 'Ar-Rum', numberOfVerses: 60 },
-    { id: 31, name: 'لقمان', englishName: 'Luqman', numberOfVerses: 34 },
-    { id: 32, name: 'السجدة', englishName: 'As-Sajda', numberOfVerses: 30 },
-    { id: 33, name: 'الأحزاب', englishName: 'Al-Ahzab', numberOfVerses: 73 },
-    { id: 34, name: 'سبأ', englishName: 'Saba', numberOfVerses: 54 },
-    { id: 35, name: 'فاطر', englishName: 'Fatir', numberOfVerses: 45 },
-    { id: 36, name: 'يس', englishName: 'Ya-Sin', numberOfVerses: 83 },
-    { id: 37, name: 'الصافات', englishName: 'As-Saffat', numberOfVerses: 182 },
-    { id: 38, name: 'ص', englishName: 'Sad', numberOfVerses: 88 },
-    { id: 39, name: 'الزمر', englishName: 'Az-Zumar', numberOfVerses: 75 },
-    { id: 40, name: 'غافر', englishName: 'Ghafir', numberOfVerses: 85 },
+    { id: 25, name: 'الفرقان', englishName': 'Al-Furqan', 'numberOfVerses': 77 },
+    { id: 26, 'name': 'الشعراء', 'englishName': 'Ash-Shuara', 'numberOfVerses': 227 },
+    { id: 27, 'name': 'النمل', 'englishName': 'An-Naml', 'numberOfVerses': 93 },
+    { id: 28, 'name': 'القصص', 'englishName': 'Al-Qasas', 'numberOfVerses': 88 },
+    { id: 29, 'name': 'العنكبوت', 'englishName': 'Al-Ankabut', 'numberOfVerses': 69 },
+    { id: 30, 'name': 'الروم', 'englishName': 'Ar-Rum', 'numberOfVerses': 60 },
+    { id: 31, 'name': 'لقمان', 'englishName': 'Luqman', 'numberOfVerses': 34 },
+    { id: 32, 'name': 'السجدة', 'englishName': 'As-Sajda', 'numberOfVerses': 30 },
+    { id: 33, 'name': 'الأحزاب', 'englishName': 'Al-Ahzab', 'numberOfVerses': 73 },
+    { id: 34, 'name': 'سبأ', 'englishName': 'Saba', 'numberOfVerses': 54 },
+    { id: 35, 'name': 'فاطر', 'englishName': 'Fatir', 'numberOfVerses': 45 },
+    { id: 36, 'name': 'يس', 'englishName': 'Ya-Sin', 'numberOfVerses': 83 },
+    { id: 37, 'name': 'الصافات', 'englishName': 'As-Saffat', 'numberOfVerses': 182 },
+    { id: 38, 'name': 'ص', 'englishName': 'Sad', 'numberOfVerses': 88 },
+    { id: 39, 'name': 'الزمر', 'englishName': 'Az-Zumar', 'numberOfVerses': 75 },
+    { id: 40, 'name': 'غافر', 'englishName': 'Ghafir', 'numberOfVerses': 85 },
     { id: 41, 'name': 'فصلت', 'englishName': 'Fussilat', 'numberOfVerses': 54 },
     { id: 42, 'name': 'الشورى', 'englishName': 'Ash-Shuraa', 'numberOfVerses': 53 },
     { id: 43, 'name': 'الزخرف', 'englishName': 'Az-Zukhruf', 'numberOfVerses': 89 },
@@ -128,20 +128,27 @@ const quranData = {
   }
 };
 
+// --- MODIFIED: Reciters Data with Costs and Locked Status ---
 const recitersData = {
-  featured: [
+  // Initially unlocked (free) reciters
+  unlocked: [
     { id: 'alafasy', name: 'مشاري العفاسي', englishName: 'Mishary Al-Afasy', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=M.A', alquranCloudId: 'ar.alafasy', cost: 0, unlocked: true },
     { id: 'abdulbaset', name: 'عبد الباسط عبد الصمد', englishName: 'Abdul Basit Abdus Samad', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=A.B.S', alquranCloudId: 'ar.abdulbasit', cost: 0, unlocked: true },
-  ],
-  free: [
     { id: 'minshawi', name: 'محمد صديق المنشاوي', englishName: 'Muhammad al-Minshawi', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=M.M', alquranCloudId: 'ar.minshawi', cost: 0, unlocked: true },
     { id: 'shuraim', name: 'سعود الشريم', englishName: 'Saud Al-Shuraim', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=S.S', alquranCloudId: 'ar.shuraim', cost: 0, unlocked: true },
+  ],
+  // New reciters that need to be unlocked with points
+  locked: [
+    { id: 'husary', name: 'محمود خليل الحصري', englishName: 'Mahmoud Khalil Al-Husary', imageUrl: 'https://placehold.co/80x80/A78BFA/5B21B6?text=M.H', alquranCloudId: 'ar.husary', cost: 50, unlocked: false },
+    { id: 'ghamdi', name: 'سعد الغامدي', englishName: 'Saad Al-Ghamdi', imageUrl: 'https://placehold.co/80x80/FDBA74/9A3412?text=S.G', alquranCloudId: 'ar.ghamdi', cost: 75, unlocked: false },
+    { id: 'siddiq', name: 'محمد صديق', englishName: 'Muhammad Siddiq', imageUrl: 'https://placehold.co/80x80/FECDD6/BE185D?text=M.S', alquranCloudId: 'ar.siddiq', cost: 100, unlocked: false },
+    { id: 'maher', name: 'ماهر المعيقلي', englishName: 'Maher Al-Muaiqly', imageUrl: 'https://placehold.co/80x80/93C5FD/1D4ED8?text=M.M', alquranCloudId: 'ar.mahermuaiqly', cost: 120, unlocked: false },
   ]
 };
 
 const achievementsData = [
   { id: 'first-read', title: 'First Read', description: 'Complete your first reading session', icon: '✨', achieved: false },
-  { id: 'first-week', title: 'Daily Reader', description: 'Maintain a 7-day reading streak', icon: '📅', achieved: false },
+  { id: 'first-week', title: 'Daily Reader', description: 'Maintain a 7-day reading streak', icon: '�', achieved: false },
   { id: 'practice-master', title: 'Practice Master', description: 'Complete 100 practice sessions', icon: '🎤', achieved: false },
   { id: 'quiz-whiz', title: 'Quiz Whiz', description: 'Score over 500 points in quizzes', icon: '❓', achieved: false },
 ];
@@ -269,17 +276,17 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         </div>
       </div>
 
-      {/* Reciters (No longer separated by featured/free for simplicity, all are unlocked) */}
+      {/* Reciters (Now with locked/unlocked status) */}
       <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
         <h2 className="text-2xl font-bold mb-5">Available Reciters</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...recitersData.featured, ...recitersData.free].map((reciter) => (
+          {[...recitersData.unlocked, ...recitersData.locked].map((reciter) => (
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
-              points={points} // Still pass points, though not used for unlocking here
-              isUnlocked={true} // All are now unlocked
-              onUnlock={() => {}} // No unlock action
+              points={points}
+              isUnlocked={unlockedReciters.includes(reciter.id)} // Check if reciter is in unlockedReciters array
+              onUnlock={handleUnlockReciter}
               showNotification={showNotification}
             />
           ))}
@@ -310,7 +317,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         </div>
       </div>
 
-      {/* NEW: Bookmarked Verses Card */}
+      {/* Bookmarked Verses Card */}
       <Card icon="⭐" title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
     </div>
   );
@@ -327,13 +334,19 @@ const Card = ({ icon, title, description, onClick }) => (
   </button>
 );
 
+// --- MODIFIED: ReciterCard to handle locked/unlocked state and costs ---
 const ReciterCard = ({ reciter, points, isUnlocked, onUnlock, showNotification, onSelectReciter }) => {
   const handleAction = () => {
-    // Since all reciters are now unlocked, the action is always to select them for listening
-    if (onSelectReciter) {
-      onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
+    if (isUnlocked) {
+      if (onSelectReciter) {
+        onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
+      }
+    } else {
+      onUnlock(reciter.id, reciter.cost);
     }
   };
+
+  const canAfford = points >= reciter.cost;
 
   return (
     <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200">
@@ -345,17 +358,40 @@ const ReciterCard = ({ reciter, points, isUnlocked, onUnlock, showNotification, 
       />
       <p className="font-arabic text-lg text-green-50">{reciter.name}</p>
       <p className="text-sm text-green-200 mb-3">{reciter.englishName}</p>
-      {/* Since all reciters are unlocked, only the 'Listen' button is shown */}
+
+      {!isUnlocked && (
+        <p className="text-sm font-semibold text-yellow-300 mb-2 flex items-center">
+          <span className="text-lg mr-1">✨</span> {reciter.cost} Points
+        </p>
+      )}
+
       <button
         onClick={handleAction}
+        disabled={!isUnlocked && !canAfford} // Disable if locked AND cannot afford
         className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
-          onSelectReciter ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400' : 'bg-green-800 text-green-300 cursor-default'
+          isUnlocked
+            ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400'
+            : canAfford
+              ? 'bg-yellow-600 hover:bg-yellow-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
+              : 'bg-gray-600 text-gray-300 cursor-not-allowed opacity-70'
         }`}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-          <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-        </svg>
-        Listen
+        {isUnlocked ? (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+              <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
+            </svg>
+            Listen
+          </>
+        ) : (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+              <path d="M16.5 6A2.25 2.25 0 0 0 14.25 3.75H13.5a.75.75 0 0 0-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75V6ZM12 18.75a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-.75-.75H10.5a.75.75 0 0 0-.75.75v6c0 .414.336.75.75.75H12ZM7.5 12A2.25 2.25 0 0 0 5.25 9.75H4.5a.75.75 0 0 0-.75.75v3c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75V12Z" />
+              <path fillRule="evenodd" d="M12.558 19.66L11.25 22.5l-1.308-2.84a.75.75 0 0 0-1.056-.474l-2.072.964A.75.75 0 0 0 6 20.25v-3.5a.75.75 0 0 0-.75-.75H4.5a.75.75 0 0 0-.75.75v3.5a2.25 2.25 0 0 1-2.25 2.25.75.75 0 0 0-.75.75v.75a.75.75 0 0 0 .75.75 3.75 3.75 0 0 0 3.75-3.75V16.5h1.5a.75.75 0 0 0 .75-.75V12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75V12a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75v-.75a.75.75 0 0 0-.75-.75 2.25 2.25 0 0 1-2.25-2.25V9.75a.75.75 0 0 0-.75-.75H18a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0-.474.996l.964 2.072a.75.75 0 0 0 .474 1.056l2.84 1.308a.75.75 0 0 0 .996-.474l.964-2.072A.75.75 0 0 0 22.5 16.5v-3.5a.75.75 0 0 0-.75-.75h-.75a2.25 2.25 0 0 1-2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75H15.75a.75.75 0 0 0-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 0 0 .75-.75V6Z" clipRule="evenodd" />
+            </svg>
+            Unlock
+          </>
+        )}
       </button>
     </div>
   );
@@ -616,7 +652,7 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
                       </svg>
                     </button>
                   )}
-                  {/* NEW: Bookmark Button */}
+                  {/* Bookmark Button */}
                   <button
                     onClick={() => onToggleBookmark({
                       surahId: selectedSurahId,
@@ -631,7 +667,7 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
                     title={isBookmarked ? "Remove Bookmark" : "Bookmark Verse"}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M10 2a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2ZM3.25 8.75a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H3.25ZM16 9.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75ZM9.5 3a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H9.5ZM10 15.25a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0v-.75a.75.75 0 0 1 .75-.75ZM15.25 9.5a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5h-.75ZM10 17a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0v-.75a.75.75 0 0 1 .75-.75ZM4.5 9.5a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H4.5ZM15.25 10.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M10 2a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2ZM3.25 8.75a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H3.25ZM16 9.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75ZM9.5 3a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H9.5ZM10 15.25a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0v-.75a.75.75 0 0 1 .75-.75ZM15.25 9.5a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H15.25ZM10 17a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0v-.75a.75.75 0 0 1 .75-.75ZM4.5 9.5a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5H4.5ZM15.25 10.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
                     </svg>
                   </button>
                 </div>
@@ -884,7 +920,7 @@ const AudioPlayer = ({ mediaUrl, isVideo = false, currentReciterName, currentSur
   );
 };
 
-// --- MODIFIED: ListenPage for Full Surah Audio ---
+// --- MODIFIED: ListenPage for Full Surah Audio and Reciter Selection ---
 const ListenPage = ({ points, unlockedReciters, handleUnlockReciter, showNotification }) => {
   const [selectedReciter, setSelectedReciter] = useState(null); // Stores the full reciter object
   const [selectedSurahForListening, setSelectedSurahForListening] = useState(null); // Stores the full surah object
@@ -925,12 +961,12 @@ const ListenPage = ({ points, unlockedReciters, handleUnlockReciter, showNotific
       <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
         <h3 className="text-2xl font-bold mb-4">Choose a Reciter</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...recitersData.featured, ...recitersData.free].map((reciter) => (
+          {[...recitersData.unlocked, ...recitersData.locked].map((reciter) => (
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
               points={points}
-              isUnlocked={unlockedReciters.includes(reciter.id)} // Check if unlocked
+              isUnlocked={unlockedReciters.includes(reciter.id)} // Check if reciter is in unlockedReciters array
               onUnlock={handleUnlockReciter}
               showNotification={showNotification}
               onSelectReciter={handleSelectReciter} // Pass the new handler
@@ -1314,19 +1350,38 @@ const BookmarkedVersesPage = ({ bookmarkedVerses, onToggleBookmark, onBackToHome
 export default function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'surah-selector', 'quran-reader', 'listen', 'practice', 'prayer-times', 'bookmarks'
   const [selectedSurahId, setSelectedSurahId] = useState(null);
-  const [points, setPoints] = useState(0);
+  // MODIFIED: Initialize points from localStorage
+  const [points, setPoints] = useState(() => {
+    try {
+      const storedPoints = localStorage.getItem('quranAppPoints');
+      return storedPoints ? parseInt(storedPoints, 10) : 0;
+    } catch (error) {
+      console.error("Failed to parse points from localStorage:", error);
+      return 0;
+    }
+  });
   const [userProgress, setUserProgress] = useState({
     dailyStreak: 0,
     versesRead: 0,
     achievements: achievementsData, // Initialize with all achievements
   });
-  const [unlockedReciters, setUnlockedReciters] = useState(['alafasy', 'abdulbaset', 'minshawi', 'shuraim']); // All are unlocked by default now
+  // MODIFIED: Initialize unlockedReciters from localStorage, including default unlocked ones
+  const [unlockedReciters, setUnlockedReciters] = useState(() => {
+    try {
+      const storedUnlocked = localStorage.getItem('quranAppUnlockedReciters');
+      const defaultUnlocked = recitersData.unlocked.map(r => r.id);
+      return storedUnlocked ? [...new Set([...defaultUnlocked, ...JSON.parse(storedUnlocked)])] : defaultUnlocked;
+    } catch (error) {
+      console.error("Failed to parse unlocked reciters from localStorage:", error);
+      return recitersData.unlocked.map(r => r.id);
+    }
+  });
   const [notification, setNotification] = useState(null);
   const [readerSettings, setReaderSettings] = useState({
     fontSize: 'medium', // 'small', 'medium', 'large'
     showTranslation: true,
   });
-  // NEW STATE: Bookmarked verses, loaded from localStorage
+  // Bookmarked verses, loaded from localStorage
   const [bookmarkedVerses, setBookmarkedVerses] = useState(() => {
     try {
       const storedBookmarks = localStorage.getItem('quranAppBookmarks');
@@ -1337,14 +1392,25 @@ export default function App() {
     }
   });
 
-  // Effect to save bookmarks to localStorage whenever they change
+  // Effect to save points to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem('quranAppBookmarks', JSON.stringify(bookmarkedVerses));
+      localStorage.setItem('quranAppPoints', points.toString());
     } catch (error) {
-      console.error("Failed to save bookmarks to localStorage:", error);
+      console.error("Failed to save points to localStorage:", error);
     }
-  }, [bookmarkedVerses]);
+  }, [points]);
+
+  // Effect to save unlockedReciters to localStorage whenever they change
+  useEffect(() => {
+    try {
+      // Only save the dynamically unlocked ones, not the default ones
+      const dynamicUnlocked = unlockedReciters.filter(id => !recitersData.unlocked.some(r => r.id === id));
+      localStorage.setItem('quranAppUnlockedReciters', JSON.stringify(dynamicUnlocked));
+    } catch (error) {
+      console.error("Failed to save unlocked reciters to localStorage:", error);
+    }
+  }, [unlockedReciters]);
 
 
   const showNotification = useCallback((message, type = 'info', duration = 3000) => {
@@ -1354,13 +1420,14 @@ export default function App() {
     }, duration);
   }, []);
 
+  // MODIFIED: handleUnlockReciter logic
   const handleUnlockReciter = useCallback((reciterId, cost) => {
     if (points >= cost) {
       setPoints(prev => prev - cost);
       setUnlockedReciters(prev => [...prev, reciterId]);
       showNotification(`Unlocked ${reciterId} for ${cost} points!`, 'success');
     } else {
-      showNotification(`Not enough points to unlock ${reciterId}.`, 'error');
+      showNotification(`Not enough points to unlock ${reciterId}. You need ${cost - points} more.`, 'error');
     }
   }, [points, showNotification]);
 
@@ -1397,7 +1464,7 @@ export default function App() {
     }));
   }, []);
 
-  // NEW FUNCTION: Toggle Bookmark
+  // Toggle Bookmark
   const handleToggleBookmark = useCallback((verseToBookmark) => {
     setBookmarkedVerses(prevBookmarks => {
       const isAlreadyBookmarked = prevBookmarks.some(
@@ -1463,9 +1530,9 @@ export default function App() {
         )}
         {currentView === 'listen' && (
           <ListenPage
-            points={points}
-            unlockedReciters={unlockedReciters}
-            handleUnlockReciter={handleUnlockReciter}
+            points={points} // Pass points to ListenPage
+            unlockedReciters={unlockedReciters} // Pass unlockedReciters to ListenPage
+            handleUnlockReciter={handleUnlockReciter} // Pass unlock handler to ListenPage
             showNotification={showNotification}
           />
         )}
@@ -1496,3 +1563,4 @@ export default function App() {
     </div>
   );
 }
+�
