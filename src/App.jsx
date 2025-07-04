@@ -1,6 +1,8 @@
 // --- Initial Setup and Data ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
+// NEW: Import Vercel Analytics component
+import { Analytics } from '@vercel/analytics/react';
 
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 const quranData = {
@@ -1566,7 +1568,7 @@ const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
   const [score, setScore] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
-  const [quizType, setQuizType] = useState('translation'); // 'translation' or 'next-verse'
+  const [quizType, setQuizType] = useState('translation'); // 'translation' or 'next-verse' or 'general'
   const [quizCategory, setQuizCategory] = useState('Combined'); // For general quiz questions
 
   const generateMultipleChoiceOptions = useCallback((correctAnswer, allPossibleAnswers, type) => {
@@ -1590,6 +1592,7 @@ const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
     }
 
     try {
+      // Fetch both Arabic and English translation for quiz
       const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-simple,en.sahih`);
       const data = await response.json();
 
@@ -1738,19 +1741,19 @@ const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
       {!quizStarted ? (
         <div className="text-center space-y-6 mt-8">
           <h3 className="text-2xl font-semibold">Select Quiz Type:</h3>
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center space-x-4 flex-wrap gap-y-4">
             <button
-              onClick={() => setQuizType('translation')}
+              onClick={() => { setQuizType('translation'); setSelectedSurah(null); setQuizCategory(''); }}
               className={`py-3 px-6 rounded-full font-semibold transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 ${
-                quizType === 'translation' ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
+                quizType === 'translation' && !selectedSurah ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
               }`}
             >
               Arabic to English Translation (Surah Specific)
             </button>
             <button
-              onClick={() => setQuizType('next-verse')}
+              onClick={() => { setQuizType('next-verse'); setSelectedSurah(null); setQuizCategory(''); }}
               className={`py-3 px-6 rounded-full font-semibold transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 ${
-                quizType === 'next-verse' ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
+                quizType === 'next-verse' && !selectedSurah ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
               }`}
             >
               Next Verse (Surah Specific)
@@ -1785,8 +1788,10 @@ const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
             {quizCategories.map(category => (
               <button
                 key={category}
-                onClick={() => startGeneralQuiz(category)}
-                className="py-3 px-6 rounded-full font-semibold transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={() => { setQuizCategory(category); setQuizType('general'); setSelectedSurah(null); startGeneralQuiz(category); }}
+                className={`py-3 px-6 rounded-full font-semibold transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 ${
+                  quizCategory === category && quizType === 'general' ? 'bg-purple-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
+                }`}
               >
                 {category}
               </button>
@@ -1807,7 +1812,7 @@ const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
       ) : (
         <div className="text-center p-8 space-y-6">
           <h3 className="text-2xl font-bold text-green-300">
-            {selectedSurah ? `Surah ${selectedSurah.englishName}` : 'General Quiz'} - Question {questionIndex + 1} of {quizQuestionsSet.length}
+            {selectedSurah ? `Surah ${selectedSurah.englishName}` : `General Quiz (${quizCategory})`} - Question {questionIndex + 1} of {quizQuestionsSet.length}
           </h3>
           <p className="text-xl font-semibold text-green-200">Score: {score}</p>
           {currentQuestion && (
@@ -2091,7 +2096,7 @@ export default function App() {
           <QuizPage
             showNotification={showNotification}
             onBackToHome={() => setCurrentView('home')}
-            onQuizComplete={(pointsEarned) => setPoints(prev => prev + pointsEarned)} // Pass function to add points
+            onQuizComplete={handleQuizComplete} // Pass function to add points
           />
         )}
       </main>
@@ -2104,6 +2109,8 @@ export default function App() {
           onClose={() => setNotification(null)}
         />
       )}
+      {/* NEW: Vercel Web Analytics Component */}
+      <Analytics />
     </div>
   );
 }
