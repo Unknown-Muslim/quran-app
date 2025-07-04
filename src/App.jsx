@@ -144,6 +144,184 @@ const achievementsData = [
   { id: 'quiz-whiz', title: 'Quiz Whiz', description: 'Score over 500 points in quizzes', icon: '❓', achieved: false },
 ];
 
+// --- Quiz Data ---
+// Expanded quiz questions for multiple categories and question types
+const quizQuestions = [
+  {
+    id: 1,
+    type: 'translation',
+    question: "What is the English translation of Surah Al-Fatiha, Verse 1:\n\"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\"",
+    correctAnswer: "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+    choices: [
+      "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+      "All praise is due to Allah, Lord of the worlds.",
+      "The Most Gracious, the Most Merciful.",
+      "Master of the Day of Judgment."
+    ],
+    category: "Short Surahs",
+    surahId: 1,
+    verseId: 1
+  },
+  {
+    id: 2,
+    type: 'next-verse',
+    question: "Which verse comes AFTER Surah Al-Ikhlas, Verse 1:\n\"قُلْ هُوَ ٱللَّهُ أَحَدٌ\"",
+    correctAnswer: "ٱللَّهُ ٱلصَّمَدُ",
+    choices: [
+      "ٱللَّهُ ٱلصَّمَدُ",
+      "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌ",
+      "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ"
+    ],
+    category: "Short Surahs",
+    surahId: 112,
+    verseId: 1
+  },
+  {
+    id: 3,
+    type: 'translation',
+    question: "What is the English translation of Surah An-Nas, Verse 1:\n\"قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ\"",
+    correctAnswer: "Say, 'I seek refuge in the Lord of mankind,'",
+    choices: [
+      "Say, 'I seek refuge in the Lord of mankind,'",
+      "The King of mankind,",
+      "The God of mankind,",
+      "From the evil of the whisperer who withdraws."
+    ],
+    category: "Short Surahs",
+    surahId: 114,
+    verseId: 1
+  },
+  {
+    id: 4,
+    type: 'general',
+    question: "Which Surah is known as 'The Opening'?",
+    correctAnswer: "Al-Fatiha",
+    choices: ["Al-Baqarah", "Al-Fatiha", "An-Nas", "Al-Ikhlas"],
+    category: "General",
+    surahId: 1,
+  },
+  {
+    id: 5,
+    type: 'general',
+    question: "How many verses are there in Surah Al-Ikhlas?",
+    correctAnswer: "4",
+    choices: ["3", "4", "5", "6"],
+    category: "General",
+    surahId: 112,
+  },
+  {
+    id: 6,
+    type: 'prophets',
+    question: "Which prophet's story is prominently featured in Surah Yusuf?",
+    correctAnswer: "Yusuf (Joseph)",
+    choices: ["Musa (Moses)", "Isa (Jesus)", "Yusuf (Joseph)", "Ibrahim (Abraham)"],
+    category: "Prophets",
+    surahId: 12,
+  },
+  {
+    id: 7,
+    type: 'general',
+    question: "What is the longest Surah in the Quran?",
+    correctAnswer: "Al-Baqarah",
+    choices: ["Al-Imran", "An-Nisa", "Al-Baqarah", "Al-Maidah"],
+    category: "General",
+    surahId: 2,
+  },
+  {
+    id: 8,
+    type: 'short-surahs',
+    question: "Which Surah begins with 'Say, He is Allah, [the] One,'?",
+    correctAnswer: "Al-Ikhlas",
+    choices: ["Al-Kafirun", "Al-Falaq", "An-Nas", "Al-Ikhlas"],
+    category: "Short Surahs",
+    surahId: 112,
+  },
+  {
+    id: 9,
+    type: 'stories',
+    question: "What is the name of the cave mentioned in Surah Al-Kahf?",
+    correctAnswer: "Al-Kahf (The Cave)",
+    choices: ["Hira", "Thawr", "Al-Kahf (The Cave)", "Uhud"],
+    category: "Stories",
+    surahId: 18,
+  },
+  {
+    id: 10,
+    type: 'general',
+    question: "Which Surah is also known as 'The Spider'?",
+    correctAnswer: "Al-Ankabut",
+    choices: ["Al-Ankabut", "An-Nahl", "Al-Naml", "Al-Fil"],
+    category: "General",
+    surahId: 29,
+  },
+  {
+    id: 11,
+    type: 'history',
+    question: "The first revelation came down in which month?",
+    correctAnswer: "Ramadan",
+    choices: ["Shawwal", "Rabi' al-Awwal", "Ramadan", "Muharram"],
+    category: "History",
+  },
+  {
+    id: 12,
+    type: 'general',
+    question: "Which angel delivered the revelation to Prophet Muhammad (PBUH)?",
+    correctAnswer: "Jibreel (Gabriel)",
+    choices: ["Israfil", "Mikail", "Jibreel (Gabriel)", "Azrael"],
+    category: "General",
+  },
+  {
+    id: 13,
+    type: 'short-surahs',
+    question: "What is the meaning of 'Al-Fatiha'?",
+    correctAnswer: "The Opening",
+    choices: ["The Cow", "The Opening", "The Chapter", "The People"],
+    category: "Short Surahs",
+    surahId: 1,
+  },
+  // Add more quiz questions here following the structure
+  // {
+  //   id: ...,
+  //   type: 'translation' or 'next-verse' or 'general' or 'prophets' or 'stories' or 'history',
+  //   question: "...",
+  //   correctAnswer: "...",
+  //   choices: ["...", "...", "...", "..."], // 4 choices for multiple choice
+  //   category: "...",
+  //   surahId: ... (optional, if question is surah-specific)
+  //   verseId: ... (optional, if question is verse-specific)
+  // },
+];
+
+// Combine all quiz question categories
+const quizCategories = [
+    "Combined", // For a mix of all questions
+    "General",
+    "Prophets",
+    "Short Surahs",
+    "Stories",
+    "History"
+    // Add more categories as you add more questions
+];
+
+// Define available font families for the Quran reader
+const fontFamilies = [
+    { name: 'Quranic (Default)', className: 'font-arabic' }, // Assumes 'font-arabic' is defined in global CSS
+    { name: 'Serif', className: 'font-serif' },
+    { name: 'Sans-serif', className: 'font-sans' },
+    { name: 'Monospace', className: 'font-mono' }
+];
+
+// Define available font sizes for the Quran reader
+const fontSizes = [
+  { name: 'Small', className: 'text-lg' },
+  { name: 'Medium', className: 'text-xl' },
+  { name: 'Large', className: 'text-2xl' },
+  { name: 'Extra Large', className: 'text-3xl' },
+  { name: 'Huge', className: 'text-4xl' },
+];
+
+
 // Utility for basic prayer time calculation (Hanafi for Asr)
 function getPrayerTimes(latitude, longitude, date = new Date()) {
   const times = {
@@ -237,7 +415,89 @@ const NotificationMessage = ({ message, type, onClose }) => {
 
 // --- Components ---
 
-const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification }) => {
+const Card = ({ icon, title, description, onClick }) => (
+  <button
+    onClick={onClick}
+    className="bg-green-700 hover:bg-green-600 text-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center text-center transition-all transform hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+  >
+    <div className="text-4xl mb-2">{icon}</div>
+    <h3 className="text-xl font-semibold mb-1">{title}</h3>
+    <p className="text-sm opacity-90">{description}</p>
+  </button>
+);
+
+const ReciterCard = ({ reciter, points, isUnlocked, onUnlock, showNotification, onSelectReciter }) => {
+  const handleAction = () => {
+    if (onSelectReciter) {
+      onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
+    }
+  };
+
+  return (
+    <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200">
+      <img
+        src={reciter.imageUrl}
+        alt={reciter.englishName}
+        className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-green-400 shadow-sm"
+        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Reciter"; }}
+      />
+      <p className="font-arabic text-lg text-green-50">{reciter.name}</p>
+      <p className="text-sm text-green-200 mb-3">{reciter.englishName}</p>
+      <button
+        onClick={handleAction}
+        className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
+          onSelectReciter ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400' : 'bg-green-800 text-green-300 cursor-default'
+        }`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+          <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
+        </svg>
+        Listen
+      </button>
+    </div>
+  );
+};
+
+const ProgressCard = ({ title, value, unit, icon, progressBar, progressPercent, milestoneText }) => (
+  <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow duration-200">
+    <div className="text-4xl mb-2">{icon}</div>
+    <h3 className="text-xl font-semibold text-green-50 mb-1">{title}</h3>
+    <p className="text-3xl font-bold text-green-200">{value}</p>
+    <p className="text-sm text-green-300">{unit}</p>
+    {progressBar && (
+      <div className="w-full mt-3">
+        <div className="h-2.5 bg-green-900 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-green-400 rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          ></div>
+        </div>
+        <p className="text-xs text-green-300 mt-1">{milestoneText}</p>
+      </div>
+    )}
+  </div>
+);
+
+const AchievementsCard = ({ achievements }) => (
+  <div className="bg-green-700 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+    <h3 className="text-xl font-bold text-green-50 mb-3 flex items-center">
+      <span className="text-3xl mr-2">🏆</span> Achievements
+    </h3>
+    <ul className="space-y-2">
+      {achievements.map((achievement) => (
+        <li key={achievement.id} className={`flex items-center ${achievement.achieved ? 'text-green-300' : 'text-green-400'}`}>
+          <span className="text-lg mr-2">{achievement.icon}</span>
+          <div>
+            <p className="font-medium">{achievement.title}</p>
+            <p className="text-xs">{achievement.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading }) => {
   const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
 
   return (
@@ -308,97 +568,24 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         </div>
       </div>
 
-      {/* Bookmarked Verses Card */}
-      <Card icon="⭐" title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
+      {/* NEW: Continue Reading Section */}
+      {lastReadPosition && (
+          <Card
+              icon="➡️"
+              title="Continue Reading"
+              description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} from Verse ${lastReadPosition.verseId}`}
+              onClick={onContinueReading}
+          />
+      )}
 
-      {/* NEW: Quiz Card */}
-      <Card icon="❓" title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
-    </div>
-  );
-};
-
-const Card = ({ icon, title, description, onClick }) => (
-  <button
-    onClick={onClick}
-    className="bg-green-700 hover:bg-green-600 text-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center text-center transition-all transform hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
-  >
-    <div className="text-4xl mb-2">{icon}</div>
-    <h3 className="text-xl font-semibold mb-1">{title}</h3>
-    <p className="text-sm opacity-90">{description}</p>
-  </button>
-);
-
-const ReciterCard = ({ reciter, points, isUnlocked, onUnlock, showNotification, onSelectReciter }) => {
-  const handleAction = () => {
-    if (onSelectReciter) {
-      onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
-    }
-  };
-
-  return (
-    <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200">
-      <img
-        src={reciter.imageUrl}
-        alt={reciter.englishName}
-        className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-green-400 shadow-sm"
-        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Reciter"; }}
-      />
-      <p className="font-arabic text-lg text-green-50">{reciter.name}</p>
-      <p className="text-sm text-green-200 mb-3">{reciter.englishName}</p>
-      <button
-        onClick={handleAction}
-        className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
-          onSelectReciter ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400' : 'bg-green-800 text-green-300 cursor-default'
-        }`}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-          <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-        </svg>
-        Listen
-      </button>
-    </div>
-  );
-};
-
-
-const ProgressCard = ({ title, value, unit, icon, progressBar, progressPercent, milestoneText }) => (
-  <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow duration-200">
-    <div className="text-4xl mb-2">{icon}</div>
-    <h3 className="text-xl font-semibold text-green-50 mb-1">{title}</h3>
-    <p className="text-3xl font-bold text-green-200">{value}</p>
-    <p className="text-sm text-green-300">{unit}</p>
-    {progressBar && (
-      <div className="w-full mt-3">
-        <div className="h-2.5 bg-green-900 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-green-400 rounded-full transition-all duration-500"
-            style={{ width: `${progressPercent}%` }}
-          ></div>
-        </div>
-        <p className="text-xs text-green-300 mt-1">{milestoneText}</p>
+      {/* Bookmarked Verses & Quiz Cards - now in a grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card icon="⭐" title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
+        <Card icon="❓" title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
       </div>
-    )}
-  </div>
-);
-
-const AchievementsCard = ({ achievements }) => (
-  <div className="bg-green-700 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
-    <h3 className="text-xl font-bold text-green-50 mb-3 flex items-center">
-      <span className="text-3xl mr-2">🏆</span> Achievements
-    </h3>
-    <ul className="space-y-2">
-      {achievements.map((achievement) => (
-        <li key={achievement.id} className={`flex items-center ${achievement.achieved ? 'text-green-300' : 'text-green-400'}`}>
-          <span className="text-lg mr-2">{achievement.icon}</span>
-          <div>
-            <p className="font-medium">{achievement.title}</p>
-            <p className="text-xs">{achievement.description}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+    </div>
+  );
+};
 
 const SurahSelector = ({ onSelectSurah }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -443,7 +630,8 @@ const SurahSelector = ({ onSelectSurah }) => {
   );
 };
 
-const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses }) => {
+// --- MODIFIED: QuranReader with Font Customization and Last Read Position Update ---
+const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, readerSettings, onUpdateReaderSettings }) => {
   const [surahVerses, setSurahVerses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -515,8 +703,8 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
     setHighlightedVerseId(verseId);
     audioRef.current.src = audioUrl;
     audioRef.current.play().catch(error => console.error("Error playing audio:", error));
-    onVerseRead();
-  }, [onVerseRead]);
+    onVerseAudioPlay(selectedSurahId, verseId); // Call the new handler to update last read position
+  }, [onVerseAudioPlay, selectedSurahId]);
 
   const handlePrevSurah = () => {
     if (selectedSurahId > 1) {
@@ -533,6 +721,25 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
       setHighlightedVerseId(null);
     }
   };
+
+  // Function to handle scrolling to a specific verse (for "Continue Reading")
+  const scrollToVerse = useCallback((verseId) => {
+    const verseElement = document.getElementById(`verse-${verseId}`);
+    if (verseElement) {
+      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedVerseId(verseId); // Highlight the verse after scrolling
+    }
+  }, []);
+
+  // Effect to scroll to the last read verse when component mounts or surah changes
+  useEffect(() => {
+    if (!isLoading && surahVerses.length > 0 && readerSettings.lastReadVerseId) {
+      scrollToVerse(readerSettings.lastReadVerseId);
+      // Clear lastReadVerseId from settings after scrolling to prevent re-scrolling on subsequent renders
+      onUpdateReaderSettings(prev => ({ ...prev, lastReadVerseId: null }));
+    }
+  }, [isLoading, surahVerses, readerSettings.lastReadVerseId, scrollToVerse, onUpdateReaderSettings]);
+
 
   if (isLoading) {
     return <p className="text-center text-green-200 p-8">Loading Surah...</p>;
@@ -553,6 +760,9 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
     return <p className="text-center text-green-200 p-8">No verses found for this Surah.</p>;
   }
 
+  // Get the CSS class for the selected font family
+  const selectedFontFamilyClass = fontFamilies.find(f => f.name === readerSettings.fontFamily)?.className || 'font-arabic';
+
   return (
     <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
       <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
@@ -568,18 +778,29 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
         </button>
         <h2 className="text-3xl font-bold text-green-50 text-center">{selectedSurahMeta?.englishName}</h2>
         <div className="flex space-x-2">
+          {/* Font Size Controls */}
           <button
-            onClick={() => settings.onFontSizeChange('decrease')}
+            onClick={() => onUpdateReaderSettings(prev => ({ ...prev, fontSize: fontSizes[Math.max(0, fontSizes.findIndex(s => s.className === prev.fontSize) - 1)].className }))}
             className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             A-
           </button>
           <button
-            onClick={() => settings.onFontSizeChange('increase')}
+            onClick={() => onUpdateReaderSettings(prev => ({ ...prev, fontSize: fontSizes[Math.min(fontSizes.length - 1, fontSizes.findIndex(s => s.className === prev.fontSize) + 1)].className }))}
             className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             A+
           </button>
+          {/* Font Family Dropdown */}
+          <select
+            value={readerSettings.fontFamily}
+            onChange={(e) => onUpdateReaderSettings(prev => ({ ...prev, fontFamily: e.target.value }))}
+            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            {fontFamilies.map(font => (
+              <option key={font.name} value={font.name}>{font.name}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -593,6 +814,7 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
           return (
             <div
               key={verse.id}
+              id={`verse-${verse.id}`} // Add ID for scrolling
               className={`p-4 rounded-lg transition-all duration-300 border border-green-700 ${
                 highlightedVerseId === verse.id ? 'bg-green-700 shadow-lg scale-[1.01]' : 'hover:bg-green-700 shadow-sm'
               }`}
@@ -630,15 +852,11 @@ const QuranReader = ({ selectedSurahId, settings, onBackToSurahList, onSurahChan
                   </button>
                 </div>
               </div>
-              <p className={`text-right font-arabic mb-3 leading-loose ${
-                settings.fontSize === 'small' ? 'text-xl' : settings.fontSize === 'medium' ? 'text-2xl' : 'text-3xl'
-              }`} style={{ lineHeight: '2.2em' }}>
+              <p className={`text-right font-arabic mb-3 leading-loose ${readerSettings.fontSize} ${selectedFontFamilyClass}`} style={{ lineHeight: '2.2em' }}>
                 {verse.arabic}
               </p>
-              {settings.showTranslation && (
-                <p className={`text-left text-green-100 border-t border-green-700 pt-3 mt-3 ${
-                  settings.fontSize === 'small' ? 'text-sm' : settings.fontSize === 'medium' ? 'text-base' : 'text-lg'
-                }`}>
+              {readerSettings.showTranslation && (
+                <p className={`text-left text-green-100 border-t border-green-700 pt-3 mt-3 ${readerSettings.fontSize.replace('text-', 'text-')}`}>
                   {verse.translation}
                 </p>
               )}
@@ -679,7 +897,6 @@ const AudioPlayer = ({ mediaUrl, isVideo = false, currentReciterName, currentSur
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
-  // NEW STATE: Playback rate
   const [playbackRate, setPlaybackRate] = useState(1.0); // Default to normal speed
 
   useEffect(() => {
@@ -689,7 +906,6 @@ const AudioPlayer = ({ mediaUrl, isVideo = false, currentReciterName, currentSur
     }
   }, [volume]);
 
-  // NEW EFFECT: Apply playbackRate to media element
   useEffect(() => {
     const audio = mediaRef.current;
     if (audio) {
@@ -762,7 +978,6 @@ const AudioPlayer = ({ mediaUrl, isVideo = false, currentReciterName, currentSur
     }
   };
 
-  // NEW: Handle playback rate change
   const handlePlaybackRateChange = (e) => {
     const newRate = parseFloat(e.target.value);
     setPlaybackRate(newRate);
@@ -1339,18 +1554,33 @@ const BookmarkedVersesPage = ({ bookmarkedVerses, onToggleBookmark, onBackToHome
   );
 };
 
-// --- NEW COMPONENT: QuizPage ---
-const QuizPage = ({ showNotification, onBackToHome }) => {
+// --- NEW COMPONENT: QuizPage (Enhanced with Multiple Choice and Scoring) ---
+const QuizPage = ({ showNotification, onBackToHome, onQuizComplete }) => {
   const [selectedSurah, setSelectedSurah] = useState(null);
-  const [quizVerses, setQuizVerses] = useState([]);
+  const [quizVerses, setQuizVerses] = useState([]); // All verses for the selected surah
+  const [quizQuestionsSet, setQuizQuestionsSet] = useState([]); // Questions generated for the current quiz
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState('');
+  const [selectedAnswer, setSelectedAnswer] = useState(''); // For multiple choice
   const [feedback, setFeedback] = useState('');
   const [score, setScore] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizType, setQuizType] = useState('translation'); // 'translation' or 'next-verse'
+  const [quizCategory, setQuizCategory] = useState('Combined'); // For general quiz questions
+
+  const generateMultipleChoiceOptions = useCallback((correctAnswer, allPossibleAnswers, type) => {
+    let options = [correctAnswer];
+    const filteredPossibleAnswers = allPossibleAnswers.filter(ans => ans.trim().toLowerCase() !== correctAnswer.trim().toLowerCase());
+
+    // Add 3 random incorrect answers
+    while (options.length < 4 && filteredPossibleAnswers.length > 0) {
+      const randomIndex = Math.floor(Math.random() * filteredPossibleAnswers.length);
+      options.push(filteredPossibleAnswers.splice(randomIndex, 1)[0]);
+    }
+    // Shuffle the options
+    return options.sort(() => Math.random() - 0.5);
+  }, []);
 
   const fetchSurahVersesForQuiz = useCallback(async (surahId) => {
     const surahMeta = quranData.surahs.find(s => s.id === surahId);
@@ -1360,7 +1590,6 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
     }
 
     try {
-      // Fetch both Arabic and English translation for quiz
       const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/editions/quran-simple,en.sahih`);
       const data = await response.json();
 
@@ -1375,70 +1604,84 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
         }));
         setQuizVerses(combinedVerses);
         setSelectedSurah(surahMeta);
+        
+        // Generate actual quiz questions from fetched verses for 'translation' or 'next-verse' types
+        const generatedQuestions = [];
+        for (let i = 0; i < combinedVerses.length; i++) {
+          const verse = combinedVerses[i];
+          if (quizType === 'translation') {
+            const allTranslations = combinedVerses.map(v => v.translation);
+            generatedQuestions.push({
+              question: `What is the English translation of Surah ${surahMeta.englishName}, Verse ${verse.id}:\n"${verse.arabic}"`,
+              correctAnswer: verse.translation,
+              choices: generateMultipleChoiceOptions(verse.translation, allTranslations, 'translation'),
+              type: 'translation',
+              surahId: surahMeta.id,
+              verseId: verse.id,
+            });
+          } else if (quizType === 'next-verse' && i < combinedVerses.length - 1) {
+            const nextVerse = combinedVerses[i + 1];
+            const allArabicVerses = combinedVerses.map(v => v.arabic);
+            generatedQuestions.push({
+              question: `What is the Arabic text of the verse that comes AFTER Surah ${surahMeta.englishName}, Verse ${verse.id}:\n"${verse.arabic}"`,
+              correctAnswer: nextVerse.arabic,
+              choices: generateMultipleChoiceOptions(nextVerse.arabic, allArabicVerses, 'next-verse'),
+              type: 'next-verse',
+              surahId: surahMeta.id,
+              verseId: verse.id,
+            });
+          }
+        }
+        // Shuffle the generated questions
+        setQuizQuestionsSet(generatedQuestions.sort(() => Math.random() - 0.5));
+
         setQuizStarted(true);
         setQuizFinished(false);
         setScore(0);
         setQuestionIndex(0);
         setFeedback('');
-        setUserAnswer('');
-        generateQuestion(combinedVerses, 0, quizType); // Generate first question
+        setSelectedAnswer('');
+        setCurrentQuestion(generatedQuestions[0]); // Set the first question
       } else {
-        showNotification("Failed to load Surah verses for quiz.", "error");
+        showNotification("Failed to load Surah verses for quiz. Please try again.", "error");
         console.error("API Error:", data);
       }
     } catch (err) {
       showNotification("Could not connect to Quran API for quiz. Check internet.", "error");
       console.error("Fetch error:", err);
     }
-  }, [showNotification, quizType]);
+  }, [showNotification, quizType, generateMultipleChoiceOptions]);
 
-  const generateQuestion = useCallback((verses, index, type) => {
-    if (index >= verses.length) {
-      setQuizFinished(true);
-      showNotification("Quiz finished!", "success");
-      return;
+  const startGeneralQuiz = useCallback((category) => {
+    let filteredQuestions = quizQuestions;
+    if (category !== 'Combined') {
+      filteredQuestions = quizQuestions.filter(q => q.category === category);
     }
+    // Shuffle the questions
+    const shuffledQuestions = filteredQuestions.sort(() => Math.random() - 0.5);
 
-    const verse = verses[index];
-    let questionText = '';
-    let correctAnswer = '';
-
-    if (type === 'translation') {
-      questionText = `What is the English translation of Surah ${selectedSurah?.englishName}, Verse ${verse.id}:\n"${verse.arabic}"`;
-      correctAnswer = verse.translation;
-    } else if (type === 'next-verse') {
-      if (index < verses.length - 1) {
-        questionText = `What is the Arabic text of the verse that comes AFTER Surah ${selectedSurah?.englishName}, Verse ${verse.id}:\n"${verse.arabic}"`;
-        correctAnswer = verses[index + 1].arabic;
-      } else {
-        // Last verse, handle end of quiz or special question
-        setQuizFinished(true);
-        showNotification("Quiz finished! No next verse.", "info");
-        return;
-      }
-    }
-    setCurrentQuestion({
-      question: questionText,
-      correctAnswer: correctAnswer,
-      verseId: verse.id,
-      surahId: selectedSurah?.id,
-      surahName: selectedSurah?.englishName,
-      type: type
-    });
-    setUserAnswer('');
+    setQuizQuestionsSet(shuffledQuestions);
+    setQuizStarted(true);
+    setQuizFinished(false);
+    setScore(0);
+    setQuestionIndex(0);
     setFeedback('');
-  }, [selectedSurah, showNotification]);
+    setSelectedAnswer('');
+    setCurrentQuestion(shuffledQuestions[0]); // Set the first question
+    setSelectedSurah(null); // No specific surah for general quiz
+    setQuizType('general'); // Mark as general quiz type
+  }, []);
 
   const handleSubmitAnswer = () => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || !selectedAnswer) return;
 
-    // Simple comparison, could be improved with fuzzy matching
-    const isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
+    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
 
     if (isCorrect) {
       setFeedback('Correct! ✅');
       setScore(prev => prev + 1);
-      showNotification('Correct Answer!', 'success', 1500);
+      onQuizComplete(10); // Add 10 points for each correct answer
+      showNotification('Correct Answer! +10 points', 'success', 1500);
     } else {
       setFeedback(`Incorrect. ❌ The correct answer was: "${currentQuestion.correctAnswer}"`);
       showNotification('Incorrect Answer.', 'error', 2500);
@@ -1447,21 +1690,31 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
     // Move to next question after a short delay
     setTimeout(() => {
       const nextIndex = questionIndex + 1;
-      setQuestionIndex(nextIndex);
-      generateQuestion(quizVerses, nextIndex, quizType);
+      if (nextIndex < quizQuestionsSet.length) {
+        setQuestionIndex(nextIndex);
+        setCurrentQuestion(quizQuestionsSet[nextIndex]);
+        setSelectedAnswer(''); // Clear selected answer for next question
+        setFeedback('');
+      } else {
+        setQuizFinished(true);
+        showNotification("Quiz finished! Check your score.", "info");
+      }
     }, 2000);
   };
 
   const handleRestartQuiz = () => {
     setSelectedSurah(null);
     setQuizVerses([]);
+    setQuizQuestionsSet([]);
     setCurrentQuestion(null);
     setQuestionIndex(0);
-    setUserAnswer('');
+    setSelectedAnswer('');
     setFeedback('');
     setScore(0);
     setQuizStarted(false);
     setQuizFinished(false);
+    setQuizType('translation'); // Reset to default quiz type
+    setQuizCategory('Combined'); // Reset to default quiz category
   };
 
   // Render quiz UI
@@ -1492,7 +1745,7 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
                 quizType === 'translation' ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
               }`}
             >
-              Arabic to English Translation
+              Arabic to English Translation (Surah Specific)
             </button>
             <button
               onClick={() => setQuizType('next-verse')}
@@ -1500,32 +1753,50 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
                 quizType === 'next-verse' ? 'bg-indigo-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'
               }`}
             >
-              Next Verse (Arabic)
+              Next Verse (Surah Specific)
             </button>
           </div>
 
-          <h3 className="text-2xl font-semibold mt-8">Select a Surah for Quiz:</h3>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto custom-scrollbar p-2 mx-auto max-w-lg">
-            {quranData.surahs.map((surah) => (
-              <li key={surah.id}>
-                <button
-                  onClick={() => fetchSurahVersesForQuiz(surah.id)}
-                  className="w-full text-left p-4 bg-green-700 hover:bg-green-600 rounded-lg transition-colors duration-200 flex justify-between items-center text-green-50 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                  <div>
-                    <p className="font-semibold text-lg">{surah.englishName}</p>
-                    <p className="font-arabic text-xl text-green-200">{surah.name}</p>
-                  </div>
-                  <span className="text-sm text-green-300">{surah.numberOfVerses} Verses</span>
-                </button>
-              </li>
+          {(quizType === 'translation' || quizType === 'next-verse') && (
+            <>
+              <h3 className="text-2xl font-semibold mt-8">Select a Surah for Quiz:</h3>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto custom-scrollbar p-2 mx-auto max-w-lg">
+                {quranData.surahs.map((surah) => (
+                  <li key={surah.id}>
+                    <button
+                      onClick={() => fetchSurahVersesForQuiz(surah.id)}
+                      className="w-full text-left p-4 bg-green-700 hover:bg-green-600 rounded-lg transition-colors duration-200 flex justify-between items-center text-green-50 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    >
+                      <div>
+                        <p className="font-semibold text-lg">{surah.englishName}</p>
+                        <p className="font-arabic text-xl text-green-200">{surah.name}</p>
+                      </div>
+                      <span className="text-sm text-green-300">{surah.numberOfVerses} Verses</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {/* General Quiz Category Selection */}
+          <h3 className="text-2xl font-semibold mt-8">Or Select a General Quiz Category:</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mx-auto max-w-xl">
+            {quizCategories.map(category => (
+              <button
+                key={category}
+                onClick={() => startGeneralQuiz(category)}
+                className="py-3 px-6 rounded-full font-semibold transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {category}
+              </button>
             ))}
-          </ul>
+          </div>
         </div>
       ) : quizFinished ? (
         <div className="text-center p-8 space-y-4">
           <h3 className="text-3xl font-bold text-green-300">Quiz Complete! 🎉</h3>
-          <p className="text-xl">You scored: <span className="text-yellow-400 font-bold">{score}</span> out of <span className="font-bold">{quizVerses.length}</span></p>
+          <p className="text-xl">You scored: <span className="text-yellow-400 font-bold">{score}</span> out of <span className="font-bold">{quizQuestionsSet.length}</span></p>
           <button
             onClick={handleRestartQuiz}
             className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -1536,23 +1807,29 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
       ) : (
         <div className="text-center p-8 space-y-6">
           <h3 className="text-2xl font-bold text-green-300">
-            Surah {selectedSurah?.englishName} - Question {questionIndex + 1} of {quizVerses.length}
+            {selectedSurah ? `Surah ${selectedSurah.englishName}` : 'General Quiz'} - Question {questionIndex + 1} of {quizQuestionsSet.length}
           </h3>
           <p className="text-xl font-semibold text-green-200">Score: {score}</p>
           {currentQuestion && (
             <>
               <p className="text-xl md:text-2xl mb-4 leading-relaxed">{currentQuestion.question}</p>
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Type your answer here..."
-                className="w-full max-w-md p-3 rounded-lg bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-green-400 text-center"
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
+                {currentQuestion.choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedAnswer(choice)}
+                    className={`p-3 rounded-lg text-lg font-medium transition-colors duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400
+                      ${selectedAnswer === choice ? 'bg-blue-600 text-white' : 'bg-green-700 text-green-50 hover:bg-green-600'}
+                    `}
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={handleSubmitAnswer}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!userAnswer.trim()}
+                className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!selectedAnswer}
               >
                 Submit Answer
               </button>
@@ -1572,9 +1849,7 @@ const QuizPage = ({ showNotification, onBackToHome }) => {
 
 // --- Main App Component (MODIFIED) ---
 export default function App() {
-  // NEW STATE: Theme (light/dark)
   const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
-
   const [currentView, setCurrentView] = useState('home'); // 'home', 'surah-selector', 'quran-reader', 'listen', 'practice', 'prayer-times', 'bookmarks', 'quiz'
   const [selectedSurahId, setSelectedSurahId] = useState(null);
   const [points, setPoints] = useState(0);
@@ -1585,10 +1860,38 @@ export default function App() {
   });
   const [unlockedReciters, setUnlockedReciters] = useState(['alafasy', 'abdulbaset', 'minshawi', 'shuraim']);
   const [notification, setNotification] = useState(null);
-  const [readerSettings, setReaderSettings] = useState({
-    fontSize: 'medium',
-    showTranslation: true,
+  // MODIFIED: readerSettings now includes fontFamily and lastReadVerseId
+  const [readerSettings, setReaderSettings] = useState(() => {
+    try {
+      const storedSettings = localStorage.getItem('quranAppReaderSettings');
+      return storedSettings ? JSON.parse(storedSettings) : {
+        fontSize: 'text-xl', // Default Tailwind font size class
+        fontFamily: 'Quranic (Default)', // Default font family
+        showTranslation: true,
+        lastReadSurahId: null, // NEW: Track last read surah
+        lastReadVerseId: null, // NEW: Track last read verse
+      };
+    } catch (error) {
+      console.error("Failed to parse reader settings from localStorage:", error);
+      return {
+        fontSize: 'text-xl',
+        fontFamily: 'Quranic (Default)',
+        showTranslation: true,
+        lastReadSurahId: null,
+        lastReadVerseId: null,
+      };
+    }
   });
+
+  // Effect to save reader settings to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('quranAppReaderSettings', JSON.stringify(readerSettings));
+    } catch (error) {
+      console.error("Failed to save reader settings to localStorage:", error);
+    }
+  }, [readerSettings]);
+
   const [bookmarkedVerses, setBookmarkedVerses] = useState(() => {
     try {
       const storedBookmarks = localStorage.getItem('quranAppBookmarks');
@@ -1607,7 +1910,7 @@ export default function App() {
     }
   }, [bookmarkedVerses]);
 
-  // NEW EFFECT: Apply dark/light mode classes to body
+  // Apply dark/light mode classes to body
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -1646,29 +1949,19 @@ export default function App() {
     setPoints(prev => prev + 1); // Reward 1 point per verse read
   }, []);
 
+  // NEW: Update last read position when a verse audio is played
+  const handleVerseAudioPlay = useCallback((surahId, verseId) => {
+    setReaderSettings(prev => ({
+      ...prev,
+      lastReadSurahId: surahId,
+      lastReadVerseId: verseId,
+    }));
+    handleVerseRead(); // Also count as a verse read
+  }, [handleVerseRead]);
+
   const handleSurahChange = useCallback((surahId) => {
     setSelectedSurahId(surahId);
     setCurrentView('quran-reader');
-  }, []);
-
-  const handleFontSizeChange = useCallback((action) => {
-    setReaderSettings(prev => {
-      if (action === 'increase') {
-        if (prev.fontSize === 'small') return { ...prev, fontSize: 'medium' };
-        if (prev.fontSize === 'medium') return { ...prev, fontSize: 'large' };
-      } else if (action === 'decrease') {
-        if (prev.fontSize === 'large') return { ...prev, fontSize: 'medium' };
-        if (prev.fontSize === 'medium') return { ...prev, fontSize: 'small' };
-      }
-      return prev;
-    });
-  }, []);
-
-  const handleToggleTranslation = useCallback(() => {
-    setReaderSettings(prev => ({
-      ...prev,
-      showTranslation: !prev.showTranslation,
-    }));
   }, []);
 
   const handleToggleBookmark = useCallback((verseToBookmark) => {
@@ -1689,8 +1982,26 @@ export default function App() {
     });
   }, [showNotification]);
 
+  // NEW: Handle "Continue Reading" click
+  const handleContinueReading = useCallback(() => {
+    if (readerSettings.lastReadSurahId) {
+      setSelectedSurahId(readerSettings.lastReadSurahId);
+      // Set the lastReadVerseId in readerSettings to trigger scroll in QuranReader
+      setReaderSettings(prev => ({ ...prev, lastReadVerseId: readerSettings.lastReadVerseId }));
+      setCurrentView('quran-reader');
+    } else {
+      showNotification("No previous reading session found.", "info");
+    }
+  }, [readerSettings.lastReadSurahId, readerSettings.lastReadVerseId, showNotification]);
+
+  // NEW: Handle quiz completion (add points)
+  const handleQuizComplete = useCallback((pointsEarned) => {
+    setPoints(prev => prev + pointsEarned);
+    // Optionally update achievements or other progress here
+  }, []);
+
+
   return (
-    // MODIFIED: Apply theme classes to the main div
     <div className={`min-h-screen font-sans flex flex-col items-center p-4 ${isDarkMode ? 'bg-green-900 text-green-50' : 'bg-gray-100 text-gray-900'}`}>
       {/* Header */}
       <header className={`w-full max-w-4xl p-6 rounded-xl shadow-lg flex justify-between items-center mb-6 ${isDarkMode ? 'bg-green-800' : 'bg-white'}`}>
@@ -1699,7 +2010,7 @@ export default function App() {
           <span className="text-2xl font-bold text-yellow-400 flex items-center">
             {points} <span className="text-xl ml-1">✨</span>
           </span>
-          {/* NEW: Theme Toggle Button */}
+          {/* Theme Toggle Button */}
           <button
             onClick={() => setIsDarkMode(prev => !prev)}
             className={`p-3 rounded-full transition-colors duration-200 ${isDarkMode ? 'bg-green-700 hover:bg-green-600 text-green-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
@@ -1735,6 +2046,8 @@ export default function App() {
             unlockedReciters={unlockedReciters}
             handleUnlockReciter={handleUnlockReciter}
             showNotification={showNotification}
+            lastReadPosition={readerSettings.lastReadSurahId ? { surahId: readerSettings.lastReadSurahId, verseId: readerSettings.lastReadVerseId } : null}
+            onContinueReading={handleContinueReading}
           />
         )}
         {currentView === 'surah-selector' && (
@@ -1743,12 +2056,14 @@ export default function App() {
         {currentView === 'quran-reader' && (
           <QuranReader
             selectedSurahId={selectedSurahId}
-            settings={readerSettings}
+            readerSettings={readerSettings} // Pass reader settings
+            onUpdateReaderSettings={setReaderSettings} // Pass setter for settings
             onBackToSurahList={() => setCurrentView('surah-selector')}
             onSurahChange={handleSurahChange}
             onVerseRead={handleVerseRead}
             onToggleBookmark={handleToggleBookmark}
             bookmarkedVerses={bookmarkedVerses}
+            onVerseAudioPlay={handleVerseAudioPlay} // Pass new audio play handler
           />
         )}
         {currentView === 'listen' && (
@@ -1772,11 +2087,11 @@ export default function App() {
             onBackToHome={() => setCurrentView('home')}
           />
         )}
-        {/* NEW ROUTE: Quiz Page */}
         {currentView === 'quiz' && (
           <QuizPage
             showNotification={showNotification}
             onBackToHome={() => setCurrentView('home')}
+            onQuizComplete={(pointsEarned) => setPoints(prev => prev + pointsEarned)} // Pass function to add points
           />
         )}
       </main>
