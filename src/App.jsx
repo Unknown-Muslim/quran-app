@@ -1,8 +1,8 @@
 // --- Initial Setup and Data Imports ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
-// Import Vercel Analytics component for web analytics
-import { Analytics } from '@vercel/analytics/react';
+// Removed Vercel Analytics component as it's not supported in this environment
+// import { Analytics } from '@vercel/analytics/react';
 
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 // This data provides metadata for each Surah of the Quran.
@@ -549,28 +549,26 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         </div>
       </div>
 
-      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
-      {lastReadPosition && (
-          <div
-              className="bg-gradient-to-r from-blue-800 to-blue-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300 cursor-pointer"
-              onClick={onContinueReading}
-          >
-              <p className="text-lg md:text-xl mb-3 font-semibold">Continue Reading</p>
-              <p className="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
-                  Surah {quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'}
-              </p>
-              <p className="text-base md:text-lg opacity-90">
-                  From Verse {lastReadPosition.verseId}
-              </p>
-              <div className="mt-5">
-                  <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-                          <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                      </svg>
-                  </button>
-              </div>
+      {/* NEW: Continue Reading Section - always visible, with dynamic content */}
+      <div
+          className="bg-gradient-to-r from-blue-800 to-blue-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+          onClick={onContinueReading}
+      >
+          <p className="text-lg md:text-xl mb-3 font-semibold">Continue Reading</p>
+          <p className="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
+              Surah {quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'}
+          </p>
+          <p className="text-base md:text-lg opacity-90">
+              From Verse {lastReadPosition.verseId}
+          </p>
+          <div className="mt-5">
+              <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+                      <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                  </svg>
+              </button>
           </div>
-      )}
+      </div>
 
       {/* Display of available reciters */}
       <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
@@ -709,7 +707,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             translation: translationVerses[index] ? translationVerses[index].text : 'Translation not available.',
             audio: arabicAyah.audio,
           }));
-          setSurahVerses(combinedVerses); // Corrected typo here
+          setSurahVerses(combinedVerses);
         } else {
           setError("Failed to load Surah verses. Please try again.");
           console.error("API Error:", data);
@@ -1344,8 +1342,8 @@ const TasbeehCounter = ({ onBackToDashboard, showNotification, onEarnPoints }) =
             </div>
 
             {showTargetInput && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                    <div className="bg-green-700 p-8 rounded-xl shadow-lg text-center">
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={cancelSetTarget}> {/* Added onClick to close modal */}
+                    <div className="bg-green-700 p-8 rounded-xl shadow-lg text-center" onClick={(e) => e.stopPropagation()}> {/* Prevent click from propagating to overlay */}
                         <h3 className="text-2xl font-bold mb-4">Set Tasbeeh Target</h3>
                         <input
                             type="number"
@@ -1825,7 +1823,7 @@ export default function App() {
         return [...prevBookmarks, verseInfo];
       }
     });
-  }, [showNotification]); // Dependency updated to setBookmarkedVerses
+  }, [showNotification]);
 
   // Callback to update user progress when a verse is read (or audio is played).
   const handleVerseRead = useCallback(() => {
@@ -1873,34 +1871,34 @@ export default function App() {
 
         return { ...prev, versesRead: newVersesRead, dailyStreak: newStreak, lastReadDate: today, achievements: updatedAchievements };
     });
-  }, [showNotification, setPoints]); // Dependency updated to setPoints
+  }, [showNotification, setPoints]);
 
   // Callback to handle selection of a surah from the selector.
   const handleSelectSurah = useCallback((surahId) => {
     setSelectedSurahId(surahId);
     setCurrentView('quran-reader');
-    setLastReadPosition({ surahId: surahId, verseId: 1 }); // Use direct setter
+    setLastReadPosition({ surahId: surahId, verseId: 1 });
   }, []);
 
   // Callback to handle changing surah within the reader.
   const handleSurahChange = useCallback((newSurahId) => {
     setSelectedSurahId(newSurahId);
-    setLastReadPosition({ surahId: newSurahId, verseId: 1 }); // Use direct setter
+    setLastReadPosition({ surahId: newSurahId, verseId: 1 });
   }, []);
 
   // Callback specifically for when a verse's audio starts playing.
   const handleVerseAudioPlay = useCallback((surahId, verseId) => {
-    setLastReadPosition({ surahId: surahId, verseId: verseId }); // Use direct setter
+    setLastReadPosition({ surahId: surahId, verseId: verseId });
     handleVerseRead(); // Also count this as a "read" for progress tracking.
   }, [handleVerseRead]);
 
   // Callback for earning points, typically from quizzes.
   const handleEarnPoints = useCallback((amount) => {
-      setPoints(prevPoints => { // Use direct setter
+      setPoints(prevPoints => {
           const newPoints = prevPoints + amount;
           // Check for 'Quiz Whiz' achievement when points increase.
           if (newPoints >= 500 && !userProgress.achievements.find(a => a.id === 'quiz-whiz')?.achieved) {
-              setUserProgress(prev => ({ // Use direct setter
+              setUserProgress(prev => ({
                   ...prev,
                   achievements: prev.achievements.map(a =>
                       a.id === 'quiz-whiz' ? { ...a, achieved: true } : a
@@ -1911,7 +1909,7 @@ export default function App() {
           }
           return newPoints;
       });
-  }, [showNotification, userProgress.achievements]); // Dependencies updated to direct setters
+  }, [showNotification, userProgress.achievements]);
 
 
   // No loading screen needed as there's no external data to fetch on mount for user state.
@@ -1950,10 +1948,6 @@ export default function App() {
                 if (lastReadPosition) {
                     setSelectedSurahId(lastReadPosition.surahId);
                     setCurrentView('quran-reader');
-                } else {
-                    // This case should ideally not be hit with the new initial state logic,
-                    // but keeping it as a fallback.
-                    showNotification("No previous reading found!", "info");
                 }
             }}
             selectedReciterId={selectedReciter.id}
@@ -2056,8 +2050,8 @@ export default function App() {
           onClose={() => setNotification(null)}
         />
       )}
-      {/* Vercel Analytics Component - placed at the root level for global tracking */}
-      <Analytics />
+      {/* Vercel Analytics Component - removed as it's not supported in this environment */}
+      {/* <Analytics /> */}
     </div>
   );
 }
