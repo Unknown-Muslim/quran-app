@@ -49,7 +49,7 @@ const quranData = {
     { id: 38, name: 'ص', englishName: 'Sad', numberOfVerses: 88 },
     { id: 39, name: 'الزمر', englishName: 'Az-Zumar', numberOfVerses: 75 },
     { id: 40, name: 'غافر', englishName: 'Ghafir', numberOfVerses: 85 },
-    { id: 41, name: 'Fussilat', englishName: 'Fussilat', numberOfVerses: 54 },
+    { id: 41, name: 'فصلت', englishName: 'Fussilat', numberOfVerses: 54 },
     { id: 42, name: 'الشورى', englishName: 'Ash-Shuraa', numberOfVerses: 53 },
     { id: 43, name: 'الزخرف', englishName: 'Az-Zukhruf', numberOfVerses: 89 },
     { id: 44, name: 'الدخان', englishName: 'Ad-Dukhan', numberOfVerses: 59 },
@@ -427,17 +427,15 @@ const Card = ({ icon, title, description, onClick }) => (
 );
 
 // ReciterCard component to display individual reciter information.
-const ReciterCard = ({ reciter, onSelectReciter }) => {
+const ReciterCard = ({ reciter, onSelectReciter, isSelected }) => {
   const handleAction = () => {
-    // This action is simplified as all reciters are pre-unlocked.
-    // In a real app, this might trigger playing audio or selecting the reciter.
     if (onSelectReciter) {
-      onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
+      onSelectReciter(reciter.id, reciter.alquranCloudId);
     }
   };
 
   return (
-    <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200">
+    <div className={`bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200 ${isSelected ? 'border-4 border-yellow-400' : ''}`}>
       <img
         src={reciter.imageUrl}
         alt={reciter.englishName}
@@ -449,13 +447,24 @@ const ReciterCard = ({ reciter, onSelectReciter }) => {
       <button
         onClick={handleAction}
         className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
-          onSelectReciter ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400' : 'bg-green-800 text-green-300 cursor-default'
+          isSelected ? 'bg-yellow-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400'
         }`}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-          <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-        </svg>
-        Listen
+        {isSelected ? (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
+                </svg>
+                Selected
+            </>
+        ) : (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
+                </svg>
+                Select
+            </>
+        )}
       </button>
     </div>
   );
@@ -503,7 +512,7 @@ const AchievementsCard = ({ achievements }) => (
 );
 
 // HomeDashboard component, serving as the main landing page of the app.
-const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading }) => {
+const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading, selectedReciterId, onSelectReciter }) => {
   const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
 
   return (
@@ -534,11 +543,34 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         <div className="mt-5">
           <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-              <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+              <path d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" />
             </svg>
           </button>
         </div>
       </div>
+
+      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
+      {lastReadPosition && (
+          <div
+              className="bg-gradient-to-r from-blue-800 to-blue-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+              onClick={onContinueReading}
+          >
+              <p className="text-lg md:text-xl mb-3 font-semibold">Continue Reading</p>
+              <p className="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
+                  Surah {quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'}
+              </p>
+              <p className="text-base md:text-lg opacity-90">
+                  From Verse {lastReadPosition.verseId}
+              </p>
+              <div className="mt-5">
+                  <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+                          <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                      </svg>
+                  </button>
+              </div>
+          </div>
+      )}
 
       {/* Display of available reciters */}
       <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
@@ -548,10 +580,8 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
-              points={points} // Points are passed but not used for unlocking here
-              isUnlocked={true} // All reciters are pre-unlocked
-              onUnlock={() => {}} // No unlock action needed
-              showNotification={showNotification}
+              onSelectReciter={onSelectReciter}
+              isSelected={selectedReciterId === reciter.id}
             />
           ))}
         </div>
@@ -580,16 +610,6 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
           <AchievementsCard achievements={userProgress.achievements} />
         </div>
       </div>
-
-      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
-      {lastReadPosition && (
-          <Card
-              icon="➡️"
-              title="Continue Reading"
-              description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} from Verse ${lastReadPosition.verseId}`}
-              onClick={onContinueReading}
-          />
-      )}
 
       {/* Bookmarked Verses & Quiz Cards - arranged in a grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -689,7 +709,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             translation: translationVerses[index] ? translationVerses[index].text : 'Translation not available.',
             audio: arabicAyah.audio,
           }));
-          setSurahVerses(combinedVerses);
+          setSurahVerses(combinedVerses); // Corrected typo here
         } else {
           setError("Failed to load Surah verses. Please try again.");
           console.error("API Error:", data);
@@ -1223,25 +1243,39 @@ const Quiz = ({ onBackToDashboard, onEarnPoints, showNotification, quranData }) 
 };
 
 // --- NEW COMPONENT: TasbeehCounter ---
-const TasbeehCounter = ({ onBackToDashboard, showNotification }) => {
-    const [count, setCount] = useState(0);
+const TasbeehCounter = ({ onBackToDashboard, showNotification, onEarnPoints }) => {
+    const [count, setCount] = useState(0); // This count will persist as long as the component is mounted
     const [target, setTarget] = useState(0);
     const [showTargetInput, setShowTargetInput] = useState(false);
     const targetInputRef = useRef(null);
+    const lastAwardedThousand = useRef(0); // To track points for every 1000 counts
 
     const increment = () => {
         setCount(prevCount => {
             const newCount = prevCount + 1;
+
+            // Check for target reached
             if (target > 0 && newCount >= target) {
                 showNotification(`Target of ${target} reached! Alhamdulillah! 🎉`, 'success');
                 setTarget(0); // Reset target after reaching it
             }
+
+            // Award points for every 1000 counts
+            const currentThousand = Math.floor(newCount / 1000);
+            if (currentThousand > lastAwardedThousand.current) {
+                onEarnPoints(10); // Award 10 points
+                showNotification(`Tasbeeh milestone! +10 points for ${currentThousand * 1000} counts!`, 'success');
+                lastAwardedThousand.current = currentThousand;
+            }
+
             return newCount;
         });
     };
 
     const reset = () => {
         setCount(0);
+        setTarget(0); // Reset target on full reset
+        lastAwardedThousand.current = 0; // Reset point tracking
         showNotification('Tasbeeh counter reset.', 'info');
     };
 
@@ -1341,10 +1375,114 @@ const TasbeehCounter = ({ onBackToDashboard, showNotification }) => {
     );
 };
 
-// --- NEW COMPONENT: QiblaFinder (Placeholder for now) ---
-const QiblaFinder = ({ onBackToDashboard }) => {
+// --- NEW COMPONENT: QiblaFinder ---
+const QiblaFinder = ({ onBackToDashboard, showNotification }) => {
+    const [latitude, setLatitude] = useState(null);
+    const [longitude, setLongitude] = useState(null);
+    const [heading, setHeading] = useState(null); // Device's current magnetic heading (0-360, North=0)
+    const [qiblaDirection, setQiblaDirection] = useState(null); // Angle from North to Qibla
+    const [error, setError] = useState('');
+    const [permissionGranted, setPermissionGranted] = useState(false);
+    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+
+    // Mecca coordinates
+    const MECCA_LAT = 21.4225; // N
+    const MECCA_LON = 39.8262; // E
+
+    // Function to request device orientation permission for iOS 13+
+    const requestDeviceOrientationPermission = async () => {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                setIsRequestingPermission(true);
+                const permissionState = await DeviceOrientationEvent.requestPermission();
+                if (permissionState === 'granted') {
+                    setPermissionGranted(true);
+                    setError('');
+                    showNotification('Device orientation permission granted!', 'success');
+                } else {
+                    setPermissionGranted(false);
+                    setError('Device orientation permission denied. Qibla finder may not work.');
+                    showNotification('Device orientation permission denied.', 'error');
+                }
+            } catch (err) {
+                setError('Error requesting device orientation permission.');
+                showNotification('Error requesting device orientation permission.', 'error');
+                console.error(err);
+            } finally {
+                setIsRequestingPermission(false);
+            }
+        } else {
+            // For Android or older iOS, permission is usually granted by default
+            setPermissionGranted(true);
+            setError('');
+        }
+    };
+
+    // Calculate Qibla direction (bearing) using Haversine-like formula
+    const calculateQiblaDirection = useCallback((userLat, userLon) => {
+        const latRad = userLat * Math.PI / 180;
+        const lonRad = userLon * Math.PI / 180;
+        const meccaLatRad = MECCA_LAT * Math.PI / 180;
+        const meccaLonRad = MECCA_LON * Math.PI / 180;
+
+        const deltaLon = meccaLonRad - lonRad;
+
+        const y = Math.sin(deltaLon);
+        const x = Math.cos(latRad) * Math.tan(meccaLatRad) - Math.sin(latRad) * Math.cos(deltaLon);
+
+        let bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        setQiblaDirection(bearing);
+    }, []);
+
+    // Effect to get geolocation and listen for device orientation
+    useEffect(() => {
+        // Get Geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLatitude(position.coords.latitude);
+                    setLongitude(position.coords.longitude);
+                    calculateQiblaDirection(position.coords.latitude, position.coords.longitude);
+                    setError('');
+                },
+                (geoError) => {
+                    setError(`Geolocation error: ${geoError.message}. Please enable location services.`);
+                    showNotification(`Geolocation error: ${geoError.message}.`, 'error');
+                    console.error("Geolocation error:", geoError);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        } else {
+            setError('Geolocation is not supported by your browser.');
+            showNotification('Geolocation not supported.', 'error');
+        }
+
+        // Device Orientation Listener
+        const handleDeviceOrientation = (event) => {
+            // `alpha` is the compass heading relative to North (0-360 degrees)
+            // `webkitCompassHeading` is for older iOS versions
+            let currentHeading = event.alpha || event.webkitCompassHeading;
+            if (currentHeading !== null) {
+                setHeading(currentHeading);
+            }
+        };
+
+        if (permissionGranted) {
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+        }
+
+        return () => {
+            window.removeEventListener('deviceorientation', handleDeviceOrientation);
+        };
+    }, [permissionGranted, calculateQiblaDirection, showNotification]);
+
+    // Calculate the rotation needed for the compass arrow
+    const arrowRotation = heading !== null && qiblaDirection !== null
+        ? qiblaDirection - heading
+        : 0; // Default to 0 if no data
+
     return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
+        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center flex flex-col items-center">
             <div className="flex justify-between items-center w-full mb-4 border-b pb-4 border-green-700">
                 <button
                     onClick={onBackToDashboard}
@@ -1359,12 +1497,260 @@ const QiblaFinder = ({ onBackToDashboard }) => {
                 <h2 className="text-3xl font-bold text-green-50">Qibla Finder</h2>
                 <div className="w-12"></div> {/* Placeholder for alignment */}
             </div>
-            <p className="text-lg text-green-200 mt-8">
-                This feature will help you find the direction of the Qibla (Kaaba in Mecca).
-            </p>
-            <p className="text-md text-green-300 mt-4">
-                (Implementation for Qibla calculation and compass will go here.)
-            </p>
+
+            {error && <p className="text-red-400 mb-4">{error}</p>}
+
+            {!permissionGranted && (
+                <div className="p-4 bg-green-700 rounded-lg shadow-md mb-6">
+                    <p className="text-lg mb-3">To use the Qibla Finder, please grant permission for device motion and location.</p>
+                    <button
+                        onClick={requestDeviceOrientationPermission}
+                        disabled={isRequestingPermission}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isRequestingPermission ? 'Requesting...' : 'Grant Permissions'}
+                    </button>
+                </div>
+            )}
+
+            {latitude && longitude && (
+                <div className="mb-6 text-lg">
+                    <p>Your Location:</p>
+                    <p>Lat: {latitude.toFixed(4)}, Lon: {longitude.toFixed(4)}</p>
+                </div>
+            )}
+
+            <div className="relative w-48 h-48 bg-green-700 rounded-full flex items-center justify-center mb-8 shadow-xl">
+                <div className="absolute text-green-300 text-xl font-bold" style={{ top: '-1.5rem' }}>N</div>
+                <div className="absolute text-green-300 text-xl font-bold" style={{ bottom: '-1.5rem' }}>S</div>
+                <div className="absolute text-green-300 text-xl font-bold" style={{ left: '-1.5rem' }}>W</div>
+                <div className="absolute text-green-300 text-xl font-bold" style={{ right: '-1.5rem' }}>E</div>
+
+                {/* Compass Needle */}
+                <div
+                    className="absolute w-2 h-24 bg-red-500 rounded-b-full origin-bottom"
+                    style={{
+                        transform: `translateY(-50%) rotate(${heading !== null ? -heading : 0}deg)`,
+                        transformOrigin: 'bottom center',
+                        transition: 'transform 0.5s ease-out',
+                    }}
+                >
+                    <div className="w-full h-1/2 bg-red-700 rounded-t-full"></div> {/* Red tip */}
+                </div>
+
+                {/* Qibla Indicator (Kaaba icon) */}
+                {qiblaDirection !== null && (
+                    <div
+                        className="absolute text-4xl text-yellow-400 transition-transform duration-500 ease-out"
+                        style={{
+                            transform: `translate(-50%, -50%) rotate(${arrowRotation}deg) translateY(-60px)`, // Position at top, rotate
+                            transformOrigin: '50% 50%',
+                            left: '50%',
+                            top: '50%',
+                        }}
+                    >
+                        🕋
+                    </div>
+                )}
+            </div>
+
+            {heading !== null && (
+                <p className="text-xl mb-2">Your Current Heading: {heading.toFixed(1)}°</p>
+            )}
+            {qiblaDirection !== null && (
+                <p className="text-xl mb-2">Qibla Direction: {qiblaDirection.toFixed(1)}° from North</p>
+            )}
+            {heading !== null && qiblaDirection !== null && (
+                <p className="text-xl font-semibold text-green-200 mt-4">
+                    Rotate your device until the 🕋 icon points directly upwards.
+                </p>
+            )}
+            {!latitude || !longitude && <p className="text-green-300">Awaiting location data...</p>}
+            {!heading && permissionGranted && <p className="text-green-300">Awaiting device orientation data...</p>}
+
+        </div>
+    );
+};
+
+// --- NEW COMPONENT: ListenView for Full Surah Audio ---
+const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, quranData }) => {
+    const [selectedSurah, setSelectedSurah] = useState(null);
+    const [audioUrl, setAudioUrl] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const audioRef = useRef(new Audio());
+    audioRef.current.volume = 0.8; // Default volume
+
+    // Effect to clean up audio when component unmounts or reciter/surah changes
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = '';
+            }
+        };
+    }, []);
+
+    // Effect to fetch and play audio when selectedSurah or selectedReciter changes
+    useEffect(() => {
+        const fetchAndPlayAudio = async () => {
+            if (selectedSurah && selectedReciter) {
+                setIsLoading(true);
+                setError('');
+                setAudioUrl('');
+                audioRef.current.pause(); // Pause any currently playing audio
+
+                try {
+                    // Construct the audio URL for the full surah
+                    // Example: https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1
+                    // For full surah, the API expects /v1/surah/{surah_number}/ar.{reciter_id}
+                    const fullSurahAudioUrl = `https://api.alquran.cloud/v1/surah/${selectedSurah.id}/ar.${selectedReciter.alquranCloudId}`;
+                    const response = await fetch(fullSurahAudioUrl);
+                    const data = await response.json();
+
+                    if (data.code === 200 && data.data && data.data.audio) {
+                        setAudioUrl(data.data.audio);
+                        audioRef.current.src = data.data.audio;
+                        audioRef.current.play().catch(e => {
+                            console.error("Error playing audio:", e);
+                            setError("Failed to play audio. Please try again.");
+                            showNotification("Failed to play audio. Browser might block autoplay.", "error");
+                        });
+                        showNotification(`Playing Surah ${selectedSurah.englishName} by ${selectedReciter.englishName}`, 'info');
+                    } else {
+                        setError('Failed to fetch full surah audio. Please try another surah or reciter.');
+                        showNotification('Failed to fetch audio.', 'error');
+                        console.error("API Error fetching full surah audio:", data);
+                    }
+                } catch (err) {
+                    console.error("Fetch error for full surah audio:", err);
+                    setError('Could not connect to audio API. Check your internet connection.');
+                    showNotification('Network error fetching audio.', 'error');
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        fetchAndPlayAudio();
+    }, [selectedSurah, selectedReciter, showNotification]);
+
+    const handleSurahSelect = (surahId) => {
+        const surah = quranData.surahs.find(s => s.id === surahId);
+        setSelectedSurah(surah);
+    };
+
+    const togglePlayPause = () => {
+        if (audioRef.current.paused) {
+            audioRef.current.play().catch(e => {
+                console.error("Error resuming audio:", e);
+                showNotification("Failed to resume audio. Browser might block autoplay.", "error");
+            });
+        } else {
+            audioRef.current.pause();
+        }
+    };
+
+    const stopAudio = () => {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setAudioUrl(''); // Clear URL to reset state
+        setSelectedSurah(null); // Clear selected surah
+        showNotification('Audio stopped.', 'info');
+    };
+
+    // Combine all reciters for display
+    const allReciters = [...recitersData.featured, ...recitersData.free];
+
+    if (!selectedReciter) {
+        return (
+            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
+                <h2 className="text-3xl font-bold mb-6">Listen to Quran</h2>
+                <p className="text-lg mb-4">Please select a reciter from the Home Dashboard first.</p>
+                <button
+                    onClick={onBackToDashboard}
+                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
+                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
+            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
+                <button
+                    onClick={onBackToDashboard}
+                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
+                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
+                    </svg>
+                    Back to Dashboard
+                </button>
+                <h2 className="text-3xl font-bold text-green-50">Listen to Quran</h2>
+                <div className="w-12"></div> {/* Placeholder for alignment */}
+            </div>
+
+            <p className="text-center text-xl mb-4">Selected Reciter: <span className="font-semibold text-yellow-300">{selectedReciter.englishName}</span></p>
+
+            <div className="mb-6">
+                <label htmlFor="surah-select" className="block text-lg font-semibold mb-2">Select Surah:</label>
+                <select
+                    id="surah-select"
+                    onChange={(e) => handleSurahSelect(parseInt(e.target.value))}
+                    value={selectedSurah ? selectedSurah.id : ''}
+                    className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
+                >
+                    <option value="">-- Choose a Surah --</option>
+                    {quranData.surahs.map(surah => (
+                        <option key={surah.id} value={surah.id}>
+                            {surah.englishName} ({surah.name})
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {isLoading && <p className="text-center text-green-300">Loading audio...</p>}
+            {error && <p className="text-center text-red-400">{error}</p>}
+
+            {selectedSurah && audioUrl && !isLoading && (
+                <div className="mt-8 text-center">
+                    <p className="text-2xl font-bold mb-4">Now Playing: {selectedSurah.englishName}</p>
+                    <div className="flex justify-center space-x-4">
+                        <button
+                            onClick={togglePlayPause}
+                            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            title={audioRef.current.paused ? 'Play' : 'Pause'}
+                        >
+                            {audioRef.current.paused ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                                    <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                                    <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0a.75.75 0 0 1 .75-.75H16.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+                                </svg>
+                            )}
+                        </button>
+                        <button
+                            onClick={stopAudio}
+                            className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-full shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            title="Stop"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                                <path fillRule="evenodd" d="M6.75 5.25A.75.75 0 0 1 7.5 4.5h9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -1374,14 +1760,24 @@ const QiblaFinder = ({ onBackToDashboard }) => {
 // This is the root component of the application, managing global state and routing.
 export default function App() {
   const [currentView, setCurrentView] = useState('home'); // Controls which main section is displayed.
-  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah.
+  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah for QuranReader.
   const [notification, setNotification] = useState(null); // Manages notification messages.
 
   // State for user points, initialized with a default. Data will reset on refresh.
   const [points, setPoints] = useState(0);
 
-  // State for tracking the last read position, initialized with a default. Data will reset on refresh.
-  const [lastReadPosition, setLastReadPosition] = useState(null);
+  // State for tracking the last read position, initialized with a default or a random verse.
+  const [lastReadPosition, setLastReadPosition] = useState(() => {
+    // This function runs only once during initial render
+    // If there's no saved last read position, pick a random one
+    const randomSurahIndex = Math.floor(Math.random() * quranData.surahs.length);
+    const randomSurah = quranData.surahs[randomSurahIndex];
+    const randomVerseId = Math.floor(Math.random() * randomSurah.numberOfVerses) + 1;
+    return {
+        surahId: randomSurah.id,
+        verseId: randomVerseId
+    };
+  });
 
   // State for overall user progress (streak, verses read, achievements), initialized with defaults. Data will reset on refresh.
   const [userProgress, setUserProgress] = useState({
@@ -1394,10 +1790,8 @@ export default function App() {
   // State for bookmarked verses, initialized with a default. Data will reset on refresh.
   const [bookmarkedVerses, setBookmarkedVerses] = useState([]);
 
-  // Unlocked reciters (all are unlocked by default in this version).
-  const [unlockedReciters, setUnlockedReciters] = useState(() => {
-    return [...recitersData.featured, ...recitersData.free].map(r => r.id);
-  });
+  // State for selected reciter for audio playback
+  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default to Al-Afasy
 
 
   // Callback function to display a notification message.
@@ -1409,18 +1803,15 @@ export default function App() {
     return () => clearTimeout(timer); // Cleanup timer.
   }, []);
 
-  // Callback for unlocking reciters (currently all are unlocked by default).
-  const handleUnlockReciter = useCallback((reciterId, cost) => {
-    if (!unlockedReciters.includes(reciterId) && points >= cost) {
-      setPoints(prevPoints => prevPoints - cost); // Use direct setter
-      setUnlockedReciters(prev => [...prev, reciterId]);
-      showNotification(`${recitersData.featured.find(r => r.id === reciterId)?.englishName || recitersData.free.find(r => r.id === reciterId)?.englishName} unlocked!`, 'success');
-    } else if (unlockedReciters.includes(reciterId)) {
-      showNotification('Reciter already unlocked!', 'info');
-    } else {
-      showNotification('Not enough points to unlock this reciter.', 'error');
+  // Callback for selecting a reciter for audio playback
+  const handleSelectReciter = useCallback((reciterId, alquranCloudId) => {
+    const reciter = [...recitersData.featured, ...recitersData.free].find(r => r.id === reciterId);
+    if (reciter) {
+      setSelectedReciter(reciter);
+      showNotification(`Reciter selected: ${reciter.englishName}`, 'info');
     }
-  }, [points, unlockedReciters, showNotification, setPoints]); // Dependency updated to setPoints
+  }, [showNotification]);
+
 
   // Callback for adding or removing a bookmark.
   const handleToggleBookmark = useCallback((verseInfo) => {
@@ -1434,7 +1825,7 @@ export default function App() {
         return [...prevBookmarks, verseInfo];
       }
     });
-  }, [showNotification, setBookmarkedVerses]); // Dependency updated to setBookmarkedVerses
+  }, [showNotification]); // Dependency updated to setBookmarkedVerses
 
   // Callback to update user progress when a verse is read (or audio is played).
   const handleVerseRead = useCallback(() => {
@@ -1482,26 +1873,26 @@ export default function App() {
 
         return { ...prev, versesRead: newVersesRead, dailyStreak: newStreak, lastReadDate: today, achievements: updatedAchievements };
     });
-  }, [showNotification, setPoints, setUserProgress]); // Dependency updated to setPoints
+  }, [showNotification, setPoints]); // Dependency updated to setPoints
 
   // Callback to handle selection of a surah from the selector.
   const handleSelectSurah = useCallback((surahId) => {
     setSelectedSurahId(surahId);
     setCurrentView('quran-reader');
     setLastReadPosition({ surahId: surahId, verseId: 1 }); // Use direct setter
-  }, [setLastReadPosition]);
+  }, []);
 
   // Callback to handle changing surah within the reader.
   const handleSurahChange = useCallback((newSurahId) => {
     setSelectedSurahId(newSurahId);
     setLastReadPosition({ surahId: newSurahId, verseId: 1 }); // Use direct setter
-  }, [setLastReadPosition]);
+  }, []);
 
   // Callback specifically for when a verse's audio starts playing.
   const handleVerseAudioPlay = useCallback((surahId, verseId) => {
     setLastReadPosition({ surahId: surahId, verseId: verseId }); // Use direct setter
     handleVerseRead(); // Also count this as a "read" for progress tracking.
-  }, [handleVerseRead, setLastReadPosition]);
+  }, [handleVerseRead]);
 
   // Callback for earning points, typically from quizzes.
   const handleEarnPoints = useCallback((amount) => {
@@ -1520,7 +1911,7 @@ export default function App() {
           }
           return newPoints;
       });
-  }, [showNotification, userProgress.achievements, setPoints, setUserProgress]); // Dependencies updated to direct setters
+  }, [showNotification, userProgress.achievements]); // Dependencies updated to direct setters
 
 
   // No loading screen needed as there's no external data to fetch on mount for user state.
@@ -1552,7 +1943,7 @@ export default function App() {
             points={points}
             userProgress={userProgress}
             unlockedReciters={unlockedReciters}
-            handleUnlockReciter={handleUnlockReciter}
+            handleUnlockReciter={() => {}} // No unlock logic needed as all are free
             showNotification={showNotification}
             lastReadPosition={lastReadPosition}
             onContinueReading={() => {
@@ -1560,9 +1951,13 @@ export default function App() {
                     setSelectedSurahId(lastReadPosition.surahId);
                     setCurrentView('quran-reader');
                 } else {
+                    // This case should ideally not be hit with the new initial state logic,
+                    // but keeping it as a fallback.
                     showNotification("No previous reading found!", "info");
                 }
             }}
+            selectedReciterId={selectedReciter.id}
+            onSelectReciter={handleSelectReciter}
           />
         )}
         {currentView === 'surah-selector' && (
@@ -1580,22 +1975,12 @@ export default function App() {
           />
         )}
         {currentView === 'listen' && (
-          <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <h2 className="text-2xl font-bold mb-5 text-center">Listen to Quran</h2>
-            <p className="text-center text-green-200 mb-4">
-              Select a reciter from the Home Dashboard to start listening! (Future: add direct listening options here)
-            </p>
-            <button
-                onClick={() => setCurrentView('home')}
-                className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                    <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                    <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                </svg>
-                Back to Dashboard
-            </button>
-          </div>
+          <ListenView
+            onBackToDashboard={() => setCurrentView('home')}
+            selectedReciter={selectedReciter}
+            showNotification={showNotification}
+            quranData={quranData}
+          />
         )}
         {currentView === 'practice' && (
             <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
@@ -1652,11 +2037,13 @@ export default function App() {
             <TasbeehCounter
                 onBackToDashboard={() => setCurrentView('home')}
                 showNotification={showNotification}
+                onEarnPoints={handleEarnPoints}
             />
         )}
         {currentView === 'qibla-finder' && (
             <QiblaFinder
                 onBackToDashboard={() => setCurrentView('home')}
+                showNotification={showNotification}
             />
         )}
       </main>
