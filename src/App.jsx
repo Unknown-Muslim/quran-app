@@ -1706,7 +1706,7 @@ const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, qura
                     value={selectedSurah ? selectedSurah.id : ''}
                     className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
                 >
-                    <option value="">-- Choose a Surah --</option>
+                    <option value="">-- Select a Surah --</option>
                     {quranData.surahs.map(surah => (
                         <option key={surah.id} value={surah.id}>
                             {surah.englishName} ({surah.name})
@@ -1715,17 +1715,18 @@ const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, qura
                 </select>
             </div>
 
-            {isLoading && <p className="text-center text-green-300">Loading audio...</p>}
+            {isLoading && <p className="text-center text-green-200">Loading audio...</p>}
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {selectedSurah && audioUrl && !isLoading && (
-                <div className="mt-8 text-center">
-                    <p className="text-2xl font-bold mb-4">Now Playing: {selectedSurah.englishName}</p>
-                    <div className="flex justify-center space-x-4">
+                <div className="mt-6 p-4 bg-green-700 rounded-lg shadow-md text-center">
+                    <h3 className="text-2xl font-bold mb-3">Now Playing: {selectedSurah.englishName}</h3>
+                    <p className="text-lg text-green-200 mb-4 font-arabic">{selectedSurah.name}</p>
+                    <div className="flex justify-center items-center space-x-4">
                         <button
                             onClick={togglePlayPause}
-                            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            title={audioRef.current.paused ? 'Play' : 'Pause'}
+                            className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            title={audioRef.current.paused ? "Play" : "Pause"}
                         >
                             {audioRef.current.paused ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
@@ -1733,13 +1734,13 @@ const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, qura
                                 </svg>
                             ) : (
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                    <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0a.75.75 0 0 1 .75-.75H16.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+                                    <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25ZM14.25 5.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
                                 </svg>
                             )}
                         </button>
                         <button
                             onClick={stopAudio}
-                            className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-full shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-400"
+                            className="p-3 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
                             title="Stop"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
@@ -1753,297 +1754,231 @@ const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, qura
     );
 };
 
-
 // --- Main App Component ---
-// This is the root component of the application, managing global state and routing.
 export default function App() {
   const [currentView, setCurrentView] = useState('home'); // Controls which main section is displayed.
-  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah for QuranReader.
-  const [notification, setNotification] = useState(null); // Manages notification messages.
+  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah.
+  const [notification, setNotification] = useState(null); // Manages temporary notification messages.
+  const [points, setPoints] = useState(0); // Tracks user's accumulated points.
+  const [bookmarkedVerses, setBookmarkedVerses] = useState([]); // Stores user's bookmarked verses.
+  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default selected reciter.
+  const [lastReadPosition, setLastReadPosition] = useState({ surahId: 1, verseId: 1 }); // Tracks last read position.
 
-  // State for user points, initialized with a default. Data will reset on refresh.
-  const [points, setPoints] = useState(0);
-
-  // State for tracking the last read position, initialized with a default or a random verse.
-  const [lastReadPosition, setLastReadPosition] = useState(() => {
-    // This function runs only once during initial render
-    // If there's no saved last read position, pick a random one
-    const randomSurahIndex = Math.floor(Math.random() * quranData.surahs.length);
-    const randomSurah = quranData.surahs[randomSurahIndex];
-    // Ensure randomVerseId is within bounds for the selected surah
-    const randomVerseId = Math.floor(Math.random() * randomSurah.numberOfVerses) + 1;
-    return {
-        surahId: randomSurah.id,
-        verseId: randomVerseId
-    };
-  });
-
-  // State for overall user progress (streak, verses read, achievements), initialized with defaults. Data will reset on refresh.
+  // User progress state, including achievements.
   const [userProgress, setUserProgress] = useState({
     dailyStreak: 0,
-    lastReadDate: null,
     versesRead: 0,
-    achievements: achievementsData.map(a => ({ ...a })), // Deep copy to allow individual achievement modification.
+    achievements: achievementsData,
+    lastReadDate: null,
   });
 
-  // State for bookmarked verses, initialized with a default. Data will reset on refresh.
-  const [bookmarkedVerses, setBookmarkedVerses] = useState([]);
+  // Effect to manage daily streak and update achievements.
+  useEffect(() => {
+    const checkDailyStreak = () => {
+      const today = startOfDay(new Date());
+      const lastRead = userProgress.lastReadDate ? parseISO(userProgress.lastReadDate) : null;
 
-  // State for selected reciter for audio playback
-  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default to Al-Afasy
+      if (lastRead) {
+        const yesterday = addDays(today, -1);
+        // If last read was yesterday, increment streak.
+        if (format(lastRead, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
+          setUserProgress(prev => ({ ...prev, dailyStreak: prev.dailyStreak + 1 }));
+        }
+        // If last read was today, do nothing (streak maintained).
+        else if (format(lastRead, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
+          // Streak already counted for today.
+        }
+        // If last read was before yesterday, reset streak.
+        else {
+          setUserProgress(prev => ({ ...prev, dailyStreak: 0 }));
+        }
+      } else {
+        // First time reading, start streak at 1.
+        setUserProgress(prev => ({ ...prev, dailyStreak: 1 }));
+      }
+      setUserProgress(prev => ({ ...prev, lastReadDate: today.toISOString() })); // Update last read date to today.
+    };
 
+    checkDailyStreak(); // Run once on component mount.
+  }, []); // Empty dependency array means this runs only once after initial render.
 
-  // Callback function to display a notification message.
-  const showNotification = useCallback((message, type = 'info') => {
+  // Effect to check and update achievements based on user progress.
+  useEffect(() => {
+    setUserProgress(prev => {
+      const updatedAchievements = prev.achievements.map(ach => {
+        if (ach.id === 'first-read' && prev.versesRead > 0 && !ach.achieved) {
+          showNotification('Achievement Unlocked: First Read! ✨', 'success');
+          return { ...ach, achieved: true };
+        }
+        if (ach.id === 'first-week' && prev.dailyStreak >= 7 && !ach.achieved) {
+          showNotification('Achievement Unlocked: Daily Reader! 📅', 'success');
+          return { ...ach, achieved: true };
+        }
+        // Add more achievement checks here as needed.
+        return ach;
+      });
+      return { ...prev, achievements: updatedAchievements };
+    });
+  }, [userProgress.versesRead, userProgress.dailyStreak, showNotification]); // Dependencies for achievement checks.
+
+  // Function to display a notification message.
+  const showNotification = useCallback((message, type = 'info', duration = 3000) => {
     setNotification({ message, type });
     const timer = setTimeout(() => {
-      setNotification(null); // Clear notification after 3 seconds.
-    }, 3000);
-    return () => clearTimeout(timer); // Cleanup timer.
+      setNotification(null);
+    }, duration);
+    return () => clearTimeout(timer); // Cleanup timer if component unmounts.
   }, []);
 
-  // Callback for selecting a reciter for audio playback
-  const handleSelectReciter = useCallback((reciterId, alquranCloudId) => {
+  // Handler for selecting a surah to read.
+  const handleSelectSurah = (surahId) => {
+    setSelectedSurahId(surahId);
+    setCurrentView('quran-reader');
+  };
+
+  // Handler for changing surah within the reader.
+  const handleSurahChange = (newSurahId) => {
+    setSelectedSurahId(newSurahId);
+    // Optionally update last read position here if user navigates through surahs.
+    setLastReadPosition(prev => ({ ...prev, surahId: newSurahId, verseId: 1 }));
+  };
+
+  // Handler for when a verse is read (e.g., scrolled into view or audio played).
+  const handleVerseRead = (surahId, verseId) => {
+    setUserProgress(prev => ({ ...prev, versesRead: prev.versesRead + 1 }));
+    setLastReadPosition({ surahId, verseId });
+  };
+
+  // Handler for toggling a bookmark on a verse.
+  const handleToggleBookmark = (verse) => {
+    setBookmarkedVerses(prev => {
+      const isBookmarked = prev.some(b => b.surahId === verse.surahId && b.verseId === verse.verseId);
+      if (isBookmarked) {
+        showNotification('Bookmark removed.', 'info');
+        return prev.filter(b => !(b.surahId === verse.surahId && b.verseId === verse.verseId));
+      } else {
+        showNotification('Verse bookmarked!', 'success');
+        return [...prev, verse];
+      }
+    });
+  };
+
+  // Handler to remove a bookmark.
+  const handleRemoveBookmark = (bookmarkToRemove) => {
+    setBookmarkedVerses(prev =>
+      prev.filter(b => !(b.surahId === bookmarkToRemove.surahId && b.verseId === bookmarkToRemove.verseId))
+    );
+    showNotification('Bookmark removed.', 'info');
+  };
+
+  // Handler to read a surah from the bookmarks list.
+  const handleReadBookmarkedSurah = (surahId) => {
+    setSelectedSurahId(surahId);
+    setCurrentView('quran-reader');
+  };
+
+  // Handler for earning points.
+  const handleEarnPoints = (amount) => {
+    setPoints(prev => prev + amount);
+    // showNotification(`+${amount} points!`, 'success'); // Notification handled by specific components (Quiz, Tasbeeh)
+  };
+
+  // Handler for selecting a reciter.
+  const handleSelectReciter = (reciterId, alquranCloudId) => {
     const reciter = [...recitersData.featured, ...recitersData.free].find(r => r.id === reciterId);
     if (reciter) {
       setSelectedReciter(reciter);
-      showNotification(`Reciter selected: ${reciter.englishName}`, 'info');
+      showNotification(`Reciter selected: ${reciter.englishName}`, 'success');
     }
-  }, [showNotification]);
+  };
 
+  // Handler for continuing reading from the last position.
+  const handleContinueReading = () => {
+    if (lastReadPosition.surahId) {
+      setSelectedSurahId(lastReadPosition.surahId);
+      setCurrentView('quran-reader');
+      showNotification(`Continuing from Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName} Verse ${lastReadPosition.verseId}`, 'info');
+    } else {
+      showNotification('No previous reading position found. Starting from Al-Fatiha.', 'info');
+      setSelectedSurahId(1);
+      setCurrentView('quran-reader');
+    }
+  };
 
-  // Callback for adding or removing a bookmark.
-  const handleToggleBookmark = useCallback((verseInfo) => {
-    setBookmarkedVerses(prevBookmarks => { // Use direct setter
-      const isBookmarked = prevBookmarks.some(b => b.surahId === verseInfo.surahId && b.verseId === verseInfo.verseId);
-      if (isBookmarked) {
-        showNotification('Bookmark removed!', 'info');
-        return prevBookmarks.filter(b => !(b.surahId === verseInfo.surahId && b.verseId === verseInfo.verseId));
-      } else {
-        showNotification('Verse bookmarked!', 'success');
-        return [...prevBookmarks, verseInfo];
-      }
-    });
-  }, [showNotification]);
-
-  // Callback to update user progress when a verse is read (or audio is played).
-  const handleVerseRead = useCallback(() => {
-    setUserProgress(prev => { // Use direct setter
-        const newVersesRead = prev.versesRead + 1;
-        const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
-        const lastRead = prev.lastReadDate;
-        let newStreak = prev.dailyStreak;
-
-        // Logic for daily streak calculation.
-        if (!lastRead) {
-            newStreak = 1;
-        } else {
-            const lastDate = parseISO(lastRead);
-            const tomorrow = addDays(lastDate, 1);
-            if (format(startOfDay(new Date()), 'yyyy-MM-dd') === format(startOfDay(tomorrow), 'yyyy-MM-dd')) {
-                newStreak += 1;
-            } else if (format(startOfDay(new Date()), 'yyyy-MM-dd') !== format(startOfDay(lastDate), 'yyyy-MM-dd')) {
-                newStreak = 1; // Streak broken if not today or yesterday.
-            }
-        }
-
-        let updatedAchievements = [...prev.achievements]; // Create a mutable copy.
-        let achievementUnlocked = false; // Flag to check if any achievement was unlocked.
-
-        // Check for 'Daily Reader' achievement.
-        if (newStreak >= 7 && !updatedAchievements.find(a => a.id === 'first-week')?.achieved) {
-            updatedAchievements = updatedAchievements.map(a =>
-                a.id === 'first-week' ? { ...a, achieved: true } : a
-            );
-            showNotification("Achievement Unlocked: Daily Reader! 📅", "success");
-            setPoints(currentPoints => currentPoints + 50); // Award points for achievement.
-            achievementUnlocked = true;
-        }
-
-        // Check for 'First Read' achievement.
-        if (newVersesRead >= 1 && !updatedAchievements.find(a => a.id === 'first-read')?.achieved) {
-            updatedAchievements = updatedAchievements.map(a =>
-                a.id === 'first-read' ? { ...a, achieved: true } : a
-            );
-            showNotification("Achievement Unlocked: First Read! ✨", "success");
-            setPoints(currentPoints => currentPoints + 20); // Award points for achievement.
-            achievementUnlocked = true;
-        }
-
-        return { ...prev, versesRead: newVersesRead, dailyStreak: newStreak, lastReadDate: today, achievements: updatedAchievements };
-    });
-  }, [showNotification, setPoints]);
-
-  // Callback to handle selection of a surah from the selector.
-  const handleSelectSurah = useCallback((surahId) => {
-    setSelectedSurahId(surahId);
-    setCurrentView('quran-reader');
-    setLastReadPosition({ surahId: surahId, verseId: 1 });
-  }, []);
-
-  // Callback to handle changing surah within the reader.
-  const handleSurahChange = useCallback((newSurahId) => {
-    setSelectedSurahId(newSurahId);
-    setLastReadPosition({ surahId: newSurahId, verseId: 1 });
-  }, []);
-
-  // Callback specifically for when a verse's audio starts playing.
-  const handleVerseAudioPlay = useCallback((surahId, verseId) => {
-    setLastReadPosition({ surahId: surahId, verseId: verseId });
-    handleVerseRead(); // Also count this as a "read" for progress tracking.
-  }, [handleVerseRead]);
-
-  // Callback for earning points, typically from quizzes.
-  const handleEarnPoints = useCallback((amount) => {
-      setPoints(prevPoints => {
-          const newPoints = prevPoints + amount;
-          // Check for 'Quiz Whiz' achievement when points increase.
-          if (newPoints >= 500 && !userProgress.achievements.find(a => a.id === 'quiz-whiz')?.achieved) {
-              setUserProgress(prev => ({
-                  ...prev,
-                  achievements: prev.achievements.map(a =>
-                      a.id === 'quiz-whiz' ? { ...a, achieved: true } : a
-                  )
-              }));
-              showNotification("Achievement Unlocked: Quiz Whiz! ❓", "success");
-              return newPoints + 100; // Award extra points for achievement.
-          }
-          return newPoints;
-      });
-  }, [showNotification, userProgress.achievements]);
-
-
-  // No loading screen needed as there's no external data to fetch on mount for user state.
-
-  return (
-    <div className="min-h-screen bg-green-900 text-green-50 font-sans"> {/* Applied general font-sans */}
-      <header className="bg-green-800 p-4 shadow-md sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-green-50">Quran App</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-xl font-semibold">🌟 {points} Points</span>
-            <button
-              onClick={() => setCurrentView('home')}
-              className="bg-green-700 hover:bg-green-600 text-green-50 p-2 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-400"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                <path d="M11.47 3.84a.75.75 0 0 1 1.06 0l8.69 8.69a1.5 1.5 0 0 1 0 2.12l-5.15 5.15a1.5 1.5 0 0 1-2.12 0L2.84 12.53a.75.75 0 0 1 0-1.06l8.69-8.69Z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto p-4 py-8">
-        {/* Conditional rendering based on currentView state */}
-        {currentView === 'home' && (
+  // Main application rendering logic based on currentView state.
+  const renderView = () => {
+    switch (currentView) {
+      case 'home':
+        return (
           <HomeDashboard
             setCurrentView={setCurrentView}
             points={points}
             userProgress={userProgress}
-            unlockedReciters={unlockedReciters}
-            handleUnlockReciter={() => {}} // No unlock logic needed as all are free
+            unlockedReciters={recitersData} // Pass all reciters as unlocked
+            handleUnlockReciter={() => showNotification("Reciter already unlocked!", "info")} // Dummy function
             showNotification={showNotification}
             lastReadPosition={lastReadPosition}
-            onContinueReading={() => {
-                if (lastReadPosition) {
-                    setSelectedSurahId(lastReadPosition.surahId);
-                    setCurrentView('quran-reader');
-                }
-            }}
+            onContinueReading={handleContinueReading}
             selectedReciterId={selectedReciter.id}
             onSelectReciter={handleSelectReciter}
           />
-        )}
-        {currentView === 'surah-selector' && (
-          <SurahSelector onSelectSurah={handleSelectSurah} />
-        )}
-        {currentView === 'quran-reader' && selectedSurahId && (
+        );
+      case 'surah-selector':
+        return <SurahSelector onSelectSurah={handleSelectSurah} />;
+      case 'quran-reader':
+        return (
           <QuranReader
             selectedSurahId={selectedSurahId}
             onBackToSurahList={() => setCurrentView('surah-selector')}
             onSurahChange={handleSurahChange}
-            onVerseRead={handleVerseRead} // Still used for streak/general read count.
+            onVerseRead={handleVerseRead}
             onToggleBookmark={handleToggleBookmark}
             bookmarkedVerses={bookmarkedVerses}
-            onVerseAudioPlay={handleVerseAudioPlay} // Prop to update last read position on audio play.
+            onVerseAudioPlay={handleVerseRead} // Reuse handleVerseRead for audio play tracking
           />
-        )}
-        {currentView === 'listen' && (
-          <ListenView
+        );
+      case 'bookmarks':
+        return (
+          <BookmarkedVerses
+            bookmarkedVerses={bookmarkedVerses}
+            onRemoveBookmark={handleRemoveBookmark}
+            onReadBookmarkedSurah={handleReadBookmarkedSurah}
             onBackToDashboard={() => setCurrentView('home')}
-            selectedReciter={selectedReciter}
-            showNotification={showNotification}
-            quranData={quranData}
           />
-        )}
-        {currentView === 'practice' && (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-                <h2 className="text-2xl font-bold mb-5 text-center">Practice Recitation (Coming Soon!)</h2>
-                <p className="text-center text-green-200">
-                    This section will allow you to record your recitation and compare it.
-                </p>
-                 <button
-                    onClick={() => setCurrentView('home')}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        )}
-        {currentView === 'prayer-times' && (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-                <h2 className="text-2xl font-bold mb-5 text-center">Prayer Times</h2>
-                <PrayerTimesDisplay />
-                 <button
-                    onClick={() => setCurrentView('home')}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        )}
-        {currentView === 'bookmarks' && (
-            <BookmarkedVerses
-                bookmarkedVerses={bookmarkedVerses}
-                onRemoveBookmark={handleToggleBookmark}
-                onReadBookmarkedSurah={handleSelectSurah}
-                onBackToDashboard={() => setCurrentView('home')}
-            />
-        )}
-        {currentView === 'quiz' && (
-            <Quiz
-                onBackToDashboard={() => setCurrentView('home')}
-                onEarnPoints={handleEarnPoints}
-                showNotification={showNotification}
-                quranData={quranData}
-            />
-        )}
-        {/* NEW VIEWS */}
-        {currentView === 'tasbeeh-counter' && (
-            <TasbeehCounter
-                onBackToDashboard={() => setCurrentView('home')}
-                showNotification={showNotification}
-                onEarnPoints={handleEarnPoints}
-            />
-        )}
-        {currentView === 'qibla-finder' && (
-            <QiblaFinder
-                onBackToDashboard={() => setCurrentView('home')}
-                showNotification={showNotification}
-            />
-        )}
+        );
+      case 'prayer-times':
+        return <PrayerTimesDisplay onBackToDashboard={() => setCurrentView('home')} />;
+      case 'quiz':
+        return <Quiz onBackToDashboard={() => setCurrentView('home')} onEarnPoints={handleEarnPoints} showNotification={showNotification} quranData={quranData} />;
+      case 'tasbeeh-counter':
+        return <TasbeehCounter onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} onEarnPoints={handleEarnPoints} />;
+      case 'qibla-finder':
+        return <QiblaFinder onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} />;
+      case 'listen':
+        return <ListenView onBackToDashboard={() => setCurrentView('home')} selectedReciter={selectedReciter} showNotification={showNotification} quranData={quranData} />;
+      // Add other cases for 'practice' etc. when implemented.
+      default:
+        return <HomeDashboard setCurrentView={setCurrentView} points={points} userProgress={userProgress} unlockedReciters={recitersData} handleUnlockReciter={() => {}} showNotification={showNotification} lastReadPosition={lastReadPosition} onContinueReading={handleContinueReading} selectedReciterId={selectedReciter.id} onSelectReciter={handleSelectReciter} />;
+    }
+  };
+
+  return (
+    // Main container with Tailwind CSS for overall styling.
+    <div className="min-h-screen bg-green-900 text-green-50 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
+      {/* Header section with app title and points display */}
+      <header className="w-full max-w-4xl bg-green-800 p-5 rounded-xl shadow-lg mb-8 flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-green-100">My Quran App</h1>
+        <div className="text-xl font-semibold text-yellow-300 flex items-center">
+          <span className="mr-2">🌟</span> {points} Points
+        </div>
+      </header>
+
+      {/* Main content area where different views are rendered */}
+      <main className="w-full max-w-4xl flex-grow">
+        {renderView()} {/* Renders the active component based on currentView */}
       </main>
 
-      {/* Notification display area */}
+      {/* Notification message display */}
       {notification && (
         <NotificationMessage
           message={notification.message}
@@ -2051,6 +1986,41 @@ export default function App() {
           onClose={() => setNotification(null)}
         />
       )}
+
+      {/* Tailwind CSS Script - MUST be included for Tailwind classes to work */}
+      <script src="https://cdn.tailwindcss.com"></script>
+      {/* Custom CSS for Arabic font and scrollbar */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap'); /* Example Arabic font */
+
+        body {
+          font-family: 'Inter', sans-serif;
+        }
+
+        .font-arabic {
+          font-family: 'Amiri Quran', serif; /* Apply to Arabic text */
+        }
+
+        /* Custom Scrollbar for better aesthetics */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #10B981; /* green-500 */
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #065F46; /* green-800 */
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #047857; /* green-700 */
+        }
+      `}</style>
     </div>
   );
 }
