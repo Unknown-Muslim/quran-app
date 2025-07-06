@@ -1,8 +1,7 @@
 // --- Initial Setup and Data Imports ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
-// Removed Vercel Analytics component as it's not supported in this environment
-// import { Analytics } from '@vercel/analytics/react';
+// IMPORTANT: Removed Vercel Analytics component as it's not supported in this environment.
 
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 // This data provides metadata for each Surah of the Quran.
@@ -1455,7 +1454,7 @@ const QiblaFinder = ({ onBackToDashboard, showNotification }) => {
             showNotification('Geolocation not supported.', 'error');
         }
 
-        // Device Orientation Listener
+        // Device Orientation Listener - only add if permission is granted
         const handleDeviceOrientation = (event) => {
             // `alpha` is the compass heading relative to North (0-360 degrees)
             // `webkitCompassHeading` is for older iOS versions
@@ -1470,9 +1469,10 @@ const QiblaFinder = ({ onBackToDashboard, showNotification }) => {
         }
 
         return () => {
+            // Clean up the event listener when component unmounts or permission changes
             window.removeEventListener('deviceorientation', handleDeviceOrientation);
         };
-    }, [permissionGranted, calculateQiblaDirection, showNotification]);
+    }, [permissionGranted, calculateQiblaDirection, showNotification]); // Added permissionGranted to dependency array
 
     // Calculate the rotation needed for the compass arrow
     const arrowRotation = heading !== null && qiblaDirection !== null
@@ -1770,6 +1770,7 @@ export default function App() {
     // If there's no saved last read position, pick a random one
     const randomSurahIndex = Math.floor(Math.random() * quranData.surahs.length);
     const randomSurah = quranData.surahs[randomSurahIndex];
+    // Ensure randomVerseId is within bounds for the selected surah
     const randomVerseId = Math.floor(Math.random() * randomSurah.numberOfVerses) + 1;
     return {
         surahId: randomSurah.id,
@@ -2050,8 +2051,6 @@ export default function App() {
           onClose={() => setNotification(null)}
         />
       )}
-      {/* Vercel Analytics Component - removed as it's not supported in this environment */}
-      {/* <Analytics /> */}
     </div>
   );
 }
