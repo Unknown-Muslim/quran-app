@@ -1,38 +1,31 @@
-.App {
-  text-align: center;
+/* src/App.css */
+
+/*
+  This file can be used for any custom CSS that is not handled by Tailwind CSS
+  utility classes or directly in your components.
+
+  For most React + Tailwind projects, this file might remain largely empty
+  or contain only a few global styles specific to your application's layout
+  or custom animations.
+*/
+
+/* Example: If you had a specific animation or custom class not covered by Tailwind */
+/*
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
+@keyframes fadeInUp {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+*/
+
+/* Add any specific styles for your application here if needed */
+
