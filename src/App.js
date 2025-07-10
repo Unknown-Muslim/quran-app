@@ -1,7 +1,13 @@
 // --- Initial Setup and Data Imports ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
-// IMPORTANT: Removed Vercel Analytics component as it's not supported in this environment.
+// NEW: Import Vercel Analytics component for web analytics
+import { Analytics } from '@vercel/analytics/react';
+
+// NEW: Firebase Imports
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 // This data provides metadata for each Surah of the Quran.
@@ -46,40 +52,40 @@ const quranData = {
     { id: 36, name: 'يس', englishName: 'Ya-Sin', numberOfVerses: 83 },
     { id: 37, name: 'الصافات', englishName: 'As-Saffat', numberOfVerses: 182 },
     { id: 38, name: 'ص', englishName: 'Sad', numberOfVerses: 88 },
-    { id: 39, name: 'الزمر', englishName: 'Az-Zumar', numberOfVerses: 75 },
-    { id: 40, name: 'غافر', englishName: 'Ghafir', numberOfVerses: 85 },
-    { id: 41, name: 'فصلت', englishName: 'Fussilat', numberOfVerses: 54 },
-    { id: 42, name: 'الشورى', englishName: 'Ash-Shuraa', numberOfVerses: 53 },
-    { id: 43, name: 'الزخرف', englishName: 'Az-Zukhruf', numberOfVerses: 89 },
-    { id: 44, name: 'الدخان', englishName: 'Ad-Dukhan', numberOfVerses: 59 },
-    { id: 45, name: 'الجاثية', englishName: 'Al-Jathiya', numberOfVerses: 37 },
-    { id: 46, name: 'الأحقاف', englishName: 'Al-Ahqaf', numberOfVerses: 35 },
-    { id: 47, name: 'محمد', englishName: 'Muhammad', numberOfVerses: 38 },
-    { id: 48, name: 'الفتح', englishName: 'Al-Fath', numberOfVerses: 29 },
-    { id: 49, name: 'الحجرات', englishName: 'Al-Hujurat', numberOfVerses: 18 },
-    { id: 50, name: 'ق', englishName: 'Qaf', numberOfVerses: 45 },
-    { id: 51, name: 'الذاريات', englishName: 'Adh-Dhariyat', numberOfVerses: 60 },
-    { id: 52, name: 'الطور', englishName: 'At-Tur', numberOfVerses: 49 },
-    { id: 53, name: 'النجم', englishName: 'An-Najm', numberOfVerses: 62 },
-    { id: 54, name: 'القمر', englishName: 'Al-Qamar', numberOfVerses: 55 },
-    { id: 55, name: 'الرحمن', englishName: 'Ar-Rahman', numberOfVerses: 78 },
-    { id: 56, name: 'الواقعة', englishName: 'Al-Waqi\'ah', numberOfVerses: 96 },
-    { id: 57, name: 'الحديد', englishName: 'Al-Hadid', numberOfVerses: 29 },
-    { id: 58, name: 'المجادلة', englishName: 'Al-Mujadila', numberOfVerses: 22 },
-    { id: 59, name: 'الحشر', englishName: 'Al-Hashr', numberOfVerses: 24 },
-    { id: 60, name: 'الممتحنة', englishName: 'Al-Mumtahanah', numberOfVerses: 13 },
-    { id: 61, name: 'الصف', englishName: 'As-Saff', numberOfVerses: 14 },
-    { id: 62, name: 'الجمعة', englishName: 'Al-Jumu\'ah', numberOfVerses: 11 },
-    { id: 63, name: 'المنافقون', englishName: 'Al-Munafiqun', numberOfVerses: 11 },
-    { id: 64, name: 'التغابن', englishName: 'At-Taghabun', numberOfVerses: 18 },
-    { id: 65, name: 'الطلاق', englishName: 'At-Talaq', numberOfVerses: 12 },
-    { id: 66, name: 'التحريم', englishName: 'At-Tahrim', numberOfVerses: 12 },
-    { id: 67, name: 'الملك', englishName: 'Al-Mulk', numberOfVerses: 30 },
-    { id: 68, name: 'القلم', englishName: 'Al-Qalam', numberOfVerses: 52 },
-    { id: 69, name: 'الحاقة', englishName: 'Al-Haqqah', numberOfVerses: 52 },
-    { id: 70, name: 'المعارج', englishName: 'Al-Ma\'arij', numberOfVerses: 44 },
-    { id: 71, name: 'نوح', englishName: 'Nuh', numberOfVerses: 28 },
-    { id: 72, name: 'الجن', englishName: 'Al-Jinn', numberOfVerses: 28 },
+    { id: 39, name: 'الزمر', englishName: 'Az-Zumar', 'numberOfVerses': 75 },
+    { id: 40, name: 'غافر', englishName: 'Ghafir', 'numberOfVerses': 85 },
+    { id: 41, 'name': 'فصلت', 'englishName': 'Fussilat', 'numberOfVerses': 54 },
+    { id: 42, 'name': 'الشورى', 'englishName': 'Ash-Shuraa', 'numberOfVerses': 53 },
+    { id: 43, 'name': 'الزخرف', 'englishName': 'Az-Zukhruf', 'numberOfVerses': 89 },
+    { id: 44, 'name': 'الدخان', 'englishName': 'Ad-Dukhan', 'numberOfVerses': 59 },
+    { id: 45, 'name': 'الجاثية', 'englishName': 'Al-Jathiya', 'numberOfVerses': 37 },
+    { id: 46, 'name': 'الأحقاف', 'englishName': 'Al-Ahqaf', 'numberOfVerses': 35 },
+    { id: 47, 'name': 'محمد', 'englishName': 'Muhammad', 'numberOfVerses': 38 },
+    { id: 48, 'name': 'الفتح', 'englishName': 'Al-Fath', 'numberOfVerses': 29 },
+    { id: 49, 'name': 'الحجرات', 'englishName': 'Al-Hujurat', 'numberOfVerses': 18 },
+    { id: 50, 'name': 'ق', 'englishName': 'Qaf', 'numberOfVerses': 45 },
+    { id: 51, 'name': 'الذاريات', 'englishName': 'Adh-Dhariyat', 'numberOfVerses': 60 },
+    { id: 52, 'name': 'الطور', 'englishName': 'At-Tur', 'numberOfVerses': 49 },
+    { id: 53, 'name': 'النجم', 'englishName': 'An-Najm', 'numberOfVerses': 62 },
+    { id: 54, 'name': 'القمر', 'englishName': 'Al-Qamar', 'numberOfVerses': 55 },
+    { id: 55, 'name': 'الرحمن', 'englishName': 'Ar-Rahman', 'numberOfVerses': 78 },
+    { id: 56, 'name': 'الواقعة', 'englishName': 'Al-Waqi\'ah', 'numberOfVerses': 96 },
+    { id: 57, 'name': 'الحديد', 'englishName': 'Al-Hadid', 'numberOfVerses': 29 },
+    { id: 58, 'name': 'المجادلة', 'englishName': 'Al-Mujadila', 'numberOfVerses': 22 },
+    { id: 59, 'name': 'الحشر', 'englishName': 'Al-Hashr', 'numberOfVerses': 24 },
+    { id: 60, 'name': 'الممتحنة', 'englishName': 'Al-Mumtahanah', 'numberOfVerses': 13 },
+    { id: 61, 'name': 'الصف', 'englishName': 'As-Saff', 'numberOfVerses': 14 },
+    { id: 62, 'name': 'الجمعة', 'englishName': 'Al-Jumu\'ah', 'numberOfVerses': 11 },
+    { id: 63, 'name': 'المنافقون', 'englishName': 'Al-Munafiqun', 'numberOfVerses': 11 },
+    { id: 64, 'name': 'التغابن', 'englishName': 'At-Taghabun', 'numberOfVerses': 18 },
+    { id: 65, 'name': 'الطلاق', 'englishName': 'At-Talaq', 'numberOfVerses': 12 },
+    { id: 66, 'name': 'التحريم', 'englishName': 'At-Tahrim', 'numberOfVerses': 12 },
+    { id: 67, 'name': 'الملك', 'englishName': 'Al-Mulk', 'numberOfVerses': 30 },
+    { id: 68, 'name': 'القلم', 'englishName': 'Al-Qalam', 'numberOfVerses': 52 },
+    { id: 69, 'name': 'الحاقة', 'englishName': 'Al-Haqqah', 'numberOfVerses': 52 },
+    { id: 70, 'name': 'المعارج', 'englishName': 'Al-Ma\'arij', 'numberOfVerses': 44 },
+    { id: 71, 'name': 'نوح', 'englishName': 'Nuh', 'numberOfVerses': 28 },
+    { id: 72, 'name': 'الجن', 'englishName': 'Al-Jinn', 'numberOfVerses': 28 },
     { id: 73, name: 'المزمل', englishName: 'Al-Muzzammil', numberOfVerses: 20 },
     { id: 74, name: 'المدثر', englishName: 'Al-Muddaththir', numberOfVerses: 56 },
     { id: 75, name: 'القيامة', englishName: 'Al-Qiyamah', numberOfVerses: 40 },
@@ -426,15 +432,17 @@ const Card = ({ icon, title, description, onClick }) => (
 );
 
 // ReciterCard component to display individual reciter information.
-const ReciterCard = ({ reciter, onSelectReciter, isSelected }) => {
+const ReciterCard = ({ reciter, onSelectReciter }) => {
   const handleAction = () => {
+    // This action is simplified as all reciters are pre-unlocked.
+    // In a real app, this might trigger playing audio or selecting the reciter.
     if (onSelectReciter) {
-      onSelectReciter(reciter.id, reciter.alquranCloudId);
+      onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
     }
   };
 
   return (
-    <div className={`bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200 ${isSelected ? 'border-4 border-yellow-400' : ''}`}>
+    <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200">
       <img
         src={reciter.imageUrl}
         alt={reciter.englishName}
@@ -446,24 +454,13 @@ const ReciterCard = ({ reciter, onSelectReciter, isSelected }) => {
       <button
         onClick={handleAction}
         className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
-          isSelected ? 'bg-yellow-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400'
+          onSelectReciter ? 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400' : 'bg-green-800 text-green-300 cursor-default'
         }`}
       >
-        {isSelected ? (
-            <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-                </svg>
-                Selected
-            </>
-        ) : (
-            <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-                </svg>
-                Select
-            </>
-        )}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
+          <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
+        </svg>
+        Listen
       </button>
     </div>
   );
@@ -511,7 +508,7 @@ const AchievementsCard = ({ achievements }) => (
 );
 
 // HomeDashboard component, serving as the main landing page of the app.
-const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading, selectedReciterId, onSelectReciter }) => {
+const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading }) => {
   const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
 
   return (
@@ -524,13 +521,6 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         <Card icon="⏰" title="Prayer Times" description="Hanafi calculations" onClick={() => setCurrentView('prayer-times')} />
       </div>
 
-      {/* NEW: Tasbeeh Counter & Qibla Finder Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card icon="📿" title="Tasbeeh Counter" description="Keep track of your dhikr" onClick={() => setCurrentView('tasbeeh-counter')} />
-        <Card icon="🕋" title="Qibla Finder" description="Find direction to Kaaba" onClick={() => setCurrentView('qibla-finder')} />
-      </div>
-
-
       {/* Dynamic Verse of the Day display */}
       <div className="bg-gradient-to-r from-green-800 to-green-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300">
         <p className="text-lg md:text-xl mb-3 font-semibold">Verse of the Day</p>
@@ -542,31 +532,10 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         <div className="mt-5">
           <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-              <path d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" />
+              <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
             </svg>
           </button>
         </div>
-      </div>
-
-      {/* NEW: Continue Reading Section - always visible, with dynamic content */}
-      <div
-          className="bg-gradient-to-r from-blue-800 to-blue-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300 cursor-pointer"
-          onClick={onContinueReading}
-      >
-          <p className="text-lg md:text-xl mb-3 font-semibold">Continue Reading</p>
-          <p className="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
-              Surah {quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'}
-          </p>
-          <p className="text-base md:text-lg opacity-90">
-              From Verse {lastReadPosition.verseId}
-          </p>
-          <div className="mt-5">
-              <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-                      <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                  </svg>
-              </button>
-          </div>
       </div>
 
       {/* Display of available reciters */}
@@ -577,8 +546,10 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
-              onSelectReciter={onSelectReciter}
-              isSelected={selectedReciterId === reciter.id}
+              points={points} // Points are passed but not used for unlocking here
+              isUnlocked={true} // All reciters are pre-unlocked
+              onUnlock={() => {}} // No unlock action needed
+              showNotification={showNotification}
             />
           ))}
         </div>
@@ -608,6 +579,16 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         </div>
       </div>
 
+      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
+      {lastReadPosition && (
+          <Card
+              icon="➡️"
+              title="Continue Reading"
+              description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} from Verse ${lastReadPosition.verseId}`}
+              onClick={onContinueReading}
+          />
+      )}
+
       {/* Bookmarked Verses & Quiz Cards - arranged in a grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card icon="⭐" title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
@@ -617,7 +598,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
   );
 };
 
-// SurahSelector component for Browse and selecting Quranic Surahs.
+// SurahSelector component for browsing and selecting Quranic Surahs.
 const SurahSelector = ({ onSelectSurah }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -697,9 +678,8 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
 
         if (data.code === 200 && data.data && data.data[0] && data.data[1]) {
           const arabicVerses = data.data[0].ayahs;
-          const translationVerses = data.data[1] ? data.data[1].ayahs : []; // Handle potential missing translation edition
+          const translationVerses = data.data[1] ? data.data[1].ayahs : []; // Ensure translationVerses is an array
 
-          // Combine Arabic text, translation, and audio URL for each verse.
           const combinedVerses = arabicVerses.map((arabicAyah, index) => ({
             id: arabicAyah.numberInSurah,
             arabic: arabicAyah.text,
@@ -768,1260 +748,1122 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
     // Defines a list of Tailwind CSS text size classes.
     const currentSizes = fontSizes.map(f => f.className);
     const currentIndex = currentSizes.indexOf(fontSize);
-    let newIndex = currentIndex;
 
     if (action === 'increase' && currentIndex < currentSizes.length - 1) {
-        newIndex = currentIndex + 1;
+      setFontSize(currentSizes[currentIndex + 1]);
     } else if (action === 'decrease' && currentIndex > 0) {
-        newIndex = currentIndex - 1;
+      setFontSize(currentSizes[currentIndex - 1]);
     }
-    setFontSize(currentSizes[newIndex]); // Update font size state.
   };
 
-  // Handler for changing font family.
-  const handleFontFamilyChange = (fontName) => {
-    setSelectedFont(fontName); // Update font family state.
+  // Function to check if a verse is bookmarked.
+  const isBookmarked = (surahId, verseId) => {
+    return bookmarkedVerses.some(b => b.surahId === surahId && b.verseId === verseId);
   };
 
-  // Loading state display.
   if (isLoading) {
-    return <p className="text-center text-green-200 p-8">Loading Surah...</p>;
+    return (
+      <div className="flex justify-center items-center h-64 bg-green-800 rounded-xl shadow-lg text-green-200 text-xl">
+        <svg className="animate-spin h-8 w-8 mr-3 text-green-400" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Loading Surah {selectedSurahMeta?.englishName}...
+      </div>
+    );
   }
 
-  // Error state display.
   if (error) {
     return (
-      <div className="text-center text-red-300 p-8 bg-red-900 rounded-xl shadow-md">
-        <p>Error: {error}</p>
-        <button onClick={onBackToSurahList} className="mt-4 bg-red-700 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-full transition duration-300">
+      <div className="bg-red-800 p-6 rounded-xl shadow-lg text-red-100 text-center">
+        <p className="text-xl font-semibold mb-3">Error Loading Surah</p>
+        <p>{error}</p>
+        <button
+          onClick={onBackToSurahList}
+          className="mt-4 bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-full transition-colors duration-200"
+        >
           Back to Surah List
         </button>
       </div>
     );
   }
 
-  // No verses found state display.
-  if (!surahVerses.length) {
-    return <p className="text-center text-green-200 p-8">No verses found for this Surah.</p>;
-  }
-
   return (
-    <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-      <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
+      <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToSurahList}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-            <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-            <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M11.03 4.47a.75.75 0 0 1 0 1.06L6.06 10.5H18.75a.75.75 0 0 1 0 1.5H6.06l4.97 4.97a.75.75 0 1 1-1.06 1.06l-6.25-6.25a.75.75 0 0 1 0-1.06l6.25-6.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
           </svg>
-          Back to Surahs
         </button>
-        <h2 className="text-3xl font-bold text-green-50 text-center">{selectedSurahMeta?.englishName}</h2>
-        <div className="flex items-center space-x-2">
-          {/* Font Size Controls */}
+        <h2 className="text-2xl font-bold text-center flex-grow">
+          {selectedSurahMeta?.englishName} ({selectedSurahMeta?.name})
+        </h2>
+        <div className="flex space-x-2">
           <button
-            onClick={() => handleFontSizeChange('decrease')}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            onClick={handlePrevSurah}
+            disabled={selectedSurahId === 1}
+            className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            A-
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clipRule="evenodd" />
+            </svg>
           </button>
           <button
-            onClick={() => handleFontSizeChange('increase')}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            onClick={handleNextSurah}
+            disabled={selectedSurahId === quranData.surahs.length}
+            className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            A+
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
+            </svg>
           </button>
-          {/* Font Family Dropdown */}
-          <select
-            value={selectedFont}
-            onChange={(e) => handleFontFamilyChange(e.target.value)}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            {fontFamilies.map(font => (
-                <option key={font.name} value={font.name}>{font.name}</option>
-            ))}
-          </select>
         </div>
       </div>
 
-      <p className="text-xl text-green-200 text-center mt-3 mb-6 font-semibold">
-        {selectedSurahMeta?.name} ({selectedSurahMeta?.numberOfVerses} Verses)
-      </p>
-
-      <div className="space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar p-3">
-        {surahVerses.map((verse) => {
-          const isBookmarked = bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id);
-          return (
-            <div
-              key={verse.id}
-              className={`p-4 rounded-lg transition-all duration-300 border border-green-700 ${
-                highlightedVerseId === verse.id ? 'bg-green-700 shadow-lg scale-[1.01]' : 'hover:bg-green-700 shadow-sm'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-base font-medium text-green-300 bg-green-900 px-3 py-1 rounded-full">Verse {verse.id}</span>
-                <div className="flex items-center space-x-2">
-                  {verse.audio && (
-                    <button
-                      onClick={() => playVerseAudio(verse.id, verse.audio)}
-                      className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      title={`Play Verse ${verse.id}`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                        <path d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11V15.89a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84Z" />
-                      </svg>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onToggleBookmark({
-                      surahId: selectedSurahId,
-                      surahName: selectedSurahMeta.englishName,
-                      verseId: verse.id,
-                      verseArabic: verse.arabic,
-                      verseTranslation: verse.translation
-                    })}
-                    className={`p-2 rounded-full transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 ${
-                      isBookmarked ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-400' : 'bg-green-600 hover:bg-green-500 text-white focus:ring-green-400'
-                    }`}
-                    title={isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M10 2.5a5.5 5.5 0 0 0-5.5 5.5c0 1.637.525 3.197 1.396 4.542L10 17.5l4.104-5.458C14.975 11.197 15.5 9.637 15.5 8A5.5 5.5 0 0 0 10 2.5ZM8.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              {/* Dynamic Arabic Font and Size */}
-              <p className={`${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'} ${fontSize} text-right mb-2 leading-relaxed`}>
-                {verse.arabic}
-              </p>
-              {/* Translation with a slightly smaller relative size */}
-              <p className={`text-base text-green-200 text-left`}>
-                {verse.translation}
-              </p>
-            </div>
-          );
-        })}
+      {/* Font Controls */}
+      <div className="flex justify-center items-center space-x-4 mb-6">
+        <label htmlFor="font-family" className="text-green-200">Font:</label>
+        <select
+          id="font-family"
+          value={selectedFont}
+          onChange={(e) => setSelectedFont(e.target.value)}
+          className="p-2 rounded-md bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          {fontFamilies.map((font) => (
+            <option key={font.name} value={font.name}>
+              {font.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => handleFontSizeChange('decrease')}
+          className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full text-lg font-bold shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          A-
+        </button>
+        <button
+          onClick={() => handleFontSizeChange('increase')}
+          className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full text-lg font-bold shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          A+
+        </button>
       </div>
 
-      {/* Navigation buttons for previous/next surah */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={handlePrevSurah}
-          disabled={selectedSurahId === 1}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-            <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clipRule="evenodd" />
-          </svg>
-          Previous Surah
-        </button>
-        <button
-          onClick={handleNextSurah}
-          disabled={selectedSurahId === quranData.surahs.length}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          Next Surah
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-2">
-            <path fillRule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
-          </svg>
-        </button>
+      <div className="max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
+        {surahVerses.map((verse) => (
+          <div
+            key={verse.id}
+            className={`mb-6 p-4 rounded-lg transition-all duration-300 ${highlightedVerseId === verse.id ? 'bg-green-600 shadow-lg' : 'bg-green-700 shadow-sm'}`}
+            onMouseEnter={() => onVerseRead(selectedSurahId, verse.id)} // Track verse read on hover
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-green-300 text-sm font-semibold">Verse {verse.id}</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => playVerseAudio(verse.id, verse.audio)}
+                  className="text-green-300 hover:text-green-100 transition-colors duration-200 focus:outline-none"
+                  title="Play Audio"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => onToggleBookmark(selectedSurahId, verse.id)}
+                  className={`transition-colors duration-200 focus:outline-none ${isBookmarked(selectedSurahId, verse.id) ? 'text-yellow-400 hover:text-yellow-300' : 'text-green-300 hover:text-green-100'}`}
+                  title={isBookmarked(selectedSurahId, verse.id) ? 'Remove Bookmark' : 'Add Bookmark'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path fillRule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.47 1.454 2.47 2.917V21.01a.75.75 0 0 1-1.085.67L12 18.089l-7.705 3.593A.75.75 0 0 1 3.75 21.01V5.494c0-1.463.973-2.743 2.47-2.917Z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <p className={`font-arabic text-right leading-loose mb-3 ${selectedFont === 'Quranic (Default)' ? 'font-arabic' : selectedFont === 'Serif' ? 'font-serif' : selectedFont === 'Sans-serif' ? 'font-sans' : 'font-mono'} ${fontSize}`}>
+              {verse.arabic}
+            </p>
+            <p className="text-green-200 text-left italic leading-relaxed">
+              {verse.translation}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-// BookmarkedVerses component to display and manage saved verses.
-const BookmarkedVerses = ({ bookmarkedVerses, onRemoveBookmark, onReadBookmarkedSurah, onBackToDashboard }) => {
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50 text-center">Bookmarked Verses</h2>
-                <div></div> {/* Placeholder for alignment */}
-            </div>
+// Listen component for playing full Surah recitations.
+const Listen = ({ selectedReciter, onSelectReciter, showNotification }) => {
+  const [selectedSurah, setSelectedSurah] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [audioError, setAudioError] = useState(null);
+  const audioRef = useRef(new Audio());
 
-            {bookmarkedVerses.length === 0 ? (
-                <p className="text-center text-green-300 p-8">You have no bookmarked verses yet.</p>
-            ) : (
-                <ul className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar p-3">
-                    {bookmarkedVerses.map((bookmark, index) => (
-                        <li key={index} className="bg-green-700 p-4 rounded-lg shadow-sm flex flex-col hover:shadow-md transition-shadow duration-200">
-                            <div className="flex justify-between items-center mb-2">
-                                <p className="font-semibold text-lg text-green-50">
-                                    {bookmark.surahName}: Verse {bookmark.verseId}
-                                </p>
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => onReadBookmarkedSurah(bookmark.surahId)}
-                                        className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        title="Go to Surah"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                            <path d="M10 2a.75.75 0 0 1 .75.75V10h7.25a.75.75 0 0 1 0 1.5H10.75V19a.75.75 0 0 1-1.5 0v-7.25H2.75a.75.75 0 0 1 0-1.5H9.25V2.75A.75.75 0 0 1 10 2Z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => onRemoveBookmark(bookmark)}
-                                        className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-                                        title="Remove Bookmark"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                            <path fillRule="evenodd" d="M8.79 3.828a.75.75 0 0 0-1.58 0L.982 13.086A.75.75 0 0 0 1.67 14.25h16.66a.75.75 0 0 0 .689-1.164L8.79 3.828ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Z" clipRule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="font-arabic text-2xl text-right mb-2 text-green-100">
-                                {bookmark.verseArabic}
-                            </p>
-                            <p className="text-sm text-green-200 text-left">
-                                {bookmark.verseTranslation}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
-};
+  // Set default volume
+  audioRef.current.volume = 0.8;
 
-// PrayerTimesDisplay component to show mock prayer times and countdown.
-const PrayerTimesDisplay = () => {
-    const [prayerTimes, setPrayerTimes] = useState(getPrayerTimes());
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    // Update current time and recalculate prayer times every second.
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-            setPrayerTimes(getPrayerTimes());
-        }, 1000);
-
-        return () => clearInterval(timer); // Cleanup interval on component unmount.
-    }, []);
-
-    return (
-        <div className="bg-green-700 p-6 rounded-xl shadow-lg text-green-50">
-            <h3 className="text-2xl font-bold mb-4 text-center">Today's Prayer Times</h3>
-            <p className="text-center text-lg mb-6">Current Time: {format(currentTime, 'p')}</p>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-                {prayerTimes.times.map(p => (
-                    <div key={p.name} className="flex items-center justify-between bg-green-600 p-3 rounded-lg shadow-sm">
-                        <span className="text-xl mr-2">{p.icon}</span>
-                        <span className="font-semibold text-lg">{p.name}</span>
-                        <span className="text-lg">{format(p.time, 'p')}</span>
-                    </div>
-                ))}
-            </div>
-            {prayerTimes.nextPrayer && (
-                <div className="text-center bg-green-600 p-4 rounded-lg shadow-md mt-4">
-                    <p className="text-xl font-bold text-green-200">Next Prayer: {prayerTimes.nextPrayer.name}</p>
-                    <p className="text-xl text-green-100">Time until: {prayerTimes.timeToNextPrayer}</p>
-                </div>
-            )}
-        </div>
-    );
-};
-
-
-// Quiz component for interactive multiple-choice questions.
-const Quiz = ({ onBackToDashboard, onEarnPoints, showNotification, quranData }) => {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
-    const [score, setScore] = useState(0);
-    const [showResults, setShowResults] = useState(false);
-    const [quizStarted, setQuizStarted] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState("Combined");
-    const [currentQuizQuestions, setCurrentQuizQuestions] = useState([]);
-
-    // Effect to reset and shuffle questions when category changes or quiz restarts.
-    useEffect(() => {
-        let questionsToUse = [];
-        if (selectedCategory === "Combined") {
-            questionsToUse = [...quizQuestions]; // Use all questions
-        } else {
-            questionsToUse = quizQuestions.filter(q => q.category === selectedCategory);
-        }
-        // Shuffle questions randomly.
-        setCurrentQuizQuestions(questionsToUse.sort(() => 0.5 - Math.random()));
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setSelectedAnswer(null);
-        setShowResults(false);
-    }, [selectedCategory, quizStarted]); // Dependencies: category or quiz start trigger.
-
-    // Handler for selecting an answer.
-    const handleAnswerSelect = (answer) => {
-        if (selectedAnswer === null) { // Prevent changing answer after selection.
-            setSelectedAnswer(answer);
-            if (answer === currentQuizQuestions[currentQuestionIndex].correctAnswer) {
-                setScore(score + 1);
-                onEarnPoints(10); // Award points for correct answer.
-                showNotification("Correct! +10 points!", "success");
-            } else {
-                showNotification("Incorrect. Try again!", "error");
-            }
-        }
+  // Effect to clean up audio on component unmount or reciter/surah change.
+  useEffect(() => {
+    const audio = audioRef.current;
+    const handleEnded = () => {
+      setIsPlaying(false);
+      showNotification("Recitation finished!", "success");
+    };
+    const handleError = () => {
+      setAudioError("Failed to load audio. Please try another reciter or Surah.");
+      setIsLoadingAudio(false);
+      setIsPlaying(false);
+      showNotification("Audio error. Try again.", "error");
     };
 
-    // Handler for moving to the next question or showing results.
-    const handleNextQuestion = () => {
-        if (currentQuestionIndex < currentQuizQuestions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setSelectedAnswer(null); // Reset selected answer for next question.
-        } else {
-            setShowResults(true); // Show results when all questions are answered.
-        }
-    };
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
 
-    // Handler for restarting the quiz.
-    const handleRestartQuiz = () => {
-        setQuizStarted(false); // Go back to category selection.
-        setSelectedCategory("Combined"); // Reset to combined category.
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setSelectedAnswer(null);
-        setShowResults(false);
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.pause();
+      audio.src = ''; // Clear source to prevent memory leaks
     };
+  }, [showNotification]);
 
-    // Render quiz category selection screen.
-    if (!quizStarted) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">Test Your Knowledge!</h2>
-                <p className="text-lg mb-4">Choose a quiz category to begin:</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    {quizCategories.map(category => (
-                        <button
-                            key={category}
-                            onClick={() => {
-                                setSelectedCategory(category);
-                                setQuizStarted(true);
-                            }}
-                            className={`p-4 rounded-lg font-semibold transition duration-300 ${
-                                selectedCategory === category
-                                    ? 'bg-green-600 text-white shadow-lg'
-                                    : 'bg-green-700 hover:bg-green-600 text-green-100 shadow-md'
-                            } focus:outline-none focus:ring-2 focus:ring-green-400`}
-                        >
-                            {category === "Combined" ? "All Topics" : category}
-                        </button>
-                    ))}
-                </div>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        );
+  // Function to play/pause audio.
+  const togglePlayPause = async () => {
+    if (!selectedReciter || !selectedSurah) {
+      showNotification("Please select a reciter and a Surah first.", "error");
+      return;
     }
 
-    // Render message if no questions are available for the selected category.
-    if (currentQuizQuestions.length === 0 && quizStarted) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">No Questions Available</h2>
-                <p className="text-lg mb-4">There are no questions for the selected category. Please choose another.</p>
-                <button
-                    onClick={handleRestartQuiz}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    Choose Another Category
-                </button>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        );
+    const audioUrl = `https://cdn.alquran.cloud/media/audio/ayah/${selectedReciter.alquranCloudId}/${selectedSurah.id}`;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      setIsLoadingAudio(true);
+      setAudioError(null);
+      try {
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+        setIsPlaying(true);
+        showNotification(`Playing ${selectedSurah.englishName} by ${selectedReciter.englishName}`, "success");
+      } catch (error) {
+        console.error("Audio playback error:", error);
+        setAudioError("Could not play audio. Ensure a valid reciter and Surah are selected.");
+        showNotification("Audio playback failed.", "error");
+        setIsPlaying(false);
+      } finally {
+        setIsLoadingAudio(false);
+      }
     }
+  };
 
-    const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-    // Find surah metadata if the question is surah-specific.
-    const surahMeta = currentQuestion.surahId ? quranData.surahs.find(s => s.id === currentQuestion.surahId) : null;
+  return (
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
+      <h2 className="text-2xl font-bold mb-5 text-center">Listen to Quran Recitations</h2>
 
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50 text-center">Quiz Time!</h2>
-                <span className="text-xl font-bold">Score: {score}</span>
-            </div>
-
-            {showResults ? (
-                // Display quiz results when finished.
-                <div className="text-center p-8">
-                    <h3 className="text-4xl font-bold text-green-300 mb-4">Quiz Complete!</h3>
-                    <p className="text-2xl text-green-100 mb-6">You scored {score} out of {currentQuizQuestions.length}!</p>
-                    <button
-                        onClick={handleRestartQuiz}
-                        className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-3 px-8 rounded-full transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        Play Again
-                    </button>
-                </div>
-            ) : (
-                // Display current question and choices.
-                <div>
-                    <p className="text-lg text-green-200 mb-2">Question {currentQuestionIndex + 1} of {currentQuizQuestions.length}</p>
-                    {surahMeta && <p className="text-md text-green-300 italic mb-4">Category: {currentQuestion.category} - From Surah {surahMeta.englishName}</p>}
-                    {!surahMeta && <p className="text-md text-green-300 italic mb-4">Category: {currentQuestion.category}</p>}
-                    <h3 className="text-2xl md:text-3xl font-semibold mb-6 leading-relaxed">
-                        {currentQuestion.question}
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {currentQuestion.choices.map((choice, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleAnswerSelect(choice)}
-                                className={`p-4 rounded-lg text-left font-medium transition duration-300 ${
-                                    selectedAnswer === choice
-                                        ? (choice === currentQuestion.correctAnswer ? 'bg-green-600 text-white shadow-lg border border-green-400' : 'bg-red-600 text-white shadow-lg border border-red-400')
-                                        : 'bg-green-700 hover:bg-green-600 text-green-100 shadow-md hover:shadow-lg'
-                                } ${selectedAnswer !== null && 'cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-green-400`}
-                                disabled={selectedAnswer !== null} // Disable buttons after an answer is selected.
-                            >
-                                {choice}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="mt-8 text-center">
-                        <button
-                            onClick={handleNextQuestion}
-                            disabled={selectedAnswer === null} // Enable "Next" button only after an answer.
-                            className={`py-3 px-8 rounded-full font-semibold transition duration-300 shadow-md ${
-                                selectedAnswer !== null
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400'
-                                    : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                            }`}
-                        >
-                            {currentQuestionIndex < currentQuizQuestions.length - 1 ? 'Next Question' : 'View Results'}
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// --- NEW COMPONENT: TasbeehCounter ---
-const TasbeehCounter = ({ onBackToDashboard, showNotification, onEarnPoints }) => {
-    const [count, setCount] = useState(0); // This count will persist as long as the component is mounted
-    const [target, setTarget] = useState(0);
-    const [showTargetInput, setShowTargetInput] = useState(false);
-    const targetInputRef = useRef(null);
-    const lastAwardedThousand = useRef(0); // To track points for every 1000 counts
-
-    const increment = () => {
-        setCount(prevCount => {
-            const newCount = prevCount + 1;
-
-            // Check for target reached
-            if (target > 0 && newCount >= target) {
-                showNotification(`Target of ${target} reached! Alhamdulillah! 🎉`, 'success');
-                setTarget(0); // Reset target after reaching it
-            }
-
-            // Award points for every 1000 counts
-            const currentThousand = Math.floor(newCount / 1000);
-            if (currentThousand > lastAwardedThousand.current) {
-                onEarnPoints(10); // Award 10 points
-                showNotification(`Tasbeeh milestone! +10 points for ${currentThousand * 1000} counts!`, 'success');
-                lastAwardedThousand.current = currentThousand;
-            }
-
-            return newCount;
-        });
-    };
-
-    const reset = () => {
-        setCount(0);
-        setTarget(0); // Reset target on full reset
-        lastAwardedThousand.current = 0; // Reset point tracking
-        showNotification('Tasbeeh counter reset.', 'info');
-    };
-
-    const handleSetTarget = () => {
-        setShowTargetInput(true);
-    };
-
-    const confirmSetTarget = () => {
-        const newTarget = parseInt(targetInputRef.current.value, 10);
-        if (!isNaN(newTarget) && newTarget > 0) {
-            setTarget(newTarget);
-            showNotification(`Target set to ${newTarget}`, 'success');
-        } else {
-            showNotification('Please enter a valid target number.', 'error');
-        }
-        setShowTargetInput(false);
-    };
-
-    const cancelSetTarget = () => {
-        setShowTargetInput(false);
-    };
-
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center flex flex-col items-center">
-            <div className="flex justify-between items-center w-full mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Tasbeeh Counter</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
-            </div>
-
-            <div className="my-8">
-                <p className="text-xl text-green-200">Current Count:</p>
-                <p className="text-8xl md:text-9xl font-extrabold text-green-100">{count}</p>
-                {target > 0 && <p className="text-2xl text-green-300 mt-2">Target: {target}</p>}
-            </div>
-
+      {/* Reciter Selection */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-3">Choose a Reciter:</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...recitersData.featured, ...recitersData.free].map((reciter) => (
             <button
-                onClick={increment}
-                className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-6xl md:text-8xl font-bold flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-green-400"
+              key={reciter.id}
+              onClick={() => onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId)}
+              className={`p-3 rounded-xl flex flex-col items-center text-center transition-all duration-200 shadow-md
+                ${selectedReciter && selectedReciter.id === reciter.id ? 'bg-green-600 ring-2 ring-green-400' : 'bg-green-700 hover:bg-green-600'}`}
             >
-                +
+              <img
+                src={reciter.imageUrl}
+                alt={reciter.englishName}
+                className="w-16 h-16 rounded-full object-cover mb-2 border-2 border-green-400"
+                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/64x64/cccccc/333333?text=R"; }}
+              />
+              <p className="font-arabic text-base">{reciter.name}</p>
+              <p className="text-xs text-green-200">{reciter.englishName}</p>
             </button>
-
-            <div className="mt-8 flex space-x-4">
-                <button
-                    onClick={reset}
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                    Reset
-                </button>
-                <button
-                    onClick={handleSetTarget}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                    Set Target
-                </button>
-            </div>
-
-            {showTargetInput && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={cancelSetTarget}> {/* Added onClick to close modal */}
-                    <div className="bg-green-700 p-8 rounded-xl shadow-lg text-center" onClick={(e) => e.stopPropagation()}> {/* Prevent click from propagating to overlay */}
-                        <h3 className="text-2xl font-bold mb-4">Set Tasbeeh Target</h3>
-                        <input
-                            type="number"
-                            ref={targetInputRef}
-                            placeholder="e.g., 33, 100, 1000"
-                            className="w-full p-3 rounded-lg bg-green-600 text-green-50 placeholder-green-200 mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
-                            min="1"
-                        />
-                        <div className="flex justify-center space-x-4">
-                            <button
-                                onClick={confirmSetTarget}
-                                className="bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-5 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-400"
-                            >
-                                Confirm
-                            </button>
-                            <button
-                                onClick={cancelSetTarget}
-                                className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-5 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+          ))}
         </div>
-    );
+      </div>
+
+      {/* Surah Selection */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-3">Select a Surah:</h3>
+        <select
+          value={selectedSurah ? selectedSurah.id : ''}
+          onChange={(e) => setSelectedSurah(quranData.surahs.find(s => s.id === parseInt(e.target.value)))}
+          className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          <option value="">-- Select Surah --</option>
+          {quranData.surahs.map((surah) => (
+            <option key={surah.id} value={surah.id}>
+              {surah.englishName} ({surah.name})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Audio Controls */}
+      <div className="flex flex-col items-center justify-center space-y-4">
+        {selectedReciter && selectedSurah && (
+          <p className="text-lg text-green-200">
+            Now playing: {selectedSurah.englishName} by {selectedReciter.englishName}
+          </p>
+        )}
+        <button
+          onClick={togglePlayPause}
+          disabled={!selectedReciter || !selectedSurah || isLoadingAudio}
+          className="bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-400 flex items-center justify-center"
+        >
+          {isLoadingAudio ? (
+            <svg className="animate-spin h-7 w-7 text-white" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : isPlaying ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+              <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM9 8.25a.75.75 0 0 0-.75.75v4.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V9a.75.75 0 0 0-.75-.75H9Zm5.25 0a.75.75 0 0 0-.75.75v4.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V9a.75.75 0 0 0-.75-.75h-1.5Z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+              <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM10.5 8.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V8.25ZM14.25 8.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V8.25Z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
+        {audioError && <p className="text-red-300 text-sm mt-2">{audioError}</p>}
+      </div>
+    </div>
+  );
 };
 
-// --- NEW COMPONENT: QiblaFinder ---
-const QiblaFinder = ({ onBackToDashboard, showNotification }) => {
-    const [latitude, setLatitude] = useState(null);
-    const [longitude, setLongitude] = useState(null);
-    const [heading, setHeading] = useState(null); // Device's current magnetic heading (0-360, North=0)
-    const [qiblaDirection, setQiblaDirection] = useState(null); // Angle from North to Qibla
-    const [error, setError] = useState('');
-    const [permissionGranted, setPermissionGranted] = useState(false);
-    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+// Practice component for recording and improving recitation.
+const Practice = ({ showNotification }) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const audioChunks = useRef([]);
+  const audioRef = useRef(null); // Ref for playback audio element
 
-    // Mecca coordinates
-    const MECCA_LAT = 21.4225; // N
-    const MECCA_LON = 39.8262; // E
+  // Function to start recording.
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+      audioChunks.current = [];
 
-    // Function to request device orientation permission for iOS 13+
-    const requestDeviceOrientationPermission = async () => {
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            try {
-                setIsRequestingPermission(true);
-                const permissionState = await DeviceOrientationEvent.requestPermission();
-                if (permissionState === 'granted') {
-                    setPermissionGranted(true);
-                    setError('');
-                    showNotification('Device orientation permission granted!', 'success');
-                } else {
-                    setPermissionGranted(false);
-                    setError('Device orientation permission denied. Qibla finder may not work.');
-                    showNotification('Device orientation permission denied.', 'error');
-                }
-            } catch (err) {
-                setError('Error requesting device orientation permission.');
-                showNotification('Error requesting device orientation permission.', 'error');
-                console.error(err);
-            } finally {
-                setIsRequestingPermission(false);
-            }
-        } else {
-            // For Android or older iOS, permission is usually granted by default
-            setPermissionGranted(true);
-            setError('');
-        }
-    };
+      recorder.ondataavailable = (event) => {
+        audioChunks.current.push(event.data);
+      };
 
-    // Calculate Qibla direction (bearing) using Haversine-like formula
-    const calculateQiblaDirection = useCallback((userLat, userLon) => {
-        const latRad = userLat * Math.PI / 180;
-        const lonRad = userLon * Math.PI / 180;
-        const meccaLatRad = MECCA_LAT * Math.PI / 180;
-        const meccaLonRad = MECCA_LON * Math.PI / 180;
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunks.current, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        showNotification("Recording stopped.", "success");
+      };
 
-        const deltaLon = meccaLonRad - lonRad;
+      recorder.start();
+      setIsRecording(true);
+      showNotification("Recording started...", "info");
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      showNotification("Failed to access microphone. Please allow access.", "error");
+    }
+  };
 
-        const y = Math.sin(deltaLon);
-        const x = Math.cos(latRad) * Math.tan(meccaLatRad) - Math.sin(latRad) * Math.cos(deltaLon);
+  // Function to stop recording.
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
 
-        let bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-        setQiblaDirection(bearing);
-    }, []);
+  // Function to play back the recorded audio.
+  const playRecording = () => {
+    if (audioBlob) {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.play().catch(e => console.error("Error playing recorded audio:", e));
+        showNotification("Playing back your recording.", "info");
+      }
+    } else {
+      showNotification("No recording available to play.", "error");
+    }
+  };
 
-    // Effect to get geolocation and listen for device orientation
-    useEffect(() => {
-        // Get Geolocation
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLatitude(position.coords.latitude);
-                    setLongitude(position.coords.longitude);
-                    calculateQiblaDirection(position.coords.latitude, position.coords.longitude);
-                    setError('');
-                },
-                (geoError) => {
-                    setError(`Geolocation error: ${geoError.message}. Please enable location services.`);
-                    showNotification(`Geolocation error: ${geoError.message}.`, 'error');
-                    console.error("Geolocation error:", geoError);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        } else {
-            setError('Geolocation is not supported by your browser.');
-            showNotification('Geolocation not supported.', 'error');
-        }
+  return (
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50 text-center">
+      <h2 className="text-2xl font-bold mb-5">Practice Your Recitation</h2>
+      <p className="text-green-200 mb-6">
+        Use your microphone to record your recitation and listen back to improve.
+      </p>
 
-        // Device Orientation Listener - only add if permission is granted
-        const handleDeviceOrientation = (event) => {
-            // `alpha` is the compass heading relative to North (0-360 degrees)
-            // `webkitCompassHeading` is for older iOS versions
-            let currentHeading = event.alpha || event.webkitCompassHeading;
-            if (currentHeading !== null) {
-                setHeading(currentHeading);
-            }
-        };
+      <div className="flex justify-center space-x-4 mb-6">
+        <button
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`py-3 px-6 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 ${
+            isRecording
+              ? 'bg-red-600 hover:bg-red-500 text-white focus:ring-red-400'
+              : 'bg-green-600 hover:bg-green-500 text-white focus:ring-green-400'
+          } flex items-center`}
+        >
+          {isRecording ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2">
+                <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75h9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+              </svg>
+              Stop Recording
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2">
+                <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z" />
+                <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.75 6.75 0 1 1-13.5 0v-1.5a.75.75 0 0 1 .75-.75Z" />
+                <path d="M9.75 18a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V18a.75.75 0 0 1 .75-.75ZM14.25 18a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V18a.75.75 0 0 1 .75-.75Z" />
+              </svg>
+              Start Recording
+            </>
+          )}
+        </button>
 
-        if (permissionGranted) {
-            window.addEventListener('deviceorientation', handleDeviceOrientation);
-        }
+        <button
+          onClick={playRecording}
+          disabled={!audioBlob || isRecording}
+          className="py-3 px-6 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2">
+            <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM10.5 8.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0V8.25Z" clipRule="evenodd" />
+          </svg>
+          Play Recording
+        </button>
+      </div>
 
-        return () => {
-            // Clean up the event listener when component unmounts or permission changes
-            window.removeEventListener('deviceorientation', handleDeviceOrientation);
-        };
-    }, [permissionGranted, calculateQiblaDirection, showNotification]); // Added permissionGranted to dependency array
-
-    // Calculate the rotation needed for the compass arrow
-    const arrowRotation = heading !== null && qiblaDirection !== null
-        ? qiblaDirection - heading
-        : 0; // Default to 0 if no data
-
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center flex flex-col items-center">
-            <div className="flex justify-between items-center w-full mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Qibla Finder</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
-            </div>
-
-            {error && <p className="text-red-400 mb-4">{error}</p>}
-
-            {!permissionGranted && (
-                <div className="p-4 bg-green-700 rounded-lg shadow-md mb-6">
-                    <p className="text-lg mb-3">To use the Qibla Finder, please grant permission for device motion and location.</p>
-                    <button
-                        onClick={requestDeviceOrientationPermission}
-                        disabled={isRequestingPermission}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isRequestingPermission ? 'Requesting...' : 'Grant Permissions'}
-                    </button>
-                </div>
-            )}
-
-            {latitude && longitude && (
-                <div className="mb-6 text-lg">
-                    <p>Your Location:</p>
-                    <p>Lat: {latitude.toFixed(4)}, Lon: {longitude.toFixed(4)}</p>
-                </div>
-            )}
-
-            <div className="relative w-48 h-48 bg-green-700 rounded-full flex items-center justify-center mb-8 shadow-xl">
-                <div className="absolute text-green-300 text-xl font-bold" style={{ top: '-1.5rem' }}>N</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ bottom: '-1.5rem' }}>S</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ left: '-1.5rem' }}>W</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ right: '-1.5rem' }}>E</div>
-
-                {/* Compass Needle */}
-                <div
-                    className="absolute w-2 h-24 bg-red-500 rounded-b-full origin-bottom"
-                    style={{
-                        transform: `translateY(-50%) rotate(${heading !== null ? -heading : 0}deg)`,
-                        transformOrigin: 'bottom center',
-                        transition: 'transform 0.5s ease-out',
-                    }}
-                >
-                    <div className="w-full h-1/2 bg-red-700 rounded-t-full"></div> {/* Red tip */}
-                </div>
-
-                {/* Qibla Indicator (Kaaba icon) */}
-                {qiblaDirection !== null && (
-                    <div
-                        className="absolute text-4xl text-yellow-400 transition-transform duration-500 ease-out"
-                        style={{
-                            transform: `translate(-50%, -50%) rotate(${arrowRotation}deg) translateY(-60px)`, // Position at top, rotate
-                            transformOrigin: '50% 50%',
-                            left: '50%',
-                            top: '50%',
-                        }}
-                    >
-                        🕋
-                    </div>
-                )}
-            </div>
-
-            {heading !== null && (
-                <p className="text-xl mb-2">Your Current Heading: {heading.toFixed(1)}°</p>
-            )}
-            {qiblaDirection !== null && (
-                <p className="text-xl mb-2">Qibla Direction: {qiblaDirection.toFixed(1)}° from North</p>
-            )}
-            {heading !== null && qiblaDirection !== null && (
-                <p className="text-xl font-semibold text-green-200 mt-4">
-                    Rotate your device until the 🕋 icon points directly upwards.
-                </p>
-            )}
-            {!latitude || !longitude && <p className="text-green-300">Awaiting location data...</p>}
-            {!heading && permissionGranted && <p className="text-green-300">Awaiting device orientation data...</p>}
-
-        </div>
-    );
+      {/* Audio element for playback */}
+      <audio ref={audioRef} controls className="w-full mt-4 rounded-lg bg-green-700"></audio>
+    </div>
+  );
 };
 
-// --- NEW COMPONENT: ListenView for Full Surah Audio ---
-const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, quranData }) => {
-    const [selectedSurah, setSelectedSurah] = useState(null);
-    const [audioUrl, setAudioUrl] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const audioRef = useRef(new Audio());
-    audioRef.current.volume = 0.8; // Default volume
+// PrayerTimes component for displaying and managing prayer times.
+const PrayerTimes = ({ showNotification }) => {
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const [prayerTimes, setPrayerTimes] = useState(null);
+  const [nextPrayerCountdown, setNextPrayerCountdown] = useState('');
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [locationError, setLocationError] = useState(null);
 
-    // Effect to clean up audio when component unmounts or reciter/surah changes
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.src = '';
-            }
-        };
-    }, []);
-
-    // Effect to fetch and play audio when selectedSurah or selectedReciter changes
-    useEffect(() => {
-        const fetchAndPlayAudio = async () => {
-            if (selectedSurah && selectedReciter) {
-                setIsLoading(true);
-                setError('');
-                setAudioUrl('');
-                audioRef.current.pause(); // Pause any currently playing audio
-
-                try {
-                    // Construct the audio URL for the full surah
-                    // Example: https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1
-                    // For full surah, the API expects /v1/surah/{surah_number}/ar.{reciter_id}
-                    const fullSurahAudioUrl = `https://api.alquran.cloud/v1/surah/${selectedSurah.id}/ar.${selectedReciter.alquranCloudId}`;
-                    const response = await fetch(fullSurahAudioUrl);
-                    const data = await response.json();
-
-                    if (data.code === 200 && data.data && data.data.audio) {
-                        setAudioUrl(data.data.audio);
-                        audioRef.current.src = data.data.audio;
-                        audioRef.current.play().catch(e => {
-                            console.error("Error playing audio:", e);
-                            setError("Failed to play audio. Please try again.");
-                            showNotification("Failed to play audio. Browser might block autoplay.", "error");
-                        });
-                        showNotification(`Playing Surah ${selectedSurah.englishName} by ${selectedReciter.englishName}`, 'info');
-                    } else {
-                        setError('Failed to fetch full surah audio. Please try another surah or reciter.');
-                        showNotification('Failed to fetch audio.', 'error');
-                        console.error("API Error fetching full surah audio:", data);
-                    }
-                } catch (err) {
-                    console.error("Fetch error for full surah audio:", err);
-                    setError('Could not connect to audio API. Check your internet connection.');
-                    showNotification('Network error fetching audio.', 'error');
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchAndPlayAudio();
-    }, [selectedSurah, selectedReciter, showNotification]);
-
-    const handleSurahSelect = (surahId) => {
-        const surah = quranData.surahs.find(s => s.id === surahId);
-        setSelectedSurah(surah);
-    };
-
-    const togglePlayPause = () => {
-        if (audioRef.current.paused) {
-            audioRef.current.play().catch(e => {
-                console.error("Error resuming audio:", e);
-                showNotification("Failed to resume audio. Browser might block autoplay.", "error");
+  // Effect to get user's current location.
+  useEffect(() => {
+    const getLocation = () => {
+      setIsLoadingLocation(true);
+      setLocationError(null);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
             });
-        } else {
-            audioRef.current.pause();
-        }
-    };
-
-    const stopAudio = () => {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        setAudioUrl(''); // Clear URL to reset state
-        setSelectedSurah(null); // Clear selected surah
-        showNotification('Audio stopped.', 'info');
-    };
-
-    // Combine all reciters for display
-    const allReciters = [...recitersData.featured, ...recitersData.free];
-
-    if (!selectedReciter) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">Listen to Quran</h2>
-                <p className="text-lg mb-4">Please select a reciter from the Home Dashboard first.</p>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
+            setIsLoadingLocation(false);
+            showNotification("Location retrieved successfully!", "success");
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            setLocationError("Unable to retrieve location. Please enable location services or enter manually.");
+            setIsLoadingLocation(false);
+            showNotification("Location access denied or failed.", "error");
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
+      } else {
+        setLocationError("Geolocation is not supported by your browser.");
+        setIsLoadingLocation(false);
+        showNotification("Geolocation not supported.", "error");
+      }
+    };
+
+    getLocation(); // Attempt to get location on component mount.
+  }, [showNotification]);
+
+  // Effect to calculate prayer times when location changes.
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      const times = getPrayerTimes(location.latitude, location.longitude);
+      setPrayerTimes(times);
+    }
+  }, [location]);
+
+  // Effect to update countdown every second.
+  useEffect(() => {
+    let countdownInterval;
+    if (prayerTimes && prayerTimes.nextPrayer) {
+      countdownInterval = setInterval(() => {
+        const now = new Date();
+        const diffSeconds = differenceInSeconds(prayerTimes.nextPrayer.time, now);
+
+        if (diffSeconds <= 0) {
+          // If countdown reaches zero or less, recalculate prayer times for the next period.
+          const updatedTimes = getPrayerTimes(location.latitude, location.longitude, addDays(now, diffSeconds < -60 ? 1 : 0)); // Recalculate for next day if already passed by a minute
+          setPrayerTimes(updatedTimes);
+          setNextPrayerCountdown(''); // Clear until new calculation
+          showNotification(`It's ${prayerTimes.nextPrayer.name} time!`, "success");
+        } else {
+          const hours = Math.floor(diffSeconds / 3600);
+          const minutes = Math.floor((diffSeconds % 3600) / 60);
+          const seconds = diffSeconds % 60;
+          setNextPrayerCountdown(`${hours}h ${minutes}m ${seconds}s`);
+        }
+      }, 1000);
     }
 
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Listen to Quran</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
+    return () => clearInterval(countdownInterval); // Clean up interval on unmount.
+  }, [prayerTimes, location, showNotification]);
+
+  return (
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50 text-center">
+      <h2 className="text-2xl font-bold mb-5">Prayer Times (Hanafi Asr)</h2>
+
+      {isLoadingLocation ? (
+        <p className="text-green-300 flex items-center justify-center">
+          <svg className="animate-spin h-5 w-5 mr-3 text-green-400" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Getting your location...
+        </p>
+      ) : locationError ? (
+        <p className="text-red-300 mb-4">{locationError}</p>
+      ) : (
+        <p className="text-green-300 mb-4">
+          Location: {location.latitude?.toFixed(2)}, {location.longitude?.toFixed(2)}
+        </p>
+      )}
+
+      {prayerTimes && (
+        <div className="mb-6">
+          {prayerTimes.nextPrayer && (
+            <div className="bg-green-700 p-4 rounded-lg shadow-md mb-4">
+              <p className="text-xl font-semibold mb-2">Next Prayer: {prayerTimes.nextPrayer.name} {prayerTimes.nextPrayer.icon}</p>
+              <p className="text-3xl font-bold text-green-200">{nextPrayerCountdown}</p>
+              <p className="text-sm text-green-300 mt-1">at {format(prayerTimes.nextPrayer.time, 'p')}</p>
             </div>
+          )}
 
-            <p className="text-center text-xl mb-4">Selected Reciter: <span className="font-semibold text-yellow-300">{selectedReciter.englishName}</span></p>
-
-            <div className="mb-6">
-                <label htmlFor="surah-select" className="block text-lg font-semibold mb-2">Select Surah:</label>
-                <select
-                    id="surah-select"
-                    onChange={(e) => handleSurahSelect(parseInt(e.target.value))}
-                    value={selectedSurah ? selectedSurah.id : ''}
-                    className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                    <option value="">-- Select a Surah --</option>
-                    {quranData.surahs.map(surah => (
-                        <option key={surah.id} value={surah.id}>
-                            {surah.englishName} ({surah.name})
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {isLoading && <p className="text-center text-green-200">Loading audio...</p>}
-            {error && <p className="text-center text-red-400">{error}</p>}
-
-            {selectedSurah && audioUrl && !isLoading && (
-                <div className="mt-6 p-4 bg-green-700 rounded-lg shadow-md text-center">
-                    <h3 className="text-2xl font-bold mb-3">Now Playing: {selectedSurah.englishName}</h3>
-                    <p className="text-lg text-green-200 mb-4 font-arabic">{selectedSurah.name}</p>
-                    <div className="flex justify-center items-center space-x-4">
-                        <button
-                            onClick={togglePlayPause}
-                            className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            title={audioRef.current.paused ? "Play" : "Pause"}
-                        >
-                            {audioRef.current.paused ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                    <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                    <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25ZM14.25 5.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
-                                </svg>
-                            )}
-                        </button>
-                        <button
-                            onClick={stopAudio}
-                            className="p-3 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-                            title="Stop"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                <path fillRule="evenodd" d="M6.75 5.25A.75.75 0 0 1 7.5 4.5h9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
+          <ul className="space-y-3">
+            {prayerTimes.times.map((prayer) => (
+              <li key={prayer.name} className="flex justify-between items-center bg-green-700 p-3 rounded-lg shadow-sm">
+                <span className="text-lg font-medium flex items-center">
+                  {prayer.icon} <span className="ml-2">{prayer.name}</span>
+                </span>
+                <span className="text-green-200 text-lg font-semibold">{format(prayer.time, 'p')}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-    );
+      )}
+
+      <button
+        onClick={() => { /* Implement manual location input or refresh */ showNotification("Manual location input not yet implemented.", "info"); }}
+        className="mt-4 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-full shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+      >
+        Refresh Prayer Times
+      </button>
+    </div>
+  );
 };
+
+// Bookmarks component to display and manage bookmarked verses.
+const Bookmarks = ({ bookmarkedVerses, onToggleBookmark, onSelectSurahAndVerse, showNotification }) => {
+  if (bookmarkedVerses.length === 0) {
+    return (
+      <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50 text-center">
+        <h2 className="text-2xl font-bold mb-5">Your Bookmarks</h2>
+        <p className="text-green-300">You haven't bookmarked any verses yet.</p>
+        <p className="text-green-300 mt-2">Go to "Read Quran" and click the star icon next to a verse to bookmark it!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
+      <h2 className="text-2xl font-bold mb-5 text-center">Your Bookmarks</h2>
+      <ul className="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
+        {bookmarkedVerses.map((bookmark, index) => {
+          const surah = quranData.surahs.find(s => s.id === bookmark.surahId);
+          return (
+            <li key={`${bookmark.surahId}-${bookmark.verseId}-${index}`} className="bg-green-700 p-4 rounded-lg shadow-md flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-lg">
+                  {surah ? surah.englishName : `Surah ${bookmark.surahId}`} - Verse {bookmark.verseId}
+                </p>
+                <p className="text-sm text-green-200">Bookmarked on: {format(parseISO(bookmark.timestamp), 'PPP p')}</p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => onSelectSurahAndVerse(bookmark.surahId, bookmark.verseId)}
+                  className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-full shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  title="Go to Verse"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => onToggleBookmark(bookmark.surahId, bookmark.verseId)}
+                  className="text-yellow-400 hover:text-yellow-300 p-2 rounded-full transition-colors duration-200 focus:outline-none"
+                  title="Remove Bookmark"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.47 1.454 2.47 2.917V21.01a.75.75 0 0 1-1.085.67L12 18.089l-7.705 3.593A.75.75 0 0 1 3.75 21.01V5.494c0-1.463.973-2.743 2.47-2.917Z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
+
+// Quiz component for testing Quranic knowledge.
+const Quiz = ({ showNotification, onQuizComplete }) => {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [score, setScore] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [quizCategory, setQuizCategory] = useState('Combined'); // Default category
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
+
+  // Filter questions based on selected category.
+  useEffect(() => {
+    if (quizCategory === 'Combined') {
+      setFilteredQuestions(quizQuestions);
+    } else {
+      setFilteredQuestions(quizQuestions.filter(q => q.category === quizCategory));
+    }
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizFinished(false);
+    setSelectedAnswer(null);
+    setFeedback('');
+    setShowExplanation(false);
+  }, [quizCategory]);
+
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
+
+  // Handler for selecting an answer.
+  const handleAnswerSelect = (answer) => {
+    if (selectedAnswer === null) { // Only allow selecting once per question
+      setSelectedAnswer(answer);
+      const isCorrect = answer === currentQuestion.correctAnswer;
+      if (isCorrect) {
+        setScore(prevScore => prevScore + 10); // Award 10 points for correct answer.
+        setFeedback('Correct! 🎉');
+        showNotification("Correct answer!", "success");
+      } else {
+        setFeedback(`Wrong! Correct answer was: "${currentQuestion.correctAnswer}"`);
+        showNotification("Incorrect answer.", "error");
+      }
+      setShowExplanation(true); // Show explanation/feedback
+    }
+  };
+
+  // Handler for moving to the next question or finishing the quiz.
+  const handleNextQuestion = () => {
+    setSelectedAnswer(null);
+    setFeedback('');
+    setShowExplanation(false);
+    if (currentQuestionIndex < filteredQuestions.length - 1) {
+      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+    } else {
+      setQuizFinished(true);
+      onQuizComplete(score); // Pass final score to parent component.
+      showNotification(`Quiz finished! Your score: ${score}`, "info");
+    }
+  };
+
+  // Handler to restart the quiz.
+  const restartQuiz = () => {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizFinished(false);
+    setSelectedAnswer(null);
+    setFeedback('');
+    setShowExplanation(false);
+    setQuizCategory('Combined'); // Reset category to combined
+  };
+
+  if (!currentQuestion && filteredQuestions.length === 0) {
+    return (
+      <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50 text-center">
+        <h2 className="text-2xl font-bold mb-5">Quiz</h2>
+        <p className="text-green-300">No questions available for the selected category.</p>
+        <button
+          onClick={() => setQuizCategory('Combined')}
+          className="mt-4 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-full shadow-md transition-colors duration-200"
+        >
+          Back to Combined Questions
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
+      <h2 className="text-2xl font-bold mb-5 text-center">Quran Quiz</h2>
+
+      {!quizFinished && (
+        <div className="mb-6">
+          <label htmlFor="quiz-category" className="block text-green-200 text-lg mb-2">Select Category:</label>
+          <select
+            id="quiz-category"
+            value={quizCategory}
+            onChange={(e) => setQuizCategory(e.target.value)}
+            className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
+          >
+            {quizCategories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {quizFinished ? (
+        <div className="text-center">
+          <h3 className="text-3xl font-bold mb-4">Quiz Complete!</h3>
+          <p className="text-xl mb-4">Your final score: <span className="text-green-400">{score}</span> points</p>
+          <button
+            onClick={restartQuiz}
+            className="bg-green-600 hover:bg-green-500 text-white py-3 px-6 rounded-full font-semibold shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400"
+          >
+            Restart Quiz
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p className="text-green-300 text-sm mb-2">Question {currentQuestionIndex + 1} of {filteredQuestions.length}</p>
+          <p className="text-xl font-semibold mb-4">{currentQuestion.question}</p>
+
+          <div className="grid grid-cols-1 gap-3 mb-4">
+            {currentQuestion.choices.map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswerSelect(choice)}
+                disabled={selectedAnswer !== null}
+                className={`w-full text-left p-3 rounded-lg transition-all duration-200 shadow-md
+                  ${selectedAnswer === choice
+                    ? (choice === currentQuestion.correctAnswer ? 'bg-green-500 ring-2 ring-green-300' : 'bg-red-500 ring-2 ring-red-300')
+                    : 'bg-green-700 hover:bg-green-600'
+                  }
+                  ${selectedAnswer !== null && choice === currentQuestion.correctAnswer && selectedAnswer !== choice ? 'ring-2 ring-green-300 border-2 border-green-300' : ''}
+                  ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}
+                `}
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+
+          {selectedAnswer !== null && (
+            <div className={`mt-4 p-3 rounded-lg ${feedback.includes('Correct') ? 'bg-green-600' : 'bg-red-600'} text-white`}>
+              <p className="font-semibold">{feedback}</p>
+              {showExplanation && currentQuestion.explanation && (
+                <p className="text-sm mt-2">{currentQuestion.explanation}</p>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={handleNextQuestion}
+            disabled={selectedAnswer === null}
+            className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white py-3 px-6 rounded-full font-semibold shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {currentQuestionIndex < filteredQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 // --- Main App Component ---
 export default function App() {
-  const [currentView, setCurrentView] = useState('home'); // Controls which main section is displayed.
-  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah.
-  const [notification, setNotification] = useState(null); // Manages temporary notification messages.
-  const [points, setPoints] = useState(0); // Tracks user's accumulated points.
-  const [bookmarkedVerses, setBookmarkedVerses] = useState([]); // Stores user's bookmarked verses.
-  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default selected reciter.
-  const [lastReadPosition, setLastReadPosition] = useState({ surahId: 1, verseId: 1 }); // Tracks last read position.
+  // --- Firebase State and Initialization ---
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isAuthReady, setIsAuthReady] = useState(false); // New state to track auth readiness
 
-  // Function to display a notification message. MOVED THIS UP!
+  // --- App State Management ---
+  const [currentView, setCurrentView] = useState('home'); // Controls which main section is displayed.
+  const [selectedSurahId, setSelectedSurahId] = useState(null); // For QuranReader view.
+  const [selectedVerseId, setSelectedVerseId] = useState(null); // For deep linking to a specific verse.
+  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default reciter.
+  const [notification, setNotification] = useState(null); // For showing temporary messages.
+
+  // --- User Progress State (persisted via Firebase) ---
+  const [userProgress, setUserProgress] = useState({
+    points: 0,
+    dailyStreak: 0,
+    lastReadDate: null, // ISO string
+    versesRead: 0,
+    bookmarkedVerses: [], // Array of { surahId, verseId, timestamp }
+    achievements: achievementsData, // Deep copy to allow modification
+    lastReadPosition: null, // { surahId, verseId }
+  });
+
+  // --- Firebase Initialization and Authentication ---
+  useEffect(() => {
+    try {
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+      if (!firebaseConfig) {
+        console.error("Firebase config is not defined. Please set __firebase_config environment variable.");
+        setNotification({ message: "Firebase not configured. Data persistence will not work.", type: "error" });
+        return;
+      }
+
+      const app = initializeApp(firebaseConfig);
+      const firestoreDb = getFirestore(app);
+      const firebaseAuth = getAuth(app);
+
+      setDb(firestoreDb);
+      setAuth(firebaseAuth);
+
+      // Listen for auth state changes
+      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
+          setUserId(user.uid);
+        } else {
+          // Sign in anonymously if no user is found
+          try {
+            if (typeof __initial_auth_token !== 'undefined') {
+              await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+            } else {
+              await signInAnonymously(firebaseAuth);
+            }
+            setUserId(firebaseAuth.currentUser?.uid || crypto.randomUUID()); // Fallback for anonymous
+          } catch (error) {
+            console.error("Error signing in anonymously:", error);
+            setNotification({ message: "Failed to sign in. Data persistence may not work.", type: "error" });
+            setUserId(crypto.randomUUID()); // Use a random ID if auth fails completely
+          }
+        }
+        setIsAuthReady(true); // Mark auth as ready after initial check/sign-in
+      });
+
+      return () => unsubscribe(); // Cleanup auth listener
+    } catch (error) {
+      console.error("Firebase initialization failed:", error);
+      setNotification({ message: "Failed to initialize Firebase. Check console for details.", type: "error" });
+    }
+  }, []); // Run only once on mount
+
+  // --- Firebase Data Listener (onSnapshot) ---
+  useEffect(() => {
+    if (!db || !userId || !isAuthReady) {
+      // Wait for db, userId, and auth readiness
+      return;
+    }
+
+    const userDocRef = doc(db, `artifacts/${__app_id}/users/${userId}/progress`, 'userProgress');
+
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Ensure all expected fields are present, provide defaults if missing
+        setUserProgress({
+          points: data.points || 0,
+          dailyStreak: data.dailyStreak || 0,
+          lastReadDate: data.lastReadDate || null,
+          versesRead: data.versesRead || 0,
+          bookmarkedVerses: data.bookmarkedVerses || [],
+          achievements: data.achievements || achievementsData,
+          lastReadPosition: data.lastReadPosition || null,
+        });
+        console.log("User progress loaded:", data);
+      } else {
+        // Initialize default progress if document doesn't exist
+        console.log("No user progress found, initializing default.");
+        // We use setDoc here to create the document if it doesn't exist
+        setDoc(userDocRef, userProgress)
+          .catch(error => console.error("Error setting initial user progress:", error));
+      }
+    }, (error) => {
+      console.error("Error fetching user progress:", error);
+      setNotification({ message: "Failed to load progress. Check console.", type: "error" });
+    });
+
+    return () => unsubscribe(); // Clean up the listener
+  }, [db, userId, isAuthReady, __app_id]); // Re-run if db, userId, or auth status changes
+
+  // --- Firebase Data Saver ---
+  // Use a debounced effect to save user progress to Firestore
+  useEffect(() => {
+    if (!db || !userId || !isAuthReady) {
+      return;
+    }
+
+    const userDocRef = doc(db, `artifacts/${__app_id}/users/${userId}/progress`, 'userProgress');
+
+    // Debounce the save operation to avoid too many writes
+    const handler = setTimeout(() => {
+      setDoc(userDocRef, userProgress, { merge: true }) // Use merge to only update changed fields
+        .then(() => console.log("User progress saved to Firestore."))
+        .catch(error => console.error("Error saving user progress:", error));
+    }, 500); // Save after 500ms of inactivity
+
+    return () => {
+      clearTimeout(handler); // Clear timeout if userProgress changes again quickly
+    };
+  }, [userProgress, db, userId, isAuthReady, __app_id]); // Dependency array for userProgress and Firebase states
+
+  // --- Notification Management ---
   const showNotification = useCallback((message, type = 'info', duration = 3000) => {
     setNotification({ message, type });
     const timer = setTimeout(() => {
       setNotification(null);
     }, duration);
-    return () => clearTimeout(timer); // Cleanup timer if component unmounts.
+    return () => clearTimeout(timer);
   }, []);
 
-  // User progress state, including achievements.
-  const [userProgress, setUserProgress] = useState({
-    dailyStreak: 0,
-    versesRead: 0,
-    achievements: achievementsData,
-    lastReadDate: null,
-  });
+  // --- Handlers for App Logic ---
 
-  // Effect to manage daily streak and update achievements.
-  useEffect(() => {
-    const checkDailyStreak = () => {
-      const today = startOfDay(new Date());
-      const lastRead = userProgress.lastReadDate ? parseISO(userProgress.lastReadDate) : null;
-
-      if (lastRead) {
-        const yesterday = addDays(today, -1);
-        // If last read was yesterday, increment streak.
-        if (format(lastRead, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
-          setUserProgress(prev => ({ ...prev, dailyStreak: prev.dailyStreak + 1 }));
-        }
-        // If last read was today, do nothing (streak maintained).
-        else if (format(lastRead, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-          // Streak already counted for today.
-        }
-        // If last read was before yesterday, reset streak.
-        else {
-          setUserProgress(prev => ({ ...prev, dailyStreak: 0 }));
-        }
-      } else {
-        // First time reading, start streak at 1.
-        setUserProgress(prev => ({ ...prev, dailyStreak: 1 }));
-      }
-      setUserProgress(prev => ({ ...prev, lastReadDate: today.toISOString() })); // Update last read date to today.
-    };
-
-    checkDailyStreak(); // Run once on component mount.
-  }, []); // Empty dependency array means this runs only once after initial render.
-
-  // Effect to check and update achievements based on user progress.
-  useEffect(() => {
-    setUserProgress(prev => {
-      const updatedAchievements = prev.achievements.map(ach => {
-        if (ach.id === 'first-read' && prev.versesRead > 0 && !ach.achieved) {
-          showNotification('Achievement Unlocked: First Read! ✨', 'success');
-          return { ...ach, achieved: true };
-        }
-        if (ach.id === 'first-week' && prev.dailyStreak >= 7 && !ach.achieved) {
-          showNotification('Achievement Unlocked: Daily Reader! 📅', 'success');
-          return { ...ach, achieved: true };
-        }
-        // Add more achievement checks here as needed.
-        return ach;
-      });
-      return { ...prev, achievements: updatedAchievements };
-    });
-  }, [userProgress.versesRead, userProgress.dailyStreak, showNotification]); // Dependencies for achievement checks.
-
-
-  // Handler for selecting a surah to read.
+  // Handle surah selection for QuranReader.
   const handleSelectSurah = (surahId) => {
     setSelectedSurahId(surahId);
-    setCurrentView('quran-reader');
+    setSelectedVerseId(null); // Reset verse ID when changing surah
+    setCurrentView('read-quran');
   };
 
-  // Handler for changing surah within the reader.
-  const handleSurahChange = (newSurahId) => {
-    setSelectedSurahId(newSurahId);
-    // Optionally update last read position here if user navigates through surahs.
-    setLastReadPosition(prev => ({ ...prev, surahId: newSurahId, verseId: 1 }));
-  };
-
-  // Handler for when a verse is read (e.g., scrolled into view or audio played).
-  const handleVerseRead = (surahId, verseId) => {
-    setUserProgress(prev => ({ ...prev, versesRead: prev.versesRead + 1 }));
-    setLastReadPosition({ surahId, verseId });
-  };
-
-  // Handler for toggling a bookmark on a verse.
-  const handleToggleBookmark = (verse) => {
-    setBookmarkedVerses(prev => {
-      const isBookmarked = prev.some(b => b.surahId === verse.surahId && b.verseId === verse.verseId);
-      if (isBookmarked) {
-        showNotification('Bookmark removed.', 'info');
-        return prev.filter(b => !(b.surahId === verse.surahId && b.verseId === verse.verseId));
-      } else {
-        showNotification('Verse bookmarked!', 'success');
-        return [...prev, verse];
-      }
-    });
-  };
-
-  // Handler to remove a bookmark.
-  const handleRemoveBookmark = (bookmarkToRemove) => {
-    setBookmarkedVerses(prev =>
-      prev.filter(b => !(b.surahId === bookmarkToRemove.surahId && b.verseId === bookmarkToRemove.verseId))
-    );
-    showNotification('Bookmark removed.', 'info');
-  };
-
-  // Handler to read a surah from the bookmarks list.
-  const handleReadBookmarkedSurah = (surahId) => {
+  // Handle deep linking to a specific verse.
+  const handleSelectSurahAndVerse = (surahId, verseId) => {
     setSelectedSurahId(surahId);
-    setCurrentView('quran-reader');
+    setSelectedVerseId(verseId);
+    setCurrentView('read-quran');
   };
 
-  // Handler for earning points.
-  const handleEarnPoints = (amount) => {
-    setPoints(prev => prev + amount);
-    // showNotification(`+${amount} points!`, 'success'); // Notification handled by specific components (Quiz, Tasbeeh)
-  };
-
-  // Handler for selecting a reciter.
-  const handleSelectReciter = (reciterId, alquranCloudId) => {
-    const reciter = [...recitersData.featured, ...recitersData.free].find(r => r.id === reciterId);
-    if (reciter) {
-      setSelectedReciter(reciter);
-      showNotification(`Reciter selected: ${reciter.englishName}`, 'success');
-    }
-  };
-
-  // Handler for continuing reading from the last position.
+  // Handle continuing from the last read position.
   const handleContinueReading = () => {
-    if (lastReadPosition.surahId) {
-      setSelectedSurahId(lastReadPosition.surahId);
-      setCurrentView('quran-reader');
-      showNotification(`Continuing from Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName} Verse ${lastReadPosition.verseId}`, 'info');
-    } else {
-      showNotification('No previous reading position found. Starting from Al-Fatiha.', 'info');
-      setSelectedSurahId(1);
-      setCurrentView('quran-reader');
-    }
+      if (userProgress.lastReadPosition) {
+          handleSelectSurahAndVerse(userProgress.lastReadPosition.surahId, userProgress.lastReadPosition.verseId);
+      } else {
+          showNotification("No last read position found. Start reading from the beginning!", "info");
+          setCurrentView('surah-selector');
+      }
   };
 
-  // Main application rendering logic based on currentView state.
-  const renderView = () => {
-    switch (currentView) {
-      case 'home':
-        return (
-          <HomeDashboard
-            setCurrentView={setCurrentView}
-            points={points}
-            userProgress={userProgress}
-            unlockedReciters={recitersData} // Pass all reciters as unlocked
-            handleUnlockReciter={() => showNotification("Reciter already unlocked!", "info")} // Dummy function
-            showNotification={showNotification}
-            lastReadPosition={lastReadPosition}
-            onContinueReading={handleContinueReading}
-            selectedReciterId={selectedReciter.id}
-            onSelectReciter={handleSelectReciter}
-          />
-        );
-      case 'surah-selector':
-        return <SurahSelector onSelectSurah={handleSelectSurah} />;
-      case 'quran-reader':
-        return (
-          <QuranReader
-            selectedSurahId={selectedSurahId}
-            onBackToSurahList={() => setCurrentView('surah-selector')}
-            onSurahChange={handleSurahChange}
-            onVerseRead={handleVerseRead}
-            onToggleBookmark={handleToggleBookmark}
-            bookmarkedVerses={bookmarkedVerses}
-            onVerseAudioPlay={handleVerseRead} // Reuse handleVerseRead for audio play tracking
-          />
-        );
-      case 'bookmarks':
-        return (
-          <BookmarkedVerses
-            bookmarkedVerses={bookmarkedVerses}
-            onRemoveBookmark={handleRemoveBookmark}
-            onReadBookmarkedSurah={handleReadBookmarkedSurah}
-            onBackToDashboard={() => setCurrentView('home')}
-          />
-        );
-      case 'prayer-times':
-        return <PrayerTimesDisplay onBackToDashboard={() => setCurrentView('home')} />;
-      case 'quiz':
-        return <Quiz onBackToDashboard={() => setCurrentView('home')} onEarnPoints={handleEarnPoints} showNotification={showNotification} quranData={quranData} />;
-      case 'tasbeeh-counter':
-        return <TasbeehCounter onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} onEarnPoints={handleEarnPoints} />;
-      case 'qibla-finder':
-        return <QiblaFinder onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} />;
-      case 'listen':
-        return <ListenView onBackToDashboard={() => setCurrentView('home')} selectedReciter={selectedReciter} showNotification={showNotification} quranData={quranData} />;
-      // Add other cases for 'practice' etc. when implemented.
-      default:
-        return <HomeDashboard setCurrentView={setCurrentView} points={points} userProgress={userProgress} unlockedReciters={recitersData} handleUnlockReciter={() => {}} showNotification={showNotification} lastReadPosition={lastReadPosition} onContinueReading={handleContinueReading} selectedReciterId={selectedReciter.id} onSelectReciter={handleSelectReciter} />;
-    }
-  };
 
+  // Handle verse read tracking and daily streak.
+  const handleVerseRead = useCallback((surahId, verseId) => {
+    setUserProgress(prev => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const lastRead = prev.lastReadDate ? format(parseISO(prev.lastReadDate), 'yyyy-MM-dd') : null;
+      let newDailyStreak = prev.dailyStreak;
+      let newPoints = prev.points;
+
+      // Update daily streak
+      if (lastRead !== today) {
+        if (lastRead === format(addDays(new Date(), -1), 'yyyy-MM-dd')) {
+          newDailyStreak += 1;
+          newPoints += 5; // Bonus points for streak
+          showNotification(`Daily streak: ${newDailyStreak} days! +5 points`, "success");
+        } else {
+          newDailyStreak = 1; // Reset if not consecutive
+          showNotification("New daily streak started!", "info");
+        }
+      }
+
+      // Update verses read and points (only increment once per unique verse per session)
+      const isVerseAlreadyCounted = prev.lastReadPosition && prev.lastReadPosition.surahId === surahId && prev.lastReadPosition.verseId === verseId;
+      const newVersesRead = isVerseAlreadyCounted ? prev.versesRead : prev.versesRead + 1;
+      if (!isVerseAlreadyCounted) {
+          newPoints += 1; // 1 point per new verse read
+      }
+
+
+      // Check for achievements
+      const updatedAchievements = prev.achievements.map(ach => {
+        if (ach.id === 'first-read' && !ach.achieved && newVersesRead > 0) {
+          showNotification("Achievement Unlocked: First Read! ✨", "success");
+          return { ...ach, achieved: true };
+        }
+        if (ach.id === 'first-week' && !ach.achieved && newDailyStreak >= 7) {
+          showNotification("Achievement Unlocked: Daily Reader! 📅", "success");
+          return { ...ach, achieved: true };
+        }
+        // Add more achievement checks here
+        return ach;
+      });
+
+      return {
+        ...prev,
+        points: newPoints,
+        dailyStreak: newDailyStreak,
+        lastReadDate: today,
+        versesRead: newVersesRead,
+        achievements: updatedAchievements,
+        lastReadPosition: { surahId, verseId }, // Update last read position
+      };
+    });
+  }, [showNotification]);
+
+  // Handle audio play for verse, updating last read position.
+  const handleVerseAudioPlay = useCallback((surahId, verseId) => {
+      setUserProgress(prev => ({
+          ...prev,
+          lastReadPosition: { surahId, verseId }
+      }));
+  }, []);
+
+  // Toggle bookmark for a verse.
+  const handleToggleBookmark = useCallback((surahId, verseId) => {
+    setUserProgress(prev => {
+      const isBookmarked = prev.bookmarkedVerses.some(b => b.surahId === surahId && b.verseId === verseId);
+      let updatedBookmarks;
+      let notificationMessage;
+      let notificationType;
+
+      if (isBookmarked) {
+        updatedBookmarks = prev.bookmarkedVerses.filter(b => !(b.surahId === surahId && b.verseId === verseId));
+        notificationMessage = "Bookmark removed!";
+        notificationType = "info";
+      } else {
+        updatedBookmarks = [...prev.bookmarkedVerses, { surahId, verseId, timestamp: new Date().toISOString() }];
+        notificationMessage = "Verse bookmarked! ⭐";
+        notificationType = "success";
+      }
+      showNotification(notificationMessage, notificationType);
+      return { ...prev, bookmarkedVerses: updatedBookmarks };
+    });
+  }, [showNotification]);
+
+  // Handle quiz completion and update points/achievements.
+  const handleQuizComplete = useCallback((finalScore) => {
+    setUserProgress(prev => {
+      let newPoints = prev.points + finalScore;
+      const updatedAchievements = prev.achievements.map(ach => {
+        if (ach.id === 'quiz-whiz' && !ach.achieved && finalScore >= 500) { // Example threshold
+          showNotification("Achievement Unlocked: Quiz Whiz! ❓", "success");
+          return { ...ach, achieved: true };
+        }
+        return ach;
+      });
+      showNotification(`Quiz finished! You earned ${finalScore} points.`, "success");
+      return { ...prev, points: newPoints, achievements: updatedAchievements };
+    });
+  }, [showNotification]);
+
+  // --- Main App Render ---
   return (
-    // Main container with Tailwind CSS for overall styling.
-    <div className="min-h-screen bg-green-900 text-green-50 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
-      {/* Header section with app title and points display */}
-      <header className="w-full max-w-4xl bg-green-800 p-5 rounded-xl shadow-lg mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-green-100">My Quran App</h1>
-        <div className="text-xl font-semibold text-yellow-300 flex items-center">
-          <span className="mr-2">🌟</span> {points} Points
+    <div className="min-h-screen bg-green-900 text-green-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <header className="w-full max-w-4xl bg-green-800 p-4 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row justify-between items-center">
+        <h1 className="text-3xl font-extrabold text-green-100 mb-4 sm:mb-0">Quran App</h1>
+        <div className="flex items-center space-x-4">
+          <span className="text-xl font-semibold">Points: {userProgress.points} ✨</span>
+          {userId && (
+              <span className="text-sm text-green-300 bg-green-700 px-3 py-1 rounded-full">
+                  User ID: {userId.substring(0, 8)}...
+              </span>
+          )}
         </div>
       </header>
 
-      {/* Main content area where different views are rendered */}
+      {/* Main Content Area */}
       <main className="w-full max-w-4xl flex-grow">
-        {renderView()} {/* Renders the active component based on currentView */}
+        {/* Conditional Rendering of Views */}
+        {(() => {
+          switch (currentView) {
+            case 'home':
+              return (
+                <HomeDashboard
+                  setCurrentView={setCurrentView}
+                  points={userProgress.points}
+                  userProgress={userProgress}
+                  unlockedReciters={recitersData.featured.concat(recitersData.free)} // All are unlocked
+                  handleUnlockReciter={() => showNotification("All reciters are unlocked!", "info")}
+                  showNotification={showNotification}
+                  lastReadPosition={userProgress.lastReadPosition}
+                  onContinueReading={handleContinueReading}
+                />
+              );
+            case 'surah-selector':
+              return <SurahSelector onSelectSurah={handleSelectSurah} />;
+            case 'read-quran':
+              return (
+                <QuranReader
+                  selectedSurahId={selectedSurahId}
+                  onBackToSurahList={() => setCurrentView('surah-selector')}
+                  onSurahChange={handleSelectSurah}
+                  onVerseRead={handleVerseRead}
+                  onToggleBookmark={handleToggleBookmark}
+                  bookmarkedVerses={userProgress.bookmarkedVerses}
+                  onVerseAudioPlay={handleVerseAudioPlay}
+                />
+              );
+            case 'listen':
+              return (
+                <Listen
+                  selectedReciter={selectedReciter}
+                  onSelectReciter={(id, name, englishName, alquranCloudId) => setSelectedReciter({ id, name, englishName, alquranCloudId })}
+                  showNotification={showNotification}
+                />
+              );
+            case 'practice':
+              return <Practice showNotification={showNotification} />;
+            case 'prayer-times':
+              return <PrayerTimes showNotification={showNotification} />;
+            case 'bookmarks':
+              return (
+                <Bookmarks
+                  bookmarkedVerses={userProgress.bookmarkedVerses}
+                  onToggleBookmark={handleToggleBookmark}
+                  onSelectSurahAndVerse={handleSelectSurahAndVerse}
+                  showNotification={showNotification}
+                />
+              );
+            case 'quiz':
+              return <Quiz showNotification={showNotification} onQuizComplete={handleQuizComplete} />;
+            default:
+              return (
+                <div className="text-center text-red-400">
+                  <p className="text-2xl">Error: Unknown view '{currentView}'</p>
+                  <button onClick={() => setCurrentView('home')} className="mt-4 bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-full">
+                    Go to Home
+                  </button>
+                </div>
+              );
+          }
+        })()}
       </main>
 
-      {/* Notification message display */}
-      {notification && (
-        <NotificationMessage
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
-        />
-      )}
-
-      {/* Tailwind CSS Script - MUST be included for Tailwind classes to work */}
-      <script src="https://cdn.tailwindcss.com"></script>
-      {/* Custom CSS for Arabic font and scrollbar */}
-      <style jsx>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap'); /* Example Arabic font */
-
-        body {
-          font-family: 'Inter', sans-serif;
-        }
-
-        .font-arabic {
-          font-family: 'Amiri Quran', serif; /* Apply to Arabic text */
-        }
-
-        /* Custom Scrollbar for better aesthetics */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #10B981; /* green-500 */
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #065F46; /* green-800 */
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #047857; /* green-700 */
-        }
-      `}</style>
-    </div>
-  );
-}
+      {/* Footer Navigation */}
+      <footer className="w-full max-w-4xl bg-green-800 p-4 rounded-xl shadow-lg mt-8 flex justify-around items-center">
+        <button
+          onClick={() => setCurrentView('home')}
+          className={`flex flex-col items-center p-2 rounded-lg transition-colors duration-200 ${currentView === 'home' ? 'text-green-200 bg-green-700' : 'text-green-400 hover:text-green-200'}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path d="M11.47 3.84a.75.75 0 0 1 1.06 0l8.69 8.69a1.5 1.5 0 0 1 0 2.12l-5.15 5.15a1.5 1.5 0 0 1-2.12 0L2.84 12.97a.75.75 0 0 1 0-1.06l8.69-8.69Z" />
+          </svg>
+          <span className="text-xs mt-1">Home</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('surah-selector')}
+          className={`flex flex-col items-center p-2 rounded-lg transition-colors duration-200 ${currentView === 'surah-selector' || currentView === 'read-quran' ? 'text-green-200 bg-green-700' : 'text-green-400 hover:text-green-200'}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path fillRule="evenodd" d="M7.875 1.5C6.839 1.5 6 2.34 6 3.375v2.99c0 .526.163 1.035.474 1.457l1.513 2.159a3.001 3.001 0 0 0 2.247 1.024H18.75a.75.75 0 0 0 .75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3.001 3.001 0 0 0-2.247-1.024H9.375v-1.17c0-.935.759-1.695 1.695-1.695H21.75c.935 0 1.695.76 1.695 1.695v12.39c0 .935-.76 1.695-1.695 1.695H11.06a2.25 2.25 0 0 1-2.247-2.159v-8.25a.75.75 0 0 0-.75-.75H3.375a1.875 1.875 0 0 0-1.875 1.875v11.71c0 1.035.84 1.875 1.875 1.875H12.75A.75.75 0 0 0 13.5 22.5h6.75a2.25 2.25 0 0 0 2.25-2.25V9.375a.75.75 0 0 0-.75-.75H18.75a.75.75 0 0 0-.75.75v3.375c0 .414.336.75.75.75h-.75a.75.75 0 0 1-.75-.75V6.61a3

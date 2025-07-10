@@ -1764,6 +1764,15 @@ export default function App() {
   const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default selected reciter.
   const [lastReadPosition, setLastReadPosition] = useState({ surahId: 1, verseId: 1 }); // Tracks last read position.
 
+  // Function to display a notification message. MOVED THIS UP!
+  const showNotification = useCallback((message, type = 'info', duration = 3000) => {
+    setNotification({ message, type });
+    const timer = setTimeout(() => {
+      setNotification(null);
+    }, duration);
+    return () => clearTimeout(timer); // Cleanup timer if component unmounts.
+  }, []);
+
   // User progress state, including achievements.
   const [userProgress, setUserProgress] = useState({
     dailyStreak: 0,
@@ -1821,14 +1830,6 @@ export default function App() {
     });
   }, [userProgress.versesRead, userProgress.dailyStreak, showNotification]); // Dependencies for achievement checks.
 
-  // Function to display a notification message.
-  const showNotification = useCallback((message, type = 'info', duration = 3000) => {
-    setNotification({ message, type });
-    const timer = setTimeout(() => {
-      setNotification(null);
-    }, duration);
-    return () => clearTimeout(timer); // Cleanup timer if component unmounts.
-  }, []);
 
   // Handler for selecting a surah to read.
   const handleSelectSurah = (surahId) => {
