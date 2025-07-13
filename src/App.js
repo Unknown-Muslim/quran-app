@@ -125,7 +125,7 @@ const quranData = {
     { id: 105, name: 'الفيل', englishName: 'Al-Fil', numberOfVerses: 5 },
     { id: 106, name: 'قريش', englishName: 'Quraish', numberOfVerses: 4 },
     { id: 107, name: 'الماعون', englishName: 'Al-Ma\'un', numberOfVerses: 7 },
-    { id: 108, name: 'الكوثر', englishName: 'Al-Kawthar', numberOfNumberOfVerses: 3 },
+    { id: 108, name: 'الكوثر', englishName: 'Al-Kawthar', numberOfVerses: 3 },
     { id: 109, name: 'الكافرون', englishName: 'Al-Kafirun', numberOfVerses: 6 },
     { id: 110, name: 'النصر', englishName: 'An-Nasr', numberOfVerses: 3 },
     { id: 111, name: 'المسد', englishName: 'Al-Masad', numberOfVerses: 5 },
@@ -622,7 +622,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
 };
 
 // SurahSelector component for browsing and selecting Quranic Surahs.
-const SurahSelector = ({ onSelectSurah }) => {
+const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHome prop
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter surahs based on search term (English name, Arabic name, or ID).
@@ -634,7 +634,17 @@ const SurahSelector = ({ onSelectSurah }) => {
 
   return (
     <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-green-100">Select a Surah</h2>
+      <div className="flex justify-between items-center mb-6"> {/* New flex container for buttons */}
+        <button
+          onClick={onBackToHome} // Back to Home button
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Select a Surah</h2>
+        <div className="w-24"></div> {/* Spacer to balance the title */}
+      </div>
       <input
         type="text"
         placeholder="Search Surah by name or number..."
@@ -668,16 +678,13 @@ const SurahSelector = ({ onSelectSurah }) => {
 };
 
 // QuranReader component for displaying and interacting with Quranic verses.
-// NOW RECEIVES selectedReciterAlquranCloudId PROP
-const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, selectedReciterAlquranCloudId, showNotification }) => {
+const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, selectedReciterAlquranCloudId, showNotification, onBackToHome }) => { // Added onBackToHome prop
   const [surahVerses, setSurahVerses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [highlightedVerseId, setHighlightedVerseId] = useState(null);
   const [selectedFont, setSelectedFont] = useState(fontFamilies[0].name); // Default to first font
   const [fontSize, setFontSize] = useState(fontSizes[1].className); // Default to Medium font size
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
-  const [isPlayingCurrentVerse, setIsPlayingCurrentVerse] = useState(false); // New state for current verse audio status
 
   const audioRef = useRef(new Audio());
   audioRef.current.volume = 0.8; // Set default audio volume
@@ -691,9 +698,6 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
       setError(null);
       setSurahVerses([]);
       setHighlightedVerseId(null);
-      // Pause any existing audio when a new surah is loaded
-      audioRef.current.pause();
-      setIsPlayingCurrentVerse(false);
 
       if (!selectedSurahId) {
         setError("No Surah selected.");
@@ -714,7 +718,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             id: arabicAyah.numberInSurah,
             arabic: arabicAyah.text,
             translation: translationVerses[index] ? translationVerses[index].text : 'Translation not available.',
-            audio: arabicAyah.audio, // This audio URL is for a default reciter (usually Ghamdi)
+            audio: arabicAyah.audio,
           }));
           setSurahVerses(combinedVerses);
         } else {
@@ -737,87 +741,62 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
     const audio = audioRef.current;
     const handleEnded = () => {
       setHighlightedVerseId(null); // Clear highlight when audio ends.
-      setIsPlayingCurrentVerse(false);
     };
-    const handlePlay = () => setIsPlayingCurrentVerse(true);
-    const handlePause = () => setIsPlayingCurrentVerse(false);
-    const handleError = (e) => {
-      console.error("Audio playback error:", e);
-      showNotification("Error playing audio. Try another reciter or verse.", 'error');
-      setIsPlayingCurrentVerse(false);
-      setIsAudioLoading(false);
-    };
-
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('error', handleError);
-
 
     return () => {
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('error', handleError);
       audio.pause(); // Pause any playing audio when component unmounts or re-renders.
       audio.src = ''; // Clear audio source.
     };
-  }, [showNotification]);
+  }, []);
 
-  // Callback to play verse audio using the selected reciter
-  const playVerseAudio = useCallback(async (verseId) => {
-    if (!selectedReciterAlquranCloudId) {
-      showNotification("Please select a reciter from the 'Listen' section on the Home page first.", 'info');
-      return;
+  // Callback to play verse audio and update last read position.
+  const playVerseAudio = useCallback(async (verseId) => { // Removed audioUrl from here
+    // Use the passed selected reciter, or fallback to the first featured reciter
+    const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
+
+    if (!reciterToUse) {
+        showNotification("Please select a reciter from the Home page or Listen page first.", 'error');
+        return;
     }
 
-    setIsAudioLoading(true);
     setHighlightedVerseId(verseId); // Highlight the currently playing verse.
     audioRef.current.pause(); // Pause any currently playing audio
-    setIsPlayingCurrentVerse(false); // Reset playing state
+    audioRef.current.src = ''; // Clear source
+
+    const apiUrl = `https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verseId}/${reciterToUse}`;
+    console.log("Fetching audio from:", apiUrl); // Debugging: Log the API URL
 
     try {
-      const response = await fetch(`https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verseId}/${selectedReciterAlquranCloudId}`);
-      const data = await response.json();
+        // Fetch audio URL for the specific verse and selected reciter
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        console.log("Audio API response:", data); // Debugging: Log the API response
 
-      if (data.code === 200 && data.data && data.data.audio) {
-        audioRef.current.src = data.data.audio;
-        audioRef.current.play().catch(error => {
-          console.error("Error playing audio after setting src:", error);
-          showNotification("Failed to play audio. Browser autoplay blocked or network issue.", 'error');
-          setIsPlayingCurrentVerse(false);
-        });
-        onVerseAudioPlay(selectedSurahId, verseId); // Inform parent about audio play for last read tracking.
-      } else {
-        showNotification("Audio not found for this verse with the selected reciter.", 'error');
-        console.error("API Error: Audio data missing or API response not 200", data);
-        setIsPlayingCurrentVerse(false);
-      }
-    } catch (err) {
-      console.error("Fetch error for verse audio:", err);
-      showNotification("Could not fetch audio. Please check your internet connection.", 'error');
-      setIsPlayingCurrentVerse(false);
-    } finally {
-      setIsAudioLoading(false);
+        if (data.code === 200 && data.data && data.data.audio) {
+            audioRef.current.src = data.data.audio;
+            audioRef.current.play().catch(error => {
+                console.error("Error playing audio:", error);
+                showNotification("Failed to play audio. Your browser might block autoplay, or there's a network issue.", 'error');
+            });
+        } else {
+            console.error("Audio not found in response or API error:", data);
+            showNotification("Audio not available for this verse or reciter. Try another reciter.", 'error');
+        }
+    } catch (error) {
+        console.error("Fetch audio error:", error);
+        showNotification("Could not fetch audio. Check your internet connection.", 'error');
     }
-  }, [selectedReciterAlquranCloudId, selectedSurahId, onVerseAudioPlay, showNotification]);
 
-  const toggleVerseAudio = useCallback((verseId) => {
-    if (highlightedVerseId === verseId && isPlayingCurrentVerse) {
-      audioRef.current.pause();
-      setHighlightedVerseId(null);
-    } else {
-      playVerseAudio(verseId);
-    }
-  }, [highlightedVerseId, isPlayingCurrentVerse, playVerseAudio]);
-
+    onVerseAudioPlay(selectedSurahId, verseId); // Inform parent about audio play for last read tracking.
+  }, [onVerseAudioPlay, selectedSurahId, selectedReciterAlquranCloudId, showNotification]); // Dependencies updated
 
   // Handler for navigating to the previous surah.
   const handlePrevSurah = () => {
     if (selectedSurahId > 1) {
       onSurahChange(selectedSurahId - 1); // Navigate to previous surah.
       audioRef.current.pause(); // Pause current audio.
-      setIsPlayingCurrentVerse(false);
       setHighlightedVerseId(null); // Clear highlight.
     }
   };
@@ -827,7 +806,6 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
     if (selectedSurahId < quranData.surahs.length) {
       onSurahChange(selectedSurahId + 1); // Navigate to next surah.
       audioRef.current.pause(); // Pause current audio.
-      setIsPlayingCurrentVerse(false);
       setHighlightedVerseId(null); // Clear highlight.
     }
   };
@@ -861,7 +839,14 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
     <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
-          onClick={onBackToSurahList}
+          onClick={onBackToHome} // NEW: Home button
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <button
+          onClick={onBackToSurahList} // Original Back button
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
           <ArrowLeft size={20} className="mr-2" />
@@ -947,29 +932,14 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             <p className="text-green-100 text-left mt-2 text-base md:text-lg">{verse.translation}</p>
             <div className="mt-4 flex justify-end">
               <button
-                // Modified to use toggleVerseAudio
                 onClick={() => {
-                  toggleVerseAudio(verse.id);
+                  playVerseAudio(verse.id); // Now only pass verse.id
                   onVerseRead(selectedSurahId, verse.id); // Mark verse as read
                 }}
-                disabled={isAudioLoading && highlightedVerseId !== verse.id} // Disable if another audio is loading
-                className="bg-green-600 hover:bg-green-500 px-5 py-2 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
+                className="bg-green-600 hover:bg-green-500 px-5 py-2 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
               >
-                {isAudioLoading && highlightedVerseId === verse.id ? (
-                    <>
-                        <span className="animate-spin mr-2">🌀</span> Loading...
-                    </>
-                ) : (highlightedVerseId === verse.id && isPlayingCurrentVerse) ? (
-                    <>
-                        <Pause size={20} className="mr-2" fill="currentColor" />
-                        Pause
-                    </>
-                ) : (
-                    <>
-                        <Play size={20} className="mr-2" fill="currentColor" />
-                        Play
-                    </>
-                )}
+                <Play size={20} className="mr-2" fill="currentColor" />
+                Play
               </button>
             </div>
           </div>
@@ -982,7 +952,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
 // --- Placeholder Components for Navigation ---
 // These components are placeholders. You can expand them with full functionality later.
 
-const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, selectedReciterEnglishName, selectedReciterAlquranCloudId, onSelectReciter, showNotification }) => {
+const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, selectedReciterEnglishName, selectedReciterAlquranCloudId, showNotification }) => { // Added showNotification prop
   const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
   const audioRef = useRef(new Audio());
   const [isPlaying, setIsPlaying] = useState(false);
@@ -994,43 +964,50 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
   const selectedSurahMeta = quranData.surahs.find(s => s.id === selectedSurahId);
 
   // Function to fetch and play audio for a specific verse
-  const playVerse = useCallback(async (surahId, verseId, reciterAlquranCloudId) => {
-    if (!reciterAlquranCloudId) {
-      setError("Please select a reciter first from the Home page.");
-      showNotification("Please select a reciter from the 'Listen' section on the Home page first.", 'info');
-      return;
+  const playVerse = useCallback(async (surahId, verseId) => {
+    // Use the passed selectedReciterAlquranCloudId, or default to the first featured reciter
+    const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
+
+    if (!reciterToUse) {
+        setError("No reciter available to play audio. Please select one from Home.");
+        showNotification("No reciter selected. Please choose one from the Home page.", 'error');
+        return;
     }
+
     setIsLoadingAudio(true);
     setError(null);
     setIsPlaying(false);
-    audioRef.current.pause(); // Ensure previous audio stops
+
+    const apiUrl = `https://api.alquran.cloud/v1/ayah/${surahId}:${verseId}/${reciterToUse}`;
+    console.log("LISTEN PAGE: Fetching audio from:", apiUrl); // Debugging: Log the API URL
 
     try {
-      const response = await fetch(`https://api.alquran.cloud/v1/ayah/${surahId}:${verseId}/${reciterAlquranCloudId}`);
+      const response = await fetch(apiUrl);
       const data = await response.json();
+      console.log("LISTEN PAGE: Audio API response:", data); // Debugging: Log the API response
 
       if (data.code === 200 && data.data && data.data.audio) {
         setCurrentAudioUrl(data.data.audio);
         audioRef.current.src = data.data.audio;
         audioRef.current.play().then(() => setIsPlaying(true)).catch(err => {
-          console.error("Error playing audio:", err);
-          setError("Failed to play audio. Browser autoplay blocked or network issue.");
-          showNotification("Failed to play audio. Browser autoplay blocked or network issue.", 'error');
+          console.error("LISTEN PAGE: Error playing audio:", err);
+          setError("Failed to play audio. Your browser might block autoplay, or there's a network issue.");
+          showNotification("Failed to play audio. Browser might block autoplay or network issue.", 'error');
           setIsPlaying(false);
         });
       } else {
-        setError("Audio not found for this verse with the selected reciter.");
-        showNotification("Audio not found for this verse with the selected reciter.", 'error');
-        console.error("API Error:", data);
+        setError("Audio not found for this verse with the selected reciter. Try another reciter.");
+        showNotification("Audio not found for this verse or reciter. Try another.", 'error');
+        console.error("LISTEN PAGE: Audio not found in response or API error:", data);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Could not fetch audio. Check internet connection.");
+      console.error("LISTEN PAGE: Fetch error:", err);
+      setError("Could not fetch audio. Check internet connection or API status.");
       showNotification("Could not fetch audio. Check internet connection.", 'error');
     } finally {
       setIsLoadingAudio(false);
     }
-  }, [showNotification]);
+  }, [selectedReciterAlquranCloudId, showNotification]); // Dependency changed to ensure re-creation if reciter changes
 
   // Effect to manage audio playback state
   useEffect(() => {
@@ -1038,63 +1015,54 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => setIsPlaying(false);
-    const handleError = (e) => {
-      console.error("Audio playback error in ListenPage:", e);
-      setError("Error playing audio. Try another reciter or verse.");
-      showNotification("Error playing audio. Try another reciter or verse.", 'error');
-      setIsPlaying(false);
-      setIsLoadingAudio(false);
-    };
 
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
       audio.pause();
       audio.src = '';
     };
-  }, [showNotification]);
+  }, []);
 
   const togglePlayPause = () => {
     if (isPlaying) {
       audioRef.current.pause();
     } else {
       if (currentAudioUrl) {
-        audioRef.current.play().catch(err => console.error("Error resuming play:", err));
+        audioRef.current.play().catch(err => console.error("LISTEN PAGE: Error resuming play:", err));
       } else {
-        // If no audio loaded, try to play the default first verse of the selected surah
-        playVerse(selectedSurahId, selectedVerseId, selectedReciterAlquranCloudId);
+        // If no audio loaded, try to play the default first verse
+        playVerse(selectedSurahId, selectedVerseId);
       }
     }
   };
 
   const handleSurahChange = (e) => {
-    const newSurahId = parseInt(e.target.value);
-    setSelectedSurahId(newSurahId);
+    setSelectedSurahId(parseInt(e.target.value));
     setSelectedVerseId(1); // Reset verse to 1 when surah changes
-    // Automatically try to play the new selection
-    playVerse(newSurahId, 1, selectedReciterAlquranCloudId);
+    setCurrentAudioUrl(null); // Clear current audio
+    setIsPlaying(false);
+    audioRef.current.pause();
   };
 
   const handleVerseChange = (e) => {
-    const newVerseId = parseInt(e.target.value);
-    setSelectedVerseId(newVerseId);
-    // Automatically try to play the new selection
-    playVerse(selectedSurahId, newVerseId, selectedReciterAlquranCloudId);
+    setSelectedVerseId(parseInt(e.target.value));
+    setCurrentAudioUrl(null); // Clear current audio
+    setIsPlaying(false);
+    audioRef.current.pause();
   };
 
-  // Initial play when component mounts or reciter changes, if not already playing
+  // Automatically play selected verse when surah/verse/reciter changes
   useEffect(() => {
-    if (selectedReciterAlquranCloudId && !currentAudioUrl && !isLoadingAudio) {
-      playVerse(selectedSurahId, selectedVerseId, selectedReciterAlquranCloudId);
+    if (selectedReciterAlquranCloudId && selectedSurahId && selectedVerseId) {
+      playVerse(selectedSurahId, selectedVerseId);
     }
-  }, [selectedReciterAlquranCloudId, selectedSurahId, selectedVerseId, playVerse, currentAudioUrl, isLoadingAudio]);
+  }, [selectedReciterAlquranCloudId, selectedSurahId, selectedVerseId, playVerse]);
 
 
   return (
@@ -1104,11 +1072,11 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
           onClick={onBackToHome}
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
-          <ArrowLeft size={20} className="mr-2" />
-          Back
+          <Home size={20} className="mr-2" />
+          Home
         </button>
         <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Listen Quran</h2>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-24"></div> {/* Spacer to balance the title */}
       </div>
 
       <div className="text-center mb-6">
@@ -1165,11 +1133,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
           disabled={!selectedReciterAlquranCloudId || isLoadingAudio}
           className="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
         >
-          {isLoadingAudio ? (
-            <>
-              <span className="animate-spin mr-2">🌀</span> Loading...
-            </>
-          ) : isPlaying ? (
+          {isPlaying ? (
             <>
               <Pause size={24} className="mr-2" fill="currentColor" />
               Pause
@@ -1186,18 +1150,18 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
   );
 };
 
-const PracticePage = ({ onBackToHome }) => (
+const PracticePage = ({ onBackToHome }) => ( // Added onBackToHome prop
   <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
     <div className="flex justify-between items-center mb-6">
       <button
-        onClick={onBackToHome}
+        onClick={onBackToHome} // Home button
         className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back
+        <Home size={20} className="mr-2" />
+        Home
       </button>
       <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Practice Recitation</h2>
-      <div className="w-10"></div> {/* Spacer */}
+      <div className="w-24"></div> {/* Spacer */}
     </div>
     <p className="text-center text-lg text-green-200 mt-8">
       This is where you can practice your recitation. (Feature coming soon!)
@@ -1208,7 +1172,7 @@ const PracticePage = ({ onBackToHome }) => (
   </div>
 );
 
-const PrayerTimesPage = ({ onBackToHome }) => {
+const PrayerTimesPage = ({ onBackToHome }) => { // Added onBackToHome prop
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [error, setError] = useState(null);
@@ -1270,14 +1234,14 @@ const PrayerTimesPage = ({ onBackToHome }) => {
     <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
-          onClick={onBackToHome}
+          onClick={onBackToHome} // Home button
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
-          <ArrowLeft size={20} className="mr-2" />
-          Back
+          <Home size={20} className="mr-2" />
+          Home
         </button>
         <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Prayer Times</h2>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-24"></div> {/* Spacer */}
       </div>
 
       {error && <p className="text-red-400 text-center mb-4 text-lg">{error}</p>}
@@ -1310,19 +1274,19 @@ const PrayerTimesPage = ({ onBackToHome }) => {
   );
 };
 
-const BookmarksPage = ({ onBackToHome, bookmarkedVerses, onSelectSurah, onToggleBookmark }) => {
+const BookmarksPage = ({ onBackToHome, bookmarkedVerses, onSelectSurah, onToggleBookmark }) => { // Added onBackToHome prop
   return (
     <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
-          onClick={onBackToHome}
+          onClick={onBackToHome} // Home button
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
-          <ArrowLeft size={20} className="mr-2" />
-          Back
+          <Home size={20} className="mr-2" />
+          Home
         </button>
         <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Bookmarked Verses</h2>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-24"></div> {/* Spacer */}
       </div>
 
       {bookmarkedVerses.length === 0 ? (
@@ -1360,7 +1324,7 @@ const BookmarksPage = ({ onBackToHome, bookmarkedVerses, onSelectSurah, onToggle
   );
 };
 
-const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
+const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => { // Added onBackToHome prop
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedback, setFeedback] = useState('');
@@ -1436,14 +1400,14 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
     <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
-          onClick={onBackToHome}
+          onClick={onBackToHome} // Home button
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
-          <ArrowLeft size={20} className="mr-2" />
-          Back
+          <Home size={20} className="mr-2" />
+          Home
         </button>
         <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Quran Quiz</h2>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-24"></div> {/* Spacer */}
       </div>
 
       {!quizStarted ? (
@@ -1918,7 +1882,7 @@ export default function App() {
           />
         );
       case 'surah-selector':
-        return <SurahSelector onSelectSurah={handleSelectSurah} />;
+        return <SurahSelector onSelectSurah={handleSelectSurah} onBackToHome={handleBackToHome} />; {/* Added onBackToHome */}
       case 'quran-reader':
         return (
           <QuranReader
@@ -1929,8 +1893,9 @@ export default function App() {
             onToggleBookmark={handleToggleBookmark}
             bookmarkedVerses={userProgress.bookmarkedVerses}
             onVerseAudioPlay={handleVerseAudioPlay}
-            selectedReciterAlquranCloudId={selectedReciterAlquranCloudId} // Pass reciter ID
-            showNotification={showNotification} // Pass notification handler
+            selectedReciterAlquranCloudId={selectedReciterAlquranCloudId}
+            showNotification={showNotification}
+            onBackToHome={handleBackToHome} // Added onBackToHome
           />
         );
       case 'listen':
@@ -1941,14 +1906,13 @@ export default function App() {
             selectedReciterName={selectedReciterName}
             selectedReciterEnglishName={selectedReciterEnglishName}
             selectedReciterAlquranCloudId={selectedReciterAlquranCloudId}
-            onSelectReciter={handleSelectReciterForListen} // Allow selection from here if needed
-            showNotification={showNotification}
+            showNotification={showNotification} // Added showNotification
           />
         );
       case 'practice':
-        return <PracticePage onBackToHome={handleBackToHome} />;
+        return <PracticePage onBackToHome={handleBackToHome} />; // Added onBackToHome
       case 'prayer-times':
-        return <PrayerTimesPage onBackToHome={handleBackToHome} />;
+        return <PrayerTimesPage onBackToHome={handleBackToHome} />; // Added onBackToHome
       case 'bookmarks':
         return (
           <BookmarksPage
