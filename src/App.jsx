@@ -1,7 +1,17 @@
 // --- Initial Setup and Data Imports ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
-// IMPORTANT: Removed Vercel Analytics component as it's not supported in this environment.
+// NEW: Import Lucide React icons for a modern look
+import { Home, BookOpen, Headphones, Mic, Clock, Star, HelpCircle, ArrowLeft, ChevronLeft, ChevronRight, Play, Pause, Bookmark, CheckCircle, XCircle, Info, Sun, Moon, Cloud, Zap, Award, User, Clock9, CalendarDays, BarChart, Gem, DollarSign, CircleDot, Square } from 'lucide-react'; // Added CircleDot, Square for recording
+// NEW: Import Vercel Analytics component for web analytics
+import { Analytics } from '@vercel/analytics/react';
+// NEW: Import Vercel Speed Insights component for performance monitoring
+import { SpeedInsights } from '@vercel/speed-insights/react';
+
+// NEW: Firebase Imports
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore'; // Correct import statement
 
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 // This data provides metadata for each Surah of the Quran.
@@ -143,10 +153,10 @@ const recitersData = {
 
 // Achievement definitions for user progress tracking.
 const achievementsData = [
-  { id: 'first-read', title: 'First Read', description: 'Complete your first reading session', icon: '✨', achieved: false },
-  { id: 'first-week', title: 'Daily Reader', description: 'Maintain a 7-day reading streak', icon: '📅', achieved: false },
-  { id: 'practice-master', title: 'Practice Master', description: 'Complete 100 practice sessions', icon: '🎤', achieved: false },
-  { id: 'quiz-whiz', title: 'Quiz Whiz', description: 'Score over 500 points in quizzes', icon: '❓', achieved: false },
+  { id: 'first-read', title: 'First Read', description: 'Complete your first reading session', icon: <BookOpen size={20} />, achieved: false },
+  { id: 'first-week', title: 'Daily Reader', description: 'Maintain a 7-day reading streak', icon: <CalendarDays size={20} />, achieved: false },
+  { id: 'practice-master', title: 'Practice Master', description: 'Complete 100 practice sessions', icon: <Mic size={20} />, achieved: false },
+  { id: 'quiz-whiz', title: 'Quiz Whiz', description: 'Score over 500 points in quizzes', icon: <HelpCircle size={20} />, achieved: false },
 ];
 
 // --- Quiz Data ---
@@ -349,12 +359,12 @@ function getPrayerTimes(latitude, longitude, date = new Date()) {
   times.Isha = ishaTime;
 
   const prayerArray = [
-    { name: 'Fajr', time: times.Fajr, icon: '🌅' },
-    { name: 'Sunrise', time: times.Sunrise, icon: '☀️' },
-    { name: 'Dhuhr', time: times.Dhuhr, icon: '🏙️' },
-    { name: 'Asr', time: times.Asr, icon: '🌇' },
-    { name: 'Maghrib', time: times.Maghrib, icon: '🌆' },
-    { name: 'Isha', time: times.Isha, icon: '🌃' },
+    { name: 'Fajr', time: times.Fajr, icon: <Sun size={24} className="text-yellow-300" /> },
+    { name: 'Sunrise', time: times.Sunrise, icon: <Cloud size={24} className="text-orange-300" /> },
+    { name: 'Dhuhr', time: times.Dhuhr, icon: <Sun size={24} className="text-yellow-500" /> },
+    { name: 'Asr', time: times.Asr, icon: <Cloud size={24} className="text-orange-500" /> },
+    { name: 'Maghrib', time: times.Maghrib, icon: <Moon size={24} className="text-purple-300" /> },
+    { name: 'Isha', time: times.Isha, icon: <Moon size={24} className="text-purple-500" /> },
   ];
 
   let nextPrayer = null;
@@ -394,18 +404,16 @@ function getPrayerTimes(latitude, longitude, date = new Date()) {
 
 // NotificationMessage component for displaying temporary messages to the user.
 const NotificationMessage = ({ message, type, onClose }) => {
-  const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+  const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
   const textColor = 'text-white';
-  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  const IconComponent = type === 'success' ? CheckCircle : type === 'error' ? XCircle : Info;
 
   return (
-    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-xl flex items-center space-x-3 transition-all duration-300 transform animate-fade-in-up z-50 ${bgColor} ${textColor}`}>
-      <span className="text-2xl">{icon}</span>
-      <p className="font-semibold">{message}</p>
-      <button onClick={onClose} className="ml-4 text-white hover:text-gray-200 focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-2xl flex items-center space-x-3 transition-all duration-500 transform animate-fade-in-up z-50 ${bgColor} ${textColor}`}>
+      <IconComponent size={24} className="flex-shrink-0" />
+      <p className="font-semibold text-base md:text-lg">{message}</p>
+      <button onClick={onClose} className="ml-4 text-white hover:text-gray-200 focus:outline-none p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors">
+        <XCircle size={20} />
       </button>
     </div>
   );
@@ -414,77 +422,89 @@ const NotificationMessage = ({ message, type, onClose }) => {
 // --- Reusable UI Components ---
 
 // Card component for navigation and feature display on the dashboard.
-const Card = ({ icon, title, description, onClick }) => (
+const Card = ({ icon: Icon, title, description, onClick }) => (
   <button
     onClick={onClick}
-    className="bg-green-700 hover:bg-green-600 text-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center text-center transition-all transform hover:scale-105 duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+    className="bg-gradient-to-br from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center text-center transition-all transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 relative overflow-hidden group"
   >
-    <div className="text-4xl mb-2">{icon}</div>
-    <h3 className="text-xl font-semibold mb-1">{title}</h3>
-    <p className="text-sm opacity-90">{description}</p>
+    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-2xl"></div>
+    <div className="text-5xl mb-3 text-green-200 group-hover:text-white transition-colors duration-300">
+      {Icon && <Icon size={48} strokeWidth={1.5} />}
+    </div>
+    <h3 className="text-xl md:text-2xl font-semibold mb-1 text-green-50 group-hover:text-white transition-colors duration-300">{title}</h3>
+    <p className="text-sm md:text-base opacity-90 text-green-100 group-hover:text-green-50 transition-colors duration-300">{description}</p>
   </button>
 );
 
 // ReciterCard component to display individual reciter information.
-const ReciterCard = ({ reciter, onSelectReciter, isSelected }) => {
+const ReciterCard = ({ reciter, onSelectReciter, points, isUnlocked, onUnlock, showNotification }) => {
   const handleAction = () => {
-    if (onSelectReciter) {
-      onSelectReciter(reciter.id, reciter.alquranCloudId);
+    if (isUnlocked) {
+      if (onSelectReciter) { // This is the prop name ReciterCard expects
+        onSelectReciter(reciter.id, reciter.name, reciter.englishName, reciter.alquranCloudId);
+      }
+    } else {
+      if (onUnlock) {
+        onUnlock(reciter.id, reciter.cost);
+      }
     }
   };
 
   return (
-    <div className={`bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative hover:shadow-md transition-shadow duration-200 ${isSelected ? 'border-4 border-yellow-400' : ''}`}>
+    <div className="bg-gradient-to-br from-green-700 to-green-800 p-4 rounded-2xl shadow-lg flex flex-col items-center text-center relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
       <img
         src={reciter.imageUrl}
         alt={reciter.englishName}
-        className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-green-400 shadow-sm"
-        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Reciter"; }} // Fallback image
+        className="w-24 h-24 rounded-full object-cover mb-3 border-4 border-green-400 shadow-md group-hover:border-green-300 transition-colors duration-300"
+        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/6EE7B7/047857?text=Reciter"; }} // Fallback image
       />
-      <p className="font-arabic text-lg text-green-50">{reciter.name}</p>
+      <p className="font-arabic text-xl text-green-50 font-medium">{reciter.name}</p>
       <p className="text-sm text-green-200 mb-3">{reciter.englishName}</p>
       <button
         onClick={handleAction}
-        className={`mt-2 py-2 px-4 rounded-full font-semibold transition duration-300 flex items-center shadow-md ${
-          isSelected ? 'bg-yellow-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400'
+        className={`mt-2 py-2 px-5 rounded-full font-semibold transition-all duration-300 flex items-center shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 ${
+          isUnlocked ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-green-800 text-green-300 cursor-default opacity-80'
         }`}
       >
-        {isSelected ? (
-            <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-                </svg>
-                Selected
-            </>
+        {isUnlocked ? (
+          <>
+            <Play size={20} className="mr-2" fill="currentColor" />
+            Listen
+          </>
         ) : (
-            <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-1">
-                    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9.75 13.5a.75.75 0 0 1-1.127.075L4.5 12.25a.75.75 0 0 1 1.06-1.06l4.227 4.227 9.157-12.704a.75.75 0 0 1 1.04-.208Z" clipRule="evenodd" />
-                </svg>
-                Select
-            </>
+          <>
+            <Gem size={20} className="mr-2" />
+            Unlock ({reciter.cost} pts)
+          </>
         )}
       </button>
+      {!isUnlocked && (
+        <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
+          Locked
+        </div>
+      )}
     </div>
   );
 };
 
 // ProgressCard component to display individual user progress metrics.
-const ProgressCard = ({ title, value, unit, icon, progressBar, progressPercent, milestoneText }) => (
-  <div className="bg-green-700 p-4 rounded-xl shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow duration-200">
-    <div className="text-4xl mb-2">{icon}</div>
+const ProgressCard = ({ title, value, unit, icon: Icon, progressBar, progressPercent, milestoneText }) => (
+  <div className="bg-gradient-to-br from-green-700 to-green-800 p-5 rounded-2xl shadow-lg flex flex-col items-center text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <div className="text-5xl mb-3 text-green-200">
+      {Icon && <Icon size={48} strokeWidth={1.5} />}
+    </div>
     <h3 className="text-xl font-semibold text-green-50 mb-1">{title}</h3>
     <p className="text-3xl font-bold text-green-200">{value}</p>
     <p className="text-sm text-green-300">{unit}</p>
     {progressBar && (
-      <div className="w-full mt-3">
-        <div className="h-2.5 bg-green-900 rounded-full overflow-hidden">
+      <div className="w-full mt-4">
+        <div className="h-3 bg-green-900 rounded-full overflow-hidden shadow-inner">
           <div
-            className="h-full bg-green-400 rounded-full transition-all duration-500"
+            className="h-full bg-green-400 rounded-full transition-all duration-700 ease-out"
             style={{ width: `${progressPercent}%` }}
           ></div>
         </div>
-        <p className="text-xs text-green-300 mt-1">{milestoneText}</p>
+        <p className="text-xs text-green-300 mt-2 font-medium">{milestoneText}</p>
       </div>
     )}
   </div>
@@ -492,17 +512,17 @@ const ProgressCard = ({ title, value, unit, icon, progressBar, progressPercent, 
 
 // AchievementsCard component to display unlocked and pending achievements.
 const AchievementsCard = ({ achievements }) => (
-  <div className="bg-green-700 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
-    <h3 className="text-xl font-bold text-green-50 mb-3 flex items-center">
-      <span className="text-3xl mr-2">🏆</span> Achievements
+  <div className="bg-gradient-to-br from-green-700 to-green-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <h3 className="text-2xl font-bold text-green-50 mb-4 flex items-center">
+      <Award size={32} className="text-yellow-400 mr-3" strokeWidth={1.5} /> Achievements
     </h3>
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {achievements.map((achievement) => (
-        <li key={achievement.id} className={`flex items-center ${achievement.achieved ? 'text-green-300' : 'text-green-400'}`}>
-          <span className="text-lg mr-2">{achievement.icon}</span>
+        <li key={achievement.id} className={`flex items-center p-2 rounded-lg ${achievement.achieved ? 'bg-green-600 text-green-200' : 'bg-green-800 text-green-400 opacity-90'}`}>
+          <span className="text-2xl mr-3 flex-shrink-0">{achievement.icon}</span>
           <div>
-            <p className="font-medium">{achievement.title}</p>
-            <p className="text-xs">{achievement.description}</p>
+            <p className="font-medium text-lg">{achievement.title}</p>
+            <p className="text-xs text-green-300">{achievement.description}</p>
           </div>
         </li>
       ))}
@@ -511,114 +531,98 @@ const AchievementsCard = ({ achievements }) => (
 );
 
 // HomeDashboard component, serving as the main landing page of the app.
-const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading, selectedReciterId, onSelectReciter }) => {
+const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading, onSelectReciterForListen }) => {
   const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Top Navigation Cards for main features */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card icon="📖" title="Read Quran" description="Browse surahs and verses" onClick={() => setCurrentView('surah-selector')} />
-        <Card icon="🎧" title="Listen" description="Beautiful recitations" onClick={() => setCurrentView('listen')} />
-        <Card icon="🎤" title="Practice" description="Record & improve" onClick={() => setCurrentView('practice')} />
-        <Card icon="⏰" title="Prayer Times" description="Hanafi calculations" onClick={() => setCurrentView('prayer-times')} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card icon={BookOpen} title="Read Quran" description="Browse surahs and verses" onClick={() => setCurrentView('surah-selector')} />
+        <Card icon={Headphones} title="Listen" description="Beautiful recitations" onClick={() => setCurrentView('listen')} />
+        <Card icon={Mic} title="Practice" description="Record & improve" onClick={() => setCurrentView('practice')} />
+        <Card icon={Clock} title="Prayer Times" description="Hanafi calculations" onClick={() => setCurrentView('prayer-times')} />
       </div>
-
-      {/* NEW: Tasbeeh Counter & Qibla Finder Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card icon="📿" title="Tasbeeh Counter" description="Keep track of your dhikr" onClick={() => setCurrentView('tasbeeh-counter')} />
-        <Card icon="🕋" title="Qibla Finder" description="Find direction to Kaaba" onClick={() => setCurrentView('qibla-finder')} />
-      </div>
-
 
       {/* Dynamic Verse of the Day display */}
-      <div className="bg-gradient-to-r from-green-800 to-green-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300">
-        <p className="text-lg md:text-xl mb-3 font-semibold">Verse of the Day</p>
-        <p className="font-arabic text-3xl md:text-4xl mb-4 leading-relaxed">
+      <div className="bg-gradient-to-br from-green-800 to-green-900 p-8 rounded-3xl shadow-2xl text-white text-center transform hover:scale-[1.01] transition-transform duration-300 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-10 rounded-3xl"></div>
+        <p className="text-lg md:text-xl mb-3 font-semibold text-green-200">Verse of the Day</p>
+        <p className="font-arabic text-4xl md:text-5xl mb-4 leading-relaxed text-green-50 font-extrabold drop-shadow-md">
           {verseOfTheDay.arabic}
         </p>
-        <p className="text-sm italic mb-4 opacity-90">At-Talaq (65:2)</p> {/* Hardcoded for now, can be dynamic */}
-        <p className="text-base md:text-lg">"{verseOfTheDay.translation}"</p>
-        <div className="mt-5">
-          <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-              <path d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" />
-            </svg>
+        <p className="text-sm italic mb-4 opacity-80 text-green-100">At-Talaq (65:2)</p> {/* Hardcoded for now, can be dynamic */}
+        <p className="text-base md:text-lg text-green-100">"{verseOfTheDay.translation}"</p>
+        <div className="mt-6">
+          <button className="bg-white bg-opacity-20 p-4 rounded-full hover:bg-opacity-30 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50 shadow-lg">
+            <Play size={28} className="text-white" fill="currentColor" />
           </button>
         </div>
       </div>
 
-      {/* NEW: Continue Reading Section - always visible, with dynamic content */}
-      <div
-          className="bg-gradient-to-r from-blue-800 to-blue-700 p-6 rounded-xl shadow-lg text-white text-center transform hover:scale-105 transition-transform duration-300 cursor-pointer"
-          onClick={onContinueReading}
-      >
-          <p className="text-lg md:text-xl mb-3 font-semibold">Continue Reading</p>
-          <p className="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
-              Surah {quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'}
-          </p>
-          <p className="text-base md:text-lg opacity-90">
-              From Verse {lastReadPosition.verseId}
-          </p>
-          <div className="mt-5">
-              <button className="bg-white bg-opacity-30 p-3 rounded-full hover:bg-opacity-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-75">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-                      <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                  </svg>
-              </button>
-          </div>
-      </div>
-
       {/* Display of available reciters */}
-      <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
-        <h2 className="text-2xl font-bold mb-5">Available Reciters</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl text-green-50">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-green-100">Available Reciters</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...recitersData.featured, ...recitersData.free].map((reciter) => (
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
-              onSelectReciter={onSelectReciter}
-              isSelected={selectedReciterId === reciter.id}
+              points={points} // Points are passed but not used for unlocking here
+              isUnlocked={userProgress.unlockedReciters.includes(reciter.id)} // Check if reciter is unlocked
+              onUnlock={handleUnlockReciter} // Pass unlock handler
+              onSelectReciter={onSelectReciterForListen} // Correctly pass the prop received by HomeDashboard
+              showNotification={showNotification}
             />
           ))}
         </div>
       </div>
 
       {/* User Progress Summary section */}
-      <div className="bg-green-800 p-6 rounded-xl shadow-lg text-green-50">
-        <h2 className="text-2xl font-bold mb-5">Your Progress</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl text-green-50">
+        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-green-100">Your Progress</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <ProgressCard
             title="Daily Streak"
             value={userProgress.dailyStreak}
             unit="Days in a row"
-            icon="🔥"
+            icon={Zap} // Using Zap icon for streak
             progressBar={false}
           />
           <ProgressCard
             title="Verses Read"
             value={userProgress.versesRead}
             unit="verses"
-            icon="📖"
+            icon={BookOpen} // Using BookOpen icon for verses read
             progressBar={true}
             progressPercent={(userProgress.versesRead % 100) / 100 * 100}
-            milestoneText={`${100 - (userProgress.versesRead % 100)}% to next milestone`}
+            milestoneText={`${100 - (userProgress.versesRead % 100)} verses to next milestone`}
           />
           <AchievementsCard achievements={userProgress.achievements} />
         </div>
       </div>
 
+      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
+      {lastReadPosition && (
+          <Card
+              icon={ArrowLeft} // Using ArrowLeft for continue reading
+              title="Continue Reading"
+              description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} from Verse ${lastReadPosition.verseId}`}
+              onClick={onContinueReading}
+          />
+      )}
+
       {/* Bookmarked Verses & Quiz Cards - arranged in a grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card icon="⭐" title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
-        <Card icon="❓" title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card icon={Bookmark} title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
+        <Card icon={HelpCircle} title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
       </div>
     </div>
   );
 };
 
-// SurahSelector component for Browse and selecting Quranic Surahs.
-const SurahSelector = ({ onSelectSurah }) => {
+// SurahSelector component for browsing and selecting Quranic Surahs.
+const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHome prop
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter surahs based on search term (English name, Arabic name, or ID).
@@ -629,33 +633,44 @@ const SurahSelector = ({ onSelectSurah }) => {
   );
 
   return (
-    <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-      <h2 className="text-2xl font-bold mb-5 text-center">Select a Surah</h2>
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6"> {/* Added header for buttons */}
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" /> {/* Home icon */}
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Select a Surah</h2>
+        <div className="w-20"></div> {/* Spacer to balance header */}
+      </div>
       <input
         type="text"
         placeholder="Search Surah by name or number..."
-        className="w-full p-3 mb-5 rounded-lg bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+        className="w-full p-4 mb-6 rounded-xl bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-lg"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
+      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto custom-scrollbar p-2">
         {filteredSurahs.length > 0 ? (
           filteredSurahs.map((surah) => (
             <li key={surah.id}>
               <button
                 onClick={() => onSelectSurah(surah.id)}
-                className="w-full text-left p-4 bg-green-700 hover:bg-green-600 rounded-lg transition-colors duration-200 flex justify-between items-center text-green-50 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="w-full text-left p-5 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 rounded-xl transition-all duration-300 flex justify-between items-center text-green-50 shadow-md hover:shadow-lg transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 relative overflow-hidden group"
               >
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-xl"></div>
                 <div>
-                  <p className="font-semibold text-lg">{surah.englishName}</p>
-                  <p className="font-arabic text-xl text-green-200">{surah.name}</p>
+                  <p className="font-semibold text-xl text-green-50 group-hover:text-white transition-colors duration-300">{surah.englishName}</p>
+                  <p className="font-arabic text-2xl text-green-200 group-hover:text-green-100 transition-colors duration-300">{surah.name}</p>
                 </div>
-                <span className="text-sm text-green-300">{surah.numberOfVerses} Verses</span>
+                <span className="text-base text-green-300 group-hover:text-green-200 transition-colors duration-300">{surah.numberOfVerses} Verses</span>
               </button>
             </li>
           ))
         ) : (
-          <p className="text-center text-green-300 col-span-full">No surahs found matching your search.</p>
+          <p className="text-center text-green-300 col-span-full py-8 text-lg">No surahs found matching your search.</p>
         )}
       </ul>
     </div>
@@ -663,13 +678,13 @@ const SurahSelector = ({ onSelectSurah }) => {
 };
 
 // QuranReader component for displaying and interacting with Quranic verses.
-const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay }) => {
+const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, selectedReciterAlquranCloudId, showNotification, onBackToHome }) => { // Added onBackToHome prop
   const [surahVerses, setSurahVerses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [highlightedVerseId, setHighlightedVerseId] = useState(null);
-  const [selectedFont, setSelectedFont] = useState('Quranic (Default)'); // Default font family
-  const [fontSize, setFontSize] = useState('text-xl'); // Default Tailwind font size class
+  const [selectedFont, setSelectedFont] = useState(fontFamilies[0].name); // Default to first font
+  const [fontSize, setFontSize] = useState(fontSizes[1].className); // Default to Medium font size
 
   const audioRef = useRef(new Audio());
   audioRef.current.volume = 0.8; // Set default audio volume
@@ -695,25 +710,25 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
         const response = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/editions/quran-simple,en.sahih`);
         const data = await response.json();
 
-        if (data.code === 200 && data.data && data.data[0] && data.data[1]) {
+        // Improved check for data validity
+        if (data.code === 200 && data.data && data.data.length >= 1) { // Check for at least Arabic data
           const arabicVerses = data.data[0].ayahs;
-          const translationVerses = data.data[1] ? data.data[1].ayahs : []; // Handle potential missing translation edition
+          const translationVerses = data.data[1] ? data.data[1].ayahs : []; // Safely get translation if available
 
-          // Combine Arabic text, translation, and audio URL for each verse.
           const combinedVerses = arabicVerses.map((arabicAyah, index) => ({
             id: arabicAyah.numberInSurah,
             arabic: arabicAyah.text,
+            // Audio is fetched on demand, so no need to store it here from this endpoint
             translation: translationVerses[index] ? translationVerses[index].text : 'Translation not available.',
-            audio: arabicAyah.audio,
           }));
           setSurahVerses(combinedVerses);
         } else {
-          setError("Failed to load Surah verses. Please try again.");
-          console.error("API Error:", data);
+          setError("Failed to load Surah verses. Data structure unexpected from API.");
+          console.error("API Error fetching surah text:", data); // More specific error message
         }
       } catch (err) {
-        console.error("Fetch error:", err);
-        setError("Could not connect to Quran API. Please check your internet connection.");
+        console.error("Fetch error for surah text:", err);
+        setError("Could not connect to Quran API for surah text. Please check your internet connection.");
       } finally {
         setIsLoading(false);
       }
@@ -738,12 +753,46 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
   }, []);
 
   // Callback to play verse audio and update last read position.
-  const playVerseAudio = useCallback((verseId, audioUrl) => {
+  const playVerseAudio = useCallback(async (verseId) => { // Removed audioUrl from here
+    // Use the passed selected reciter, or fallback to the first featured reciter
+    const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
+
+    if (!reciterToUse) {
+        showNotification("Please select a reciter from the Home page or Listen page first.", 'error');
+        return;
+    }
+
     setHighlightedVerseId(verseId); // Highlight the currently playing verse.
-    audioRef.current.src = audioUrl;
-    audioRef.current.play().catch(error => console.error("Error playing audio:", error));
+    audioRef.current.pause(); // Pause any currently playing audio
+    audioRef.current.src = ''; // Clear source
+
+    const audioApiUrl = `https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verseId}/${reciterToUse}`;
+    console.log("QuranReader: Attempting to fetch audio from:", audioApiUrl); // DEBUG: Log the URL
+
+    try {
+        // Fetch audio URL for the specific verse and selected reciter
+        const response = await fetch(audioApiUrl);
+        const data = await response.json();
+
+        if (data.code === 200 && data.data && data.data.audio) {
+            console.log("QuranReader: Audio URL received:", data.data.audio); // DEBUG: Log the audio URL
+            audioRef.current.src = data.data.audio;
+            audioRef.current.play().catch(error => {
+                console.error("QuranReader: Error playing audio:", error);
+                showNotification("Failed to play audio. Your browser might block autoplay, or there's a network issue.", 'error');
+            });
+        } else {
+            console.error("QuranReader: Audio not found in API response:", data);
+            showNotification("Audio not available for this verse or reciter. Check console for details.", 'error');
+        }
+    } catch (error) {
+        console.error("QuranReader: Fetch audio error:", error);
+        setError("Could not fetch audio. Check your internet connection."); // Set error for display
+        showNotification("Could not fetch audio. Check your internet connection.", 'error');
+    }
+
     onVerseAudioPlay(selectedSurahId, verseId); // Inform parent about audio play for last read tracking.
-  }, [onVerseAudioPlay, selectedSurahId]);
+  }, [onVerseAudioPlay, selectedSurahId, selectedReciterAlquranCloudId, showNotification]); // Dependencies updated
 
   // Handler for navigating to the previous surah.
   const handlePrevSurah = () => {
@@ -765,1263 +814,1504 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
 
   // Handler for changing font size.
   const handleFontSizeChange = (action) => {
-    // Defines a list of Tailwind CSS text size classes.
     const currentSizes = fontSizes.map(f => f.className);
     const currentIndex = currentSizes.indexOf(fontSize);
-    let newIndex = currentIndex;
 
     if (action === 'increase' && currentIndex < currentSizes.length - 1) {
-        newIndex = currentIndex + 1;
+      setFontSize(currentSizes[currentIndex + 1]);
     } else if (action === 'decrease' && currentIndex > 0) {
-        newIndex = currentIndex - 1;
+      setFontSize(currentSizes[currentIndex - 1]);
     }
-    setFontSize(currentSizes[newIndex]); // Update font size state.
   };
 
   // Handler for changing font family.
-  const handleFontFamilyChange = (fontName) => {
-    setSelectedFont(fontName); // Update font family state.
+  const handleFontFamilyChange = (e) => {
+    setSelectedFont(e.target.value);
   };
 
-  // Loading state display.
   if (isLoading) {
-    return <p className="text-center text-green-200 p-8">Loading Surah...</p>;
+    return <div className="text-center text-green-200 text-xl py-8 animate-pulse">Loading Surah...</div>;
   }
 
-  // Error state display.
   if (error) {
     return (
-      <div className="text-center text-red-300 p-8 bg-red-900 rounded-xl shadow-md">
-        <p>Error: {error}</p>
-        <button onClick={onBackToSurahList} className="mt-4 bg-red-700 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-full transition duration-300">
-          Back to Surah List
-        </button>
-      </div>
+        <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+            <div className="flex justify-between items-center mb-6">
+                <button
+                    onClick={onBackToSurahList}
+                    className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+                >
+                    <ArrowLeft size={20} className="mr-2" />
+                    Back
+                </button>
+                <button
+                    onClick={onBackToHome}
+                    className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+                >
+                    <Home size={20} className="mr-2" />
+                    Home
+                </button>
+                <div className="w-20"></div> {/* Spacer */}
+            </div>
+            <div className="text-center text-red-400 text-xl py-8">Error: {error}</div>
+        </div>
     );
   }
 
-  // No verses found state display.
-  if (!surahVerses.length) {
-    return <p className="text-center text-green-200 p-8">No verses found for this Surah.</p>;
-  }
-
   return (
-    <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-      <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToSurahList}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-            <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-            <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-          </svg>
-          Back to Surahs
+          <ArrowLeft size={20} className="mr-2" />
+          Back
         </button>
-        <h2 className="text-3xl font-bold text-green-50 text-center">{selectedSurahMeta?.englishName}</h2>
+        <button
+          onClick={onBackToHome} // <-- ADDED HOME BUTTON
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-3xl md:text-4xl font-bold text-center flex-grow text-green-100">
+          {selectedSurahMeta?.englishName} <span className="font-arabic text-4xl md:text-5xl ml-2 text-green-200">{selectedSurahMeta?.name}</span>
+        </h2>
+        <div className="flex space-x-2">
+          <button
+            onClick={handlePrevSurah}
+            disabled={selectedSurahId === 1}
+            className="bg-green-700 hover:bg-green-600 px-3 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={handleNextSurah}
+            disabled={selectedSurahId === quranData.surahs.length}
+            className="bg-green-700 hover:bg-green-600 px-3 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Font Controls */}
+      <div className="flex flex-wrap justify-center items-center gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
         <div className="flex items-center space-x-2">
-          {/* Font Size Controls */}
-          <button
-            onClick={() => handleFontSizeChange('decrease')}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            A-
-          </button>
-          <button
-            onClick={() => handleFontSizeChange('increase')}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            A+
-          </button>
-          {/* Font Family Dropdown */}
+          <label htmlFor="font-family" className="text-green-200 font-medium">Font:</label>
           <select
+            id="font-family"
             value={selectedFont}
-            onChange={(e) => handleFontFamilyChange(e.target.value)}
-            className="bg-green-700 text-green-50 px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            onChange={handleFontFamilyChange}
+            className="p-2 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400 border border-green-500 shadow-sm"
           >
             {fontFamilies.map(font => (
-                <option key={font.name} value={font.name}>{font.name}</option>
+              <option key={font.name} value={font.name}>
+                {font.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <label className="text-green-200 font-medium">Font Size:</label>
+          <button
+            onClick={() => handleFontSizeChange('decrease')}
+            className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-md text-green-50 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
+          >
+            -
+          </button>
+          <span className="text-green-50 text-xl font-bold">{fontSize.replace('text-', '')}</span> {/* Display current size */}
+          <button
+            onClick={() => handleFontSizeChange('increase')}
+            className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-md text-green-50 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Verses Display */}
+      <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar p-2">
+        {surahVerses.map((verse) => (
+          <div
+            key={verse.id}
+            className={`p-5 rounded-2xl shadow-lg transition-all duration-300 border ${
+              highlightedVerseId === verse.id ? 'bg-green-600 border-green-400 animate-pulse-once' : 'bg-green-700 border-green-700 hover:shadow-xl'
+            }`}
+          >
+            <div className="flex justify-between items-start mb-3">
+              <p className={`font-arabic text-right leading-loose ${fontSize} ${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'} text-green-50 font-medium`}>
+                {verse.arabic} <span className="text-sm opacity-70 text-green-200">({verse.id})</span>
+              </p>
+              <button
+                onClick={() => onToggleBookmark(selectedSurahId, verse.id)}
+                className="ml-4 text-yellow-400 hover:text-yellow-300 focus:outline-none p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors"
+                title={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "Remove Bookmark" : "Add Bookmark"}
+              >
+                <Bookmark size={24} fill={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "currentColor" : "none"} strokeWidth={1.5} />
+              </button>
+            </div>
+            <p className="text-green-100 text-left mt-2 text-base md:text-lg">{verse.translation}</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => {
+                  playVerseAudio(verse.id); // Now only pass verse.id
+                  onVerseRead(selectedSurahId, verse.id); // Mark verse as read
+                }}
+                className="bg-green-600 hover:bg-green-500 px-5 py-2 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
+              >
+                <Play size={20} className="mr-2" fill="currentColor" />
+                Play
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Placeholder Components for Navigation ---
+// These components are placeholders. You can expand them with full functionality later.
+
+const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, selectedReciterEnglishName, selectedReciterAlquranCloudId, showNotification }) => { // Added showNotification prop
+  const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
+  const audioRef = useRef(new Audio());
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedSurahId, setSelectedSurahId] = useState(1); // Default to Al-Fatiha
+  const [selectedVerseId, setSelectedVerseId] = useState(1); // Default to first verse
+
+  const selectedSurahMeta = quranData.surahs.find(s => s.id === selectedSurahId);
+
+  // Function to fetch and play audio for a specific verse
+  const playVerse = useCallback(async (surahId, verseId) => {
+    // Use the passed selectedReciterAlquranCloudId, or default to the first featured reciter
+    const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
+
+    if (!reciterToUse) {
+        showNotification("No reciter available to play audio. Please select one from Home.", 'error');
+        return;
+    }
+
+    setIsLoadingAudio(true);
+    setError(null);
+    setIsPlaying(false);
+
+    const audioApiUrl = `https://api.alquran.cloud/v1/ayah/${surahId}:${verseId}/${reciterToUse}`;
+    console.log("ListenPage: Attempting to fetch audio from:", audioApiUrl); // DEBUG: Log the URL
+
+    try {
+      const response = await fetch(audioApiUrl);
+      const data = await response.json();
+
+      // --- IMPROVED ERROR CHECKING FOR LISTEN PAGE AUDIO API RESPONSE ---
+      if (data.code === 200 && data.data && data.data.audio) {
+        console.log("ListenPage: Audio URL received:", data.data.audio); // DEBUG: Log the audio URL
+        setCurrentAudioUrl(data.data.audio);
+        audioRef.current.src = data.data.audio;
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(err => {
+          console.error("ListenPage: Error playing audio:", err);
+          setError("Failed to play audio. Your browser might block autoplay, or there's a network issue.");
+          showNotification("Failed to play audio. Browser might block autoplay, or network issue.", 'error'); // Added notification
+          setIsPlaying(false);
+        });
+      } else {
+        setError("Audio not found for this verse with the selected reciter. Try another reciter.");
+        console.error("ListenPage: Audio not found in API response:", data);
+        showNotification("Audio not found for this verse or reciter.", 'error'); // Added notification
+      }
+    } catch (err) {
+      console.error("ListenPage: Fetch error:", err);
+      setError("Could not fetch audio. Check internet connection or API status.");
+      showNotification("Could not fetch audio. Check internet connection.", 'error'); // Added notification
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  }, [selectedReciterAlquranCloudId, showNotification]); // Dependency changed to ensure re-creation if reciter changes
+
+  // Effect to manage audio playback state
+  useEffect(() => {
+    const audio = audioRef.current;
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => setIsPlaying(false);
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      if (currentAudioUrl) {
+        audioRef.current.play().catch(err => console.error("Error resuming play:", err));
+      } else {
+        // If no audio loaded, try to play the default first verse
+        playVerse(selectedSurahId, selectedVerseId);
+      }
+    }
+  };
+
+  const handleSurahChange = (e) => {
+    setSelectedSurahId(parseInt(e.target.value));
+    setSelectedVerseId(1); // Reset verse to 1 when surah changes
+    setCurrentAudioUrl(null); // Clear current audio
+    setIsPlaying(false);
+    audioRef.current.pause();
+  };
+
+  const handleVerseChange = (e) => {
+    setSelectedVerseId(parseInt(e.target.value));
+    setCurrentAudioUrl(null); // Clear current audio
+    setIsPlaying(false);
+    audioRef.current.pause();
+  };
+
+  // Automatically play selected verse when surah/verse/reciter changes
+  useEffect(() => {
+    if (selectedReciterAlquranCloudId && selectedSurahId && selectedVerseId) {
+      playVerse(selectedSurahId, selectedVerseId);
+    }
+  }, [selectedReciterAlquranCloudId, selectedSurahId, selectedVerseId, playVerse]);
+
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome} // <-- ADDED HOME BUTTON
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Listen Quran</h2>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      <div className="text-center mb-6">
+        {selectedReciterName ? (
+          <p className="text-xl text-green-100">Reciter: <span className="font-arabic font-semibold text-green-50">{selectedReciterName}</span> (<span className="text-green-200">{selectedReciterEnglishName}</span>)</p>
+        ) : (
+          <p className="text-xl text-red-300 font-medium">No reciter selected. Please select one from the Home page.</p>
+        )}
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <label htmlFor="surah-select" className="block text-green-200 font-medium mb-2">Select Surah:</label>
+          <select
+            id="surah-select"
+            value={selectedSurahId}
+            onChange={handleSurahChange}
+            className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          >
+            {quranData.surahs.map(surah => (
+              <option key={surah.id} value={surah.id}>
+                {surah.englishName} ({surah.name})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex-1">
+          <label htmlFor="verse-select" className="block text-green-200 font-medium mb-2">Select Verse:</label>
+          <select
+            id="verse-select"
+            value={selectedVerseId}
+            onChange={handleVerseChange}
+            className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          >
+            {Array.from({ length: selectedSurahMeta?.numberOfVerses || 0 }, (_, i) => i + 1).map(verseNum => (
+              <option key={verseNum} value={verseNum}>
+                Verse {verseNum}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
-      <p className="text-xl text-green-200 text-center mt-3 mb-6 font-semibold">
-        {selectedSurahMeta?.name} ({selectedSurahMeta?.numberOfVerses} Verses)
-      </p>
+      {isLoadingAudio && (
+        <div className="text-center text-green-300 text-lg mb-4 animate-pulse">Loading audio...</div>
+      )}
+      {error && (
+        <div className="text-center text-red-400 text-lg mb-4">Error: {error}</div>
+      )}
 
-      <div className="space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar p-3">
-        {surahVerses.map((verse) => {
-          const isBookmarked = bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id);
-          return (
-            <div
-              key={verse.id}
-              className={`p-4 rounded-lg transition-all duration-300 border border-green-700 ${
-                highlightedVerseId === verse.id ? 'bg-green-700 shadow-lg scale-[1.01]' : 'hover:bg-green-700 shadow-sm'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-base font-medium text-green-300 bg-green-900 px-3 py-1 rounded-full">Verse {verse.id}</span>
-                <div className="flex items-center space-x-2">
-                  {verse.audio && (
-                    <button
-                      onClick={() => playVerseAudio(verse.id, verse.audio)}
-                      className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      title={`Play Verse ${verse.id}`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                        <path d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11V15.89a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84Z" />
-                      </svg>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onToggleBookmark({
-                      surahId: selectedSurahId,
-                      surahName: selectedSurahMeta.englishName,
-                      verseId: verse.id,
-                      verseArabic: verse.arabic,
-                      verseTranslation: verse.translation
-                    })}
-                    className={`p-2 rounded-full transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 ${
-                      isBookmarked ? 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-400' : 'bg-green-600 hover:bg-green-500 text-white focus:ring-green-400'
-                    }`}
-                    title={isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M10 2.5a5.5 5.5 0 0 0-5.5 5.5c0 1.637.525 3.197 1.396 4.542L10 17.5l4.104-5.458C14.975 11.197 15.5 9.637 15.5 8A5.5 5.5 0 0 0 10 2.5ZM8.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              {/* Dynamic Arabic Font and Size */}
-              <p className={`${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'} ${fontSize} text-right mb-2 leading-relaxed`}>
-                {verse.arabic}
-              </p>
-              {/* Translation with a slightly smaller relative size */}
-              <p className={`text-base text-green-200 text-left`}>
-                {verse.translation}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Navigation buttons for previous/next surah */}
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-center items-center gap-4 mt-6">
         <button
-          onClick={handlePrevSurah}
-          disabled={selectedSurahId === 1}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
+          onClick={togglePlayPause}
+          disabled={isLoadingAudio} // Removed !selectedReciterAlquranCloudId as it's handled by playVerse
+          className="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-            <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clipRule="evenodd" />
-          </svg>
-          Previous Surah
-        </button>
-        <button
-          onClick={handleNextSurah}
-          disabled={selectedSurahId === quranData.surahs.length}
-          className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          Next Surah
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-2">
-            <path fillRule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
-          </svg>
+          {isPlaying ? (
+            <>
+              <Pause size={24} className="mr-2" fill="currentColor" />
+              Pause
+            </>
+          ) : (
+            <>
+              <Play size={24} className="mr-2" fill="currentColor" />
+              Play
+            </>
+          )}
         </button>
       </div>
     </div>
   );
 };
 
-// BookmarkedVerses component to display and manage saved verses.
-const BookmarkedVerses = ({ bookmarkedVerses, onRemoveBookmark, onReadBookmarkedSurah, onBackToDashboard }) => {
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50 text-center">Bookmarked Verses</h2>
-                <div></div> {/* Placeholder for alignment */}
-            </div>
+const PracticePage = ({ onBackToHome, showNotification }) => {
+  const [selectedSurahId, setSelectedSurahId] = useState(1); // Default to Al-Fatiha
+  const [selectedVerseId, setSelectedVerseId] = useState(1); // Default to first verse
+  const [surahVerses, setSurahVerses] = useState([]);
+  const [isLoadingVerses, setIsLoadingVerses] = useState(false);
+  const [errorFetchingVerses, setErrorFetchingVerses] = useState(null);
 
-            {bookmarkedVerses.length === 0 ? (
-                <p className="text-center text-green-300 p-8">You have no bookmarked verses yet.</p>
-            ) : (
-                <ul className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar p-3">
-                    {bookmarkedVerses.map((bookmark, index) => (
-                        <li key={index} className="bg-green-700 p-4 rounded-lg shadow-sm flex flex-col hover:shadow-md transition-shadow duration-200">
-                            <div className="flex justify-between items-center mb-2">
-                                <p className="font-semibold text-lg text-green-50">
-                                    {bookmark.surahName}: Verse {bookmark.verseId}
-                                </p>
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => onReadBookmarkedSurah(bookmark.surahId)}
-                                        className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        title="Go to Surah"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                            <path d="M10 2a.75.75 0 0 1 .75.75V10h7.25a.75.75 0 0 1 0 1.5H10.75V19a.75.75 0 0 1-1.5 0v-7.25H2.75a.75.75 0 0 1 0-1.5H9.25V2.75A.75.75 0 0 1 10 2Z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => onRemoveBookmark(bookmark)}
-                                        className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-                                        title="Remove Bookmark"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                            <path fillRule="evenodd" d="M8.79 3.828a.75.75 0 0 0-1.58 0L.982 13.086A.75.75 0 0 0 1.67 14.25h16.66a.75.75 0 0 0 .689-1.164L8.79 3.828ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Z" clipRule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="font-arabic text-2xl text-right mb-2 text-green-100">
-                                {bookmark.verseArabic}
-                            </p>
-                            <p className="text-sm text-green-200 text-left">
-                                {bookmark.verseTranslation}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
-};
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState(null);
 
-// PrayerTimesDisplay component to show mock prayer times and countdown.
-const PrayerTimesDisplay = () => {
-    const [prayerTimes, setPrayerTimes] = useState(getPrayerTimes());
-    const [currentTime, setCurrentTime] = useState(new Date());
+  const audioPlaybackRef = useRef(new Audio());
+  const [isPlayingRecording, setIsPlayingRecording] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0); // Default to normal speed
 
-    // Update current time and recalculate prayer times every second.
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-            setPrayerTimes(getPrayerTimes());
-        }, 1000);
+  const selectedSurahMeta = quranData.surahs.find(s => s.id === selectedSurahId);
 
-        return () => clearInterval(timer); // Cleanup interval on component unmount.
-    }, []);
+  // Effect to fetch surah verses for display
+  useEffect(() => {
+    const fetchVerseText = async () => {
+      setIsLoadingVerses(true);
+      setErrorFetchingVerses(null);
+      setSurahVerses([]);
 
-    return (
-        <div className="bg-green-700 p-6 rounded-xl shadow-lg text-green-50">
-            <h3 className="text-2xl font-bold mb-4 text-center">Today's Prayer Times</h3>
-            <p className="text-center text-lg mb-6">Current Time: {format(currentTime, 'p')}</p>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-                {prayerTimes.times.map(p => (
-                    <div key={p.name} className="flex items-center justify-between bg-green-600 p-3 rounded-lg shadow-sm">
-                        <span className="text-xl mr-2">{p.icon}</span>
-                        <span className="font-semibold text-lg">{p.name}</span>
-                        <span className="text-lg">{format(p.time, 'p')}</span>
-                    </div>
-                ))}
-            </div>
-            {prayerTimes.nextPrayer && (
-                <div className="text-center bg-green-600 p-4 rounded-lg shadow-md mt-4">
-                    <p className="text-xl font-bold text-green-200">Next Prayer: {prayerTimes.nextPrayer.name}</p>
-                    <p className="text-xl text-green-100">Time until: {prayerTimes.timeToNextPrayer}</p>
-                </div>
-            )}
-        </div>
-    );
-};
+      if (!selectedSurahId || !selectedVerseId) {
+        setIsLoadingVerses(false);
+        return;
+      }
 
+      try {
+        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${selectedVerseId}/editions/quran-simple,en.sahih`);
+        const data = await response.json();
 
-// Quiz component for interactive multiple-choice questions.
-const Quiz = ({ onBackToDashboard, onEarnPoints, showNotification, quranData }) => {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
-    const [score, setScore] = useState(0);
-    const [showResults, setShowResults] = useState(false);
-    const [quizStarted, setQuizStarted] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState("Combined");
-    const [currentQuizQuestions, setCurrentQuizQuestions] = useState([]);
+        // --- IMPROVED ERROR CHECKING FOR PRACTICE PAGE API RESPONSE ---
+        // Ensure data.data exists, is an array, and has at least two elements (Arabic and Translation)
+        // Also check if ayahs property exists and is an array with at least one element
+        if (data.code === 200 && data.data && Array.isArray(data.data) && data.data.length >= 2 &&
+            data.data[0].ayahs && Array.isArray(data.data[0].ayahs) && data.data[0].ayahs.length > 0 &&
+            data.data[1].ayahs && Array.isArray(data.data[1].ayahs) && data.data[1].ayahs.length > 0) {
 
-    // Effect to reset and shuffle questions when category changes or quiz restarts.
-    useEffect(() => {
-        let questionsToUse = [];
-        if (selectedCategory === "Combined") {
-            questionsToUse = [...quizQuestions]; // Use all questions
+          const arabicAyah = data.data[0].ayahs[0]; // First ayah of the first edition (arabic)
+          const translationAyah = data.data[1].ayahs[0]; // First ayah of the second edition (translation)
+
+          setSurahVerses([{
+            id: arabicAyah.numberInSurah,
+            arabic: arabicAyah.text,
+            translation: translationAyah ? translationAyah.text : 'Translation not available.',
+          }]);
         } else {
-            questionsToUse = quizQuestions.filter(q => q.category === selectedCategory);
+          setErrorFetchingVerses("Failed to load verse text. API response was unexpected or incomplete.");
+          console.error("API Error fetching verse text for practice:", data);
+          showNotification("Failed to load verse text for practice. API response issue.", 'error');
         }
-        // Shuffle questions randomly.
-        setCurrentQuizQuestions(questionsToUse.sort(() => 0.5 - Math.random()));
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setSelectedAnswer(null);
-        setShowResults(false);
-    }, [selectedCategory, quizStarted]); // Dependencies: category or quiz start trigger.
-
-    // Handler for selecting an answer.
-    const handleAnswerSelect = (answer) => {
-        if (selectedAnswer === null) { // Prevent changing answer after selection.
-            setSelectedAnswer(answer);
-            if (answer === currentQuizQuestions[currentQuestionIndex].correctAnswer) {
-                setScore(score + 1);
-                onEarnPoints(10); // Award points for correct answer.
-                showNotification("Correct! +10 points!", "success");
-            } else {
-                showNotification("Incorrect. Try again!", "error");
-            }
-        }
+      } catch (err) {
+        console.error("Fetch error for verse text for practice:", err);
+        setErrorFetchingVerses("Could not connect to Quran API for verse text. Check internet connection.");
+        showNotification("Could not connect to Quran API for verse text.", 'error');
+      } finally {
+        setIsLoadingVerses(false);
+      }
     };
 
-    // Handler for moving to the next question or showing results.
-    const handleNextQuestion = () => {
-        if (currentQuestionIndex < currentQuizQuestions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setSelectedAnswer(null); // Reset selected answer for next question.
-        } else {
-            setShowResults(true); // Show results when all questions are answered.
+    fetchVerseText();
+  }, [selectedSurahId, selectedVerseId, showNotification]); // Added showNotification to dependencies
+
+  // Recording logic
+  const startRecording = async () => {
+    setRecordedAudioUrl(null); // Clear previous recording
+    setAudioChunks([]);
+    setIsPlayingRecording(false);
+    audioPlaybackRef.current.pause(); // Stop any playback
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Prefer 'audio/webm' for broader browser support and smaller file sizes,
+      // but if that fails, consider 'audio/wav' as a fallback if needed for specific issues.
+      const options = { mimeType: 'audio/webm' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.warn('audio/webm not supported, trying audio/ogg');
+        options.mimeType = 'audio/ogg';
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          console.warn('audio/ogg not supported, trying audio/wav');
+          options.mimeType = 'audio/wav';
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            showNotification("Your browser does not support any common audio recording formats.", 'error');
+            return;
+          }
         }
-    };
+      }
 
-    // Handler for restarting the quiz.
-    const handleRestartQuiz = () => {
-        setQuizStarted(false); // Go back to category selection.
-        setSelectedCategory("Combined"); // Reset to combined category.
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setSelectedAnswer(null);
-        setShowResults(false);
-    };
+      const recorder = new MediaRecorder(stream, options);
+      setMediaRecorder(recorder);
 
-    // Render quiz category selection screen.
-    if (!quizStarted) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">Test Your Knowledge!</h2>
-                <p className="text-lg mb-4">Choose a quiz category to begin:</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    {quizCategories.map(category => (
-                        <button
-                            key={category}
-                            onClick={() => {
-                                setSelectedCategory(category);
-                                setQuizStarted(true);
-                            }}
-                            className={`p-4 rounded-lg font-semibold transition duration-300 ${
-                                selectedCategory === category
-                                    ? 'bg-green-600 text-white shadow-lg'
-                                    : 'bg-green-700 hover:bg-green-600 text-green-100 shadow-md'
-                            } focus:outline-none focus:ring-2 focus:ring-green-400`}
-                        >
-                            {category === "Combined" ? "All Topics" : category}
-                        </button>
-                    ))}
-                </div>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        );
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) { // Only add if data exists
+          setAudioChunks((prev) => [...prev, event.data]);
+        }
+      };
+
+      recorder.onstop = () => {
+        if (audioChunks.length === 0) {
+          showNotification("No audio recorded. Make sure your microphone is working.", 'error');
+          return;
+        }
+        const audioBlob = new Blob(audioChunks, { type: recorder.mimeType }); // Use recorder's actual mimeType
+        const url = URL.createObjectURL(audioBlob);
+        setRecordedAudioUrl(url);
+        showNotification("Recording finished!", 'success');
+      };
+
+      recorder.onerror = (event) => { // Added error handling for MediaRecorder
+        console.error("MediaRecorder error:", event.error);
+        showNotification(`Recording error: ${event.error.name}`, 'error');
+        setIsRecording(false);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      showNotification("Recording started...", 'info');
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      showNotification("Microphone access denied or unavailable. Please allow microphone access in browser settings.", 'error');
     }
+  };
 
-    // Render message if no questions are available for the selected category.
-    if (currentQuizQuestions.length === 0 && quizStarted) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">No Questions Available</h2>
-                <p className="text-lg mb-4">There are no questions for the selected category. Please choose another.</p>
-                <button
-                    onClick={handleRestartQuiz}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    Choose Another Category
-                </button>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        );
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop()); // Stop microphone track
+      setIsRecording(false);
+      setMediaRecorder(null);
     }
+  };
 
-    const currentQuestion = currentQuizQuestions[currentQuestionIndex];
-    // Find surah metadata if the question is surah-specific.
-    const surahMeta = currentQuestion.surahId ? quranData.surahs.find(s => s.id === currentQuestion.surahId) : null;
+  // Playback logic
+  const playRecordedAudio = useCallback(() => {
+    if (recordedAudioUrl) {
+      audioPlaybackRef.current.src = recordedAudioUrl;
+      audioPlaybackRef.current.playbackRate = playbackRate;
+      audioPlaybackRef.current.load(); // Added load() to ensure source is ready
+      audioPlaybackRef.current.play().then(() => setIsPlayingRecording(true)).catch(err => {
+        console.error("Error playing recorded audio:", err);
+        showNotification("Failed to play recording. Your browser might block autoplay, or the audio format is not supported.", 'error');
+      });
+    } else {
+      showNotification("No recording available to play.", 'info');
+    }
+  }, [recordedAudioUrl, playbackRate, showNotification]);
 
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50 text-center">Quiz Time!</h2>
-                <span className="text-xl font-bold">Score: {score}</span>
-            </div>
+  const pauseRecordedAudio = () => {
+    audioPlaybackRef.current.pause();
+    setIsPlayingRecording(false);
+  };
 
-            {showResults ? (
-                // Display quiz results when finished.
-                <div className="text-center p-8">
-                    <h3 className="text-4xl font-bold text-green-300 mb-4">Quiz Complete!</h3>
-                    <p className="text-2xl text-green-100 mb-6">You scored {score} out of {currentQuizQuestions.length}!</p>
-                    <button
-                        onClick={handleRestartQuiz}
-                        className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-3 px-8 rounded-full transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        Play Again
-                    </button>
-                </div>
-            ) : (
-                // Display current question and choices.
-                <div>
-                    <p className="text-lg text-green-200 mb-2">Question {currentQuestionIndex + 1} of {currentQuizQuestions.length}</p>
-                    {surahMeta && <p className="text-md text-green-300 italic mb-4">Category: {currentQuestion.category} - From Surah {surahMeta.englishName}</p>}
-                    {!surahMeta && <p className="text-md text-green-300 italic mb-4">Category: {currentQuestion.category}</p>}
-                    <h3 className="text-2xl md:text-3xl font-semibold mb-6 leading-relaxed">
-                        {currentQuestion.question}
-                    </h3>
+  // Effect for audio playback cleanup
+  useEffect(() => {
+    const audio = audioPlaybackRef.current;
+    const handleEnded = () => setIsPlayingRecording(false);
+    audio.addEventListener('ended', handleEnded);
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+      if (recordedAudioUrl) {
+        URL.revokeObjectURL(recordedAudioUrl); // Clean up object URL
+      }
+    };
+  }, [recordedAudioUrl]);
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {currentQuestion.choices.map((choice, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleAnswerSelect(choice)}
-                                className={`p-4 rounded-lg text-left font-medium transition duration-300 ${
-                                    selectedAnswer === choice
-                                        ? (choice === currentQuestion.correctAnswer ? 'bg-green-600 text-white shadow-lg border border-green-400' : 'bg-red-600 text-white shadow-lg border border-red-400')
-                                        : 'bg-green-700 hover:bg-green-600 text-green-100 shadow-md hover:shadow-lg'
-                                } ${selectedAnswer !== null && 'cursor-not-allowed'} focus:outline-none focus:ring-2 focus:ring-green-400`}
-                                disabled={selectedAnswer !== null} // Disable buttons after an answer is selected.
-                            >
-                                {choice}
-                            </button>
-                        ))}
-                    </div>
+  // Handlers for dropdowns
+  const handleSurahChange = (e) => {
+    setSelectedSurahId(parseInt(e.target.value));
+    setSelectedVerseId(1); // Reset verse to 1 when surah changes
+    setRecordedAudioUrl(null); // Clear recording on surah change
+    setIsPlayingRecording(false);
+    audioPlaybackRef.current.pause();
+  };
 
-                    <div className="mt-8 text-center">
-                        <button
-                            onClick={handleNextQuestion}
-                            disabled={selectedAnswer === null} // Enable "Next" button only after an answer.
-                            className={`py-3 px-8 rounded-full font-semibold transition duration-300 shadow-md ${
-                                selectedAnswer !== null
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400'
-                                    : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                            }`}
-                        >
-                            {currentQuestionIndex < currentQuizQuestions.length - 1 ? 'Next Question' : 'View Results'}
-                        </button>
-                    </div>
-                </div>
-            )}
+  const handleVerseChange = (e) => {
+    setSelectedVerseId(parseInt(e.target.value));
+    setRecordedAudioUrl(null); // Clear recording on verse change
+    setIsPlayingRecording(false);
+    audioPlaybackRef.current.pause();
+  };
+
+  const handlePlaybackRateChange = (e) => {
+    setPlaybackRate(parseFloat(e.target.value));
+    if (audioPlaybackRef.current.src) {
+      audioPlaybackRef.current.playbackRate = parseFloat(e.target.value);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Practice Recitation</h2>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      <p className="text-center text-lg text-green-200 mb-6">
+        Select a verse, record your recitation, and listen back to improve!
+      </p>
+
+      {/* Surah and Verse Selection */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
+        <div className="flex-1">
+          <label htmlFor="surah-select-practice" className="block text-green-200 font-medium mb-2">Select Surah:</label>
+          <select
+            id="surah-select-practice"
+            value={selectedSurahId}
+            onChange={handleSurahChange}
+            className="w-full p-3 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          >
+            {quranData.surahs.map(surah => (
+              <option key={surah.id} value={surah.id}>
+                {surah.englishName} ({surah.name})
+              </option>
+            ))}
+          </select>
         </div>
-    );
-};
+        <div className="flex-1">
+          <label htmlFor="verse-select-practice" className="block text-green-200 font-medium mb-2">Select Verse:</label>
+          <select
+            id="verse-select-practice"
+            value={selectedVerseId}
+            onChange={handleVerseChange}
+            className="w-full p-3 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          >
+            {Array.from({ length: selectedSurahMeta?.numberOfVerses || 0 }, (_, i) => i + 1).map(verseNum => (
+              <option key={verseNum} value={verseNum}>
+                Verse {verseNum}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-// --- NEW COMPONENT: TasbeehCounter ---
-const TasbeehCounter = ({ onBackToDashboard, showNotification, onEarnPoints }) => {
-    const [count, setCount] = useState(0); // This count will persist as long as the component is mounted
-    const [target, setTarget] = useState(0);
-    const [showTargetInput, setShowTargetInput] = useState(false);
-    const targetInputRef = useRef(null);
-    const lastAwardedThousand = useRef(0); // To track points for every 1000 counts
+      {isLoadingVerses ? (
+        <div className="text-center text-green-300 text-lg py-4 animate-pulse">Loading verse text...</div>
+      ) : errorFetchingVerses ? (
+        <div className="text-center text-red-400 text-lg py-4">Error: {errorFetchingVerses}</div>
+      ) : (
+        <div className="bg-green-700 p-6 rounded-2xl shadow-lg mb-6 border border-green-600">
+          {surahVerses.length > 0 ? (
+            <>
+              <p className="font-arabic text-right text-3xl md:text-4xl leading-loose text-green-50 font-medium mb-3">
+                {surahVerses[0].arabic} <span className="text-base opacity-70 text-green-200">({surahVerses[0].id})</span>
+              </p>
+              <p className="text-green-100 text-left text-base md:text-lg">{surahVerses[0].translation}</p>
+            </>
+          ) : (
+            <p className="text-center text-green-300 text-lg">No verse selected or loaded.</p>
+          )}
+        </div>
+      )}
 
-    const increment = () => {
-        setCount(prevCount => {
-            const newCount = prevCount + 1;
+      {/* Recording Controls */}
+      <div className="flex justify-center items-center gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
+        {!isRecording ? (
+          <button
+            onClick={startRecording}
+            className="bg-red-600 hover:bg-red-500 px-6 py-3 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400 focus:ring-opacity-50 flex items-center"
+          >
+            <CircleDot size={24} className="mr-2" fill="currentColor" />
+            Start Recording
+          </button>
+        ) : (
+          <button
+            onClick={stopRecording}
+            className="bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-opacity-50 flex items-center animate-pulse"
+          >
+            <Square size={24} className="mr-2" fill="currentColor" />
+            Stop Recording
+          </button>
+        )}
+      </div>
 
-            // Check for target reached
-            if (target > 0 && newCount >= target) {
-                showNotification(`Target of ${target} reached! Alhamdulillah! 🎉`, 'success');
-                setTarget(0); // Reset target after reaching it
-            }
-
-            // Award points for every 1000 counts
-            const currentThousand = Math.floor(newCount / 1000);
-            if (currentThousand > lastAwardedThousand.current) {
-                onEarnPoints(10); // Award 10 points
-                showNotification(`Tasbeeh milestone! +10 points for ${currentThousand * 1000} counts!`, 'success');
-                lastAwardedThousand.current = currentThousand;
-            }
-
-            return newCount;
-        });
-    };
-
-    const reset = () => {
-        setCount(0);
-        setTarget(0); // Reset target on full reset
-        lastAwardedThousand.current = 0; // Reset point tracking
-        showNotification('Tasbeeh counter reset.', 'info');
-    };
-
-    const handleSetTarget = () => {
-        setShowTargetInput(true);
-    };
-
-    const confirmSetTarget = () => {
-        const newTarget = parseInt(targetInputRef.current.value, 10);
-        if (!isNaN(newTarget) && newTarget > 0) {
-            setTarget(newTarget);
-            showNotification(`Target set to ${newTarget}`, 'success');
-        } else {
-            showNotification('Please enter a valid target number.', 'error');
-        }
-        setShowTargetInput(false);
-    };
-
-    const cancelSetTarget = () => {
-        setShowTargetInput(false);
-    };
-
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center flex flex-col items-center">
-            <div className="flex justify-between items-center w-full mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Tasbeeh Counter</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
-            </div>
-
-            <div className="my-8">
-                <p className="text-xl text-green-200">Current Count:</p>
-                <p className="text-8xl md:text-9xl font-extrabold text-green-100">{count}</p>
-                {target > 0 && <p className="text-2xl text-green-300 mt-2">Target: {target}</p>}
-            </div>
-
+      {/* Playback Controls and Speed */}
+      {recordedAudioUrl && (
+        <div className="bg-green-700 p-6 rounded-2xl shadow-lg mb-6 border border-green-600">
+          <h3 className="text-xl font-bold text-green-100 mb-4">Your Recording:</h3>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
             <button
-                onClick={increment}
-                className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-6xl md:text-8xl font-bold flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-green-400"
+              onClick={isPlayingRecording ? pauseRecordedAudio : playRecordedAudio}
+              className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 flex items-center"
             >
-                +
+              {isPlayingRecording ? (
+                <>
+                  <Pause size={24} className="mr-2" fill="currentColor" />
+                  Pause Playback
+                </>
+              ) : (
+                <>
+                  <Play size={24} className="mr-2" fill="currentColor" />
+                  Play
+                </>
+              )}
             </button>
+          </div>
 
-            <div className="mt-8 flex space-x-4">
-                <button
-                    onClick={reset}
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                    Reset
-                </button>
-                <button
-                    onClick={handleSetTarget}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                    Set Target
-                </button>
+          <div className="mt-6">
+            <label htmlFor="playback-speed" className="block text-green-200 font-medium mb-2 text-center">Playback Speed: {playbackRate.toFixed(1)}x</label>
+            <input
+              type="range"
+              id="playback-speed"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              value={playbackRate}
+              onChange={handlePlaybackRateChange}
+              className="w-full h-2 bg-green-600 rounded-lg appearance-none cursor-pointer range-lg focus:outline-none focus:ring-2 focus:ring-4 focus:ring-green-400"
+            />
+            <div className="flex justify-between text-sm text-green-300 mt-2">
+              <span>0.5x (Slow)</span>
+              <span>1.0x (Normal)</span>
+              <span>2.0x (Fast)</span>
             </div>
-
-            {showTargetInput && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={cancelSetTarget}> {/* Added onClick to close modal */}
-                    <div className="bg-green-700 p-8 rounded-xl shadow-lg text-center" onClick={(e) => e.stopPropagation()}> {/* Prevent click from propagating to overlay */}
-                        <h3 className="text-2xl font-bold mb-4">Set Tasbeeh Target</h3>
-                        <input
-                            type="number"
-                            ref={targetInputRef}
-                            placeholder="e.g., 33, 100, 1000"
-                            className="w-full p-3 rounded-lg bg-green-600 text-green-50 placeholder-green-200 mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
-                            min="1"
-                        />
-                        <div className="flex justify-center space-x-4">
-                            <button
-                                onClick={confirmSetTarget}
-                                className="bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-5 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-400"
-                            >
-                                Confirm
-                            </button>
-                            <button
-                                onClick={cancelSetTarget}
-                                className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-5 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
-// --- NEW COMPONENT: QiblaFinder ---
-const QiblaFinder = ({ onBackToDashboard, showNotification }) => {
-    const [latitude, setLatitude] = useState(null);
-    const [longitude, setLongitude] = useState(null);
-    const [heading, setHeading] = useState(null); // Device's current magnetic heading (0-360, North=0)
-    const [qiblaDirection, setQiblaDirection] = useState(null); // Angle from North to Qibla
-    const [error, setError] = useState('');
-    const [permissionGranted, setPermissionGranted] = useState(false);
-    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
-
-    // Mecca coordinates
-    const MECCA_LAT = 21.4225; // N
-    const MECCA_LON = 39.8262; // E
-
-    // Function to request device orientation permission for iOS 13+
-    const requestDeviceOrientationPermission = async () => {
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            try {
-                setIsRequestingPermission(true);
-                const permissionState = await DeviceOrientationEvent.requestPermission();
-                if (permissionState === 'granted') {
-                    setPermissionGranted(true);
-                    setError('');
-                    showNotification('Device orientation permission granted!', 'success');
-                } else {
-                    setPermissionGranted(false);
-                    setError('Device orientation permission denied. Qibla finder may not work.');
-                    showNotification('Device orientation permission denied.', 'error');
-                }
-            } catch (err) {
-                setError('Error requesting device orientation permission.');
-                showNotification('Error requesting device orientation permission.', 'error');
-                console.error(err);
-            } finally {
-                setIsRequestingPermission(false);
-            }
-        } else {
-            // For Android or older iOS, permission is usually granted by default
-            setPermissionGranted(true);
-            setError('');
-        }
-    };
-
-    // Calculate Qibla direction (bearing) using Haversine-like formula
-    const calculateQiblaDirection = useCallback((userLat, userLon) => {
-        const latRad = userLat * Math.PI / 180;
-        const lonRad = userLon * Math.PI / 180;
-        const meccaLatRad = MECCA_LAT * Math.PI / 180;
-        const meccaLonRad = MECCA_LON * Math.PI / 180;
-
-        const deltaLon = meccaLonRad - lonRad;
-
-        const y = Math.sin(deltaLon);
-        const x = Math.cos(latRad) * Math.tan(meccaLatRad) - Math.sin(latRad) * Math.cos(deltaLon);
-
-        let bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-        setQiblaDirection(bearing);
-    }, []);
-
-    // Effect to get geolocation and listen for device orientation
-    useEffect(() => {
-        // Get Geolocation
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLatitude(position.coords.latitude);
-                    setLongitude(position.coords.longitude);
-                    calculateQiblaDirection(position.coords.latitude, position.coords.longitude);
-                    setError('');
-                },
-                (geoError) => {
-                    setError(`Geolocation error: ${geoError.message}. Please enable location services.`);
-                    showNotification(`Geolocation error: ${geoError.message}.`, 'error');
-                    console.error("Geolocation error:", geoError);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        } else {
-            setError('Geolocation is not supported by your browser.');
-            showNotification('Geolocation not supported.', 'error');
-        }
-
-        // Device Orientation Listener - only add if permission is granted
-        const handleDeviceOrientation = (event) => {
-            // `alpha` is the compass heading relative to North (0-360 degrees)
-            // `webkitCompassHeading` is for older iOS versions
-            let currentHeading = event.alpha || event.webkitCompassHeading;
-            if (currentHeading !== null) {
-                setHeading(currentHeading);
-            }
-        };
-
-        if (permissionGranted) {
-            window.addEventListener('deviceorientation', handleDeviceOrientation);
-        }
-
-        return () => {
-            // Clean up the event listener when component unmounts or permission changes
-            window.removeEventListener('deviceorientation', handleDeviceOrientation);
-        };
-    }, [permissionGranted, calculateQiblaDirection, showNotification]); // Added permissionGranted to dependency array
-
-    // Calculate the rotation needed for the compass arrow
-    const arrowRotation = heading !== null && qiblaDirection !== null
-        ? qiblaDirection - heading
-        : 0; // Default to 0 if no data
-
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center flex flex-col items-center">
-            <div className="flex justify-between items-center w-full mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Qibla Finder</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
-            </div>
-
-            {error && <p className="text-red-400 mb-4">{error}</p>}
-
-            {!permissionGranted && (
-                <div className="p-4 bg-green-700 rounded-lg shadow-md mb-6">
-                    <p className="text-lg mb-3">To use the Qibla Finder, please grant permission for device motion and location.</p>
-                    <button
-                        onClick={requestDeviceOrientationPermission}
-                        disabled={isRequestingPermission}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isRequestingPermission ? 'Requesting...' : 'Grant Permissions'}
-                    </button>
-                </div>
-            )}
-
-            {latitude && longitude && (
-                <div className="mb-6 text-lg">
-                    <p>Your Location:</p>
-                    <p>Lat: {latitude.toFixed(4)}, Lon: {longitude.toFixed(4)}</p>
-                </div>
-            )}
-
-            <div className="relative w-48 h-48 bg-green-700 rounded-full flex items-center justify-center mb-8 shadow-xl">
-                <div className="absolute text-green-300 text-xl font-bold" style={{ top: '-1.5rem' }}>N</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ bottom: '-1.5rem' }}>S</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ left: '-1.5rem' }}>W</div>
-                <div className="absolute text-green-300 text-xl font-bold" style={{ right: '-1.5rem' }}>E</div>
-
-                {/* Compass Needle */}
-                <div
-                    className="absolute w-2 h-24 bg-red-500 rounded-b-full origin-bottom"
-                    style={{
-                        transform: `translateY(-50%) rotate(${heading !== null ? -heading : 0}deg)`,
-                        transformOrigin: 'bottom center',
-                        transition: 'transform 0.5s ease-out',
-                    }}
-                >
-                    <div className="w-full h-1/2 bg-red-700 rounded-t-full"></div> {/* Red tip */}
-                </div>
-
-                {/* Qibla Indicator (Kaaba icon) */}
-                {qiblaDirection !== null && (
-                    <div
-                        className="absolute text-4xl text-yellow-400 transition-transform duration-500 ease-out"
-                        style={{
-                            transform: `translate(-50%, -50%) rotate(${arrowRotation}deg) translateY(-60px)`, // Position at top, rotate
-                            transformOrigin: '50% 50%',
-                            left: '50%',
-                            top: '50%',
-                        }}
-                    >
-                        🕋
-                    </div>
-                )}
-            </div>
-
-            {heading !== null && (
-                <p className="text-xl mb-2">Your Current Heading: {heading.toFixed(1)}°</p>
-            )}
-            {qiblaDirection !== null && (
-                <p className="text-xl mb-2">Qibla Direction: {qiblaDirection.toFixed(1)}° from North</p>
-            )}
-            {heading !== null && qiblaDirection !== null && (
-                <p className="text-xl font-semibold text-green-200 mt-4">
-                    Rotate your device until the 🕋 icon points directly upwards.
-                </p>
-            )}
-            {!latitude || !longitude && <p className="text-green-300">Awaiting location data...</p>}
-            {!heading && permissionGranted && <p className="text-green-300">Awaiting device orientation data...</p>}
-
-        </div>
-    );
-};
-
-// --- NEW COMPONENT: ListenView for Full Surah Audio ---
-const ListenView = ({ onBackToDashboard, selectedReciter, showNotification, quranData }) => {
-    const [selectedSurah, setSelectedSurah] = useState(null);
-    const [audioUrl, setAudioUrl] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const audioRef = useRef(new Audio());
-    audioRef.current.volume = 0.8; // Default volume
-
-    // Effect to clean up audio when component unmounts or reciter/surah changes
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.src = '';
-            }
-        };
-    }, []);
-
-    // Effect to fetch and play audio when selectedSurah or selectedReciter changes
-    useEffect(() => {
-        const fetchAndPlayAudio = async () => {
-            if (selectedSurah && selectedReciter) {
-                setIsLoading(true);
-                setError('');
-                setAudioUrl('');
-                audioRef.current.pause(); // Pause any currently playing audio
-
-                try {
-                    // Construct the audio URL for the full surah
-                    // Example: https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1
-                    // For full surah, the API expects /v1/surah/{surah_number}/ar.{reciter_id}
-                    const fullSurahAudioUrl = `https://api.alquran.cloud/v1/surah/${selectedSurah.id}/ar.${selectedReciter.alquranCloudId}`;
-                    const response = await fetch(fullSurahAudioUrl);
-                    const data = await response.json();
-
-                    if (data.code === 200 && data.data && data.data.audio) {
-                        setAudioUrl(data.data.audio);
-                        audioRef.current.src = data.data.audio;
-                        audioRef.current.play().catch(e => {
-                            console.error("Error playing audio:", e);
-                            setError("Failed to play audio. Please try again.");
-                            showNotification("Failed to play audio. Browser might block autoplay.", "error");
-                        });
-                        showNotification(`Playing Surah ${selectedSurah.englishName} by ${selectedReciter.englishName}`, 'info');
-                    } else {
-                        setError('Failed to fetch full surah audio. Please try another surah or reciter.');
-                        showNotification('Failed to fetch audio.', 'error');
-                        console.error("API Error fetching full surah audio:", data);
-                    }
-                } catch (err) {
-                    console.error("Fetch error for full surah audio:", err);
-                    setError('Could not connect to audio API. Check your internet connection.');
-                    showNotification('Network error fetching audio.', 'error');
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchAndPlayAudio();
-    }, [selectedSurah, selectedReciter, showNotification]);
-
-    const handleSurahSelect = (surahId) => {
-        const surah = quranData.surahs.find(s => s.id === surahId);
-        setSelectedSurah(surah);
-    };
-
-    const togglePlayPause = () => {
-        if (audioRef.current.paused) {
-            audioRef.current.play().catch(e => {
-                console.error("Error resuming audio:", e);
-                showNotification("Failed to resume audio. Browser might block autoplay.", "error");
-            });
-        } else {
-            audioRef.current.pause();
-        }
-    };
-
-    const stopAudio = () => {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        setAudioUrl(''); // Clear URL to reset state
-        setSelectedSurah(null); // Clear selected surah
-        showNotification('Audio stopped.', 'info');
-    };
-
-    // Combine all reciters for display
-    const allReciters = [...recitersData.featured, ...recitersData.free];
-
-    if (!selectedReciter) {
-        return (
-            <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50 text-center">
-                <h2 className="text-3xl font-bold mb-6">Listen to Quran</h2>
-                <p className="text-lg mb-4">Please select a reciter from the Home Dashboard first.</p>
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full mt-4 flex items-center justify-center mx-auto transition duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-            </div>
-        );
-    }
-
-    return (
-        <div className="bg-green-800 p-6 rounded-xl shadow-lg mb-6 text-green-50">
-            <div className="flex justify-between items-center mb-4 border-b pb-4 border-green-700">
-                <button
-                    onClick={onBackToDashboard}
-                    className="bg-green-700 hover:bg-green-600 text-green-50 font-semibold py-2 px-4 rounded-full flex items-center transition duration-300 text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-2">
-                        <path fillRule="evenodd" d="M9.75 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        <path fillRule="evenodd" d="M.93 13.297a.75.75 0 0 0 0 1.06l6.5 6.5a.75.75 0 0 0 1.06-1.06L2.81 13.75h14.44a.75.75 0 0 0 0-1.5H2.81l5.68-5.69a.75.75 0 0 0-1.06-1.06l-6.5 6.5Z" clipRule="evenodd" />
-                    </svg>
-                    Back to Dashboard
-                </button>
-                <h2 className="text-3xl font-bold text-green-50">Listen to Quran</h2>
-                <div className="w-12"></div> {/* Placeholder for alignment */}
-            </div>
-
-            <p className="text-center text-xl mb-4">Selected Reciter: <span className="font-semibold text-yellow-300">{selectedReciter.englishName}</span></p>
-
-            <div className="mb-6">
-                <label htmlFor="surah-select" className="block text-lg font-semibold mb-2">Select Surah:</label>
-                <select
-                    id="surah-select"
-                    onChange={(e) => handleSurahSelect(parseInt(e.target.value))}
-                    value={selectedSurah ? selectedSurah.id : ''}
-                    className="w-full p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                    <option value="">-- Select a Surah --</option>
-                    {quranData.surahs.map(surah => (
-                        <option key={surah.id} value={surah.id}>
-                            {surah.englishName} ({surah.name})
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {isLoading && <p className="text-center text-green-200">Loading audio...</p>}
-            {error && <p className="text-center text-red-400">{error}</p>}
-
-            {selectedSurah && audioUrl && !isLoading && (
-                <div className="mt-6 p-4 bg-green-700 rounded-lg shadow-md text-center">
-                    <h3 className="text-2xl font-bold mb-3">Now Playing: {selectedSurah.englishName}</h3>
-                    <p className="text-lg text-green-200 mb-4 font-arabic">{selectedSurah.name}</p>
-                    <div className="flex justify-center items-center space-x-4">
-                        <button
-                            onClick={togglePlayPause}
-                            className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            title={audioRef.current.paused ? "Play" : "Pause"}
-                        >
-                            {audioRef.current.paused ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                    <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.715 1.295 2.565 0 3.28l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                    <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25ZM14.25 5.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
-                                </svg>
-                            )}
-                        </button>
-                        <button
-                            onClick={stopAudio}
-                            className="p-3 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-                            title="Stop"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                <path fillRule="evenodd" d="M6.75 5.25A.75.75 0 0 1 7.5 4.5h9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 // --- Main App Component ---
 export default function App() {
-  const [currentView, setCurrentView] = useState('home'); // Controls which main section is displayed.
-  const [selectedSurahId, setSelectedSurahId] = useState(null); // Stores the ID of the currently selected Surah.
-  const [notification, setNotification] = useState(null); // Manages temporary notification messages.
-  const [points, setPoints] = useState(0); // Tracks user's accumulated points.
-  const [bookmarkedVerses, setBookmarkedVerses] = useState([]); // Stores user's bookmarked verses.
-  const [selectedReciter, setSelectedReciter] = useState(recitersData.featured[0]); // Default selected reciter.
-  const [lastReadPosition, setLastReadPosition] = useState({ surahId: 1, verseId: 1 }); // Tracks last read position.
+  // Firebase State
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
-  // Function to display a notification message. MOVED THIS UP!
-  const showNotification = useCallback((message, type = 'info', duration = 3000) => {
-    setNotification({ message, type });
-    const timer = setTimeout(() => {
-      setNotification(null);
-    }, duration);
-    return () => clearTimeout(timer); // Cleanup timer if component unmounts.
-  }, []);
+  // App UI State
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'surah-selector', 'quran-reader', 'listen', 'practice', 'prayer-times', 'bookmarks', 'quiz'
+  const [notification, setNotification] = useState(null);
 
-  // User progress state, including achievements.
+  // Quran Reader State
+  const [selectedSurahId, setSelectedSurahId] = useState(null);
+
+  // User Progress State (synced with Firestore)
   const [userProgress, setUserProgress] = useState({
+    points: 0,
     dailyStreak: 0,
+    lastLoginDate: null,
     versesRead: 0,
-    achievements: achievementsData,
-    lastReadDate: null,
+    bookmarkedVerses: [], // { surahId: number, verseId: number, arabicText: string }
+    lastReadPosition: null, // { surahId: number, verseId: number }
+    achievements: achievementsData.map(a => ({ ...a, achieved: false })), // Initialize with all achievements as not achieved
+    unlockedReciters: recitersData.featured.map(r => r.id), // All featured reciters are unlocked by default
   });
 
-  // Effect to manage daily streak and update achievements.
-  useEffect(() => {
-    const checkDailyStreak = () => {
-      const today = startOfDay(new Date());
-      const lastRead = userProgress.lastReadDate ? parseISO(userProgress.lastReadDate) : null;
+  // Reciter State for Listen Page
+  const [selectedReciterId, setSelectedReciterId] = useState(recitersData.featured[0].id);
+  const [selectedReciterName, setSelectedReciterName] = useState(recitersData.featured[0].name);
+  const [selectedReciterEnglishName, setSelectedReciterEnglishName] = useState(recitersData.featured[0].englishName);
+  const [selectedReciterAlquranCloudId, setSelectedReciterAlquranCloudId] = useState(recitersData.featured[0].alquranCloudId);
 
-      if (lastRead) {
-        const yesterday = addDays(today, -1);
-        // If last read was yesterday, increment streak.
-        if (format(lastRead, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
-          setUserProgress(prev => ({ ...prev, dailyStreak: prev.dailyStreak + 1 }));
-        }
-        // If last read was today, do nothing (streak maintained).
-        else if (format(lastRead, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-          // Streak already counted for today.
-        }
-        // If last read was before yesterday, reset streak.
-        else {
-          setUserProgress(prev => ({ ...prev, dailyStreak: 0 }));
-        }
-      } else {
-        // First time reading, start streak at 1.
-        setUserProgress(prev => ({ ...prev, dailyStreak: 1 }));
-      }
-      setUserProgress(prev => ({ ...prev, lastReadDate: today.toISOString() })); // Update last read date to today.
+  // --- Notification Management --- // MOVED THIS UP!
+  const showNotification = useCallback((message, type = 'info') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000); // Notification disappears after 3 seconds
+  }, []);
+
+
+  // --- Firebase Initialization and Authentication ---
+  useEffect(() => {
+    // Define a default/mock Firebase config for local development
+    // IMPORTANT: Replace with your actual Firebase project config if deploying!
+    const defaultFirebaseConfig = {
+      apiKey: "YOUR_API_KEY", // Replace with your Firebase project's API Key
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Replace with your Firebase project's Auth Domain
+      projectId: "YOUR_PROJECT_ID", // Replace with your Firebase project ID
+      storageBucket: "YOUR_PROJECT_ID.appspot.com", // Replace with your Firebase project's Storage Bucket
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your Firebase project's Messaging Sender ID
+      appId: "YOUR_APP_ID" // Replace with your Firebase project's App ID
     };
 
-    checkDailyStreak(); // Run once on component mount.
-  }, []); // Empty dependency array means this runs only once after initial render.
+    // Use the provided __firebase_config if available (e.g., in a hosted environment),
+    // otherwise, use the defaultFirebaseConfig for local development.
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId || 'default-app-id'; // Use project ID as default appId
 
-  // Effect to check and update achievements based on user progress.
-  useEffect(() => {
-    setUserProgress(prev => {
-      const updatedAchievements = prev.achievements.map(ach => {
-        if (ach.id === 'first-read' && prev.versesRead > 0 && !ach.achieved) {
-          showNotification('Achievement Unlocked: First Read! ✨', 'success');
-          return { ...ach, achieved: true };
+    if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+      console.warn("Firebase config is missing or using default placeholders. Please update defaultFirebaseConfig with your actual Firebase project details for full functionality.");
+      // Even if config is missing/placeholder, we'll try to initialize to prevent hard crashes,
+      // but Firestore operations will likely fail without proper credentials.
+    }
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const firestoreDb = getFirestore(app);
+      const firebaseAuth = getAuth(app);
+
+      setDb(firestoreDb);
+      setAuth(firebaseAuth);
+
+      // Listen for authentication state changes
+      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
+          setUserId(user.uid);
+        } else {
+          // If no user, sign in anonymously
+          try {
+            // Use __initial_auth_token if available, otherwise sign in anonymously
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            if (initialAuthToken) {
+              await signInWithCustomToken(firebaseAuth, initialAuthToken);
+              console.log("Signed in with custom token.");
+            } else {
+              await signInAnonymously(firebaseAuth);
+              console.log("Signed in anonymously.");
+            }
+            setUserId(firebaseAuth.currentUser.uid); // Ensure userId is set after sign-in
+          } catch (error) {
+            console.error("Error signing in anonymously or with custom token:", error);
+            showNotification("Failed to authenticate. Please check console for details.", 'error');
+          }
         }
-        if (ach.id === 'first-week' && prev.dailyStreak >= 7 && !ach.achieved) {
-          showNotification('Achievement Unlocked: Daily Reader! 📅', 'success');
-          return { ...ach, achieved: true };
-        }
-        // Add more achievement checks here as needed.
-        return ach;
+        setIsAuthReady(true); // Mark auth as ready once initial check/sign-in is done
       });
-      return { ...prev, achievements: updatedAchievements };
+
+      return () => unsubscribe(); // Cleanup auth listener
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+      showNotification("Failed to initialize Firebase. Check console for details.", 'error');
+      setIsAuthReady(true); // Still set auth ready to allow UI to render, even if Firebase is broken
+    }
+  }, [showNotification]); // Added showNotification to dependencies
+
+
+  // --- Firestore Data Listener (User Progress) ---
+  useEffect(() => {
+    if (!isAuthReady || !db || !userId) {
+      // console.log("Firestore listener skipped: isAuthReady", isAuthReady, "db", !!db, "userId", !!userId); // Debugging line
+      return;
+    }
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : (db.app.options.projectId || 'default-app-id'); // Fallback to projectId if __app_id not defined
+    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/quranProgress/data`);
+
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Parse JSON strings back to objects/arrays where necessary
+        const parsedBookmarkedVerses = data.bookmarkedVerses ? JSON.parse(data.bookmarkedVerses) : [];
+        const parsedAchievements = data.achievements ? JSON.parse(data.achievements) : achievementsData.map(a => ({ ...a, achieved: false }));
+        const parsedLastReadPosition = data.lastReadPosition ? JSON.parse(data.lastReadPosition) : null;
+        const parsedUnlockedReciters = data.unlockedReciters ? JSON.parse(data.unlockedReciters) : recitersData.featured.map(r => r.id);
+
+        setUserProgress({
+          points: data.points || 0,
+          dailyStreak: data.dailyStreak || 0,
+          lastLoginDate: data.lastLoginDate ? parseISO(data.lastLoginDate) : null,
+          versesRead: data.versesRead || 0,
+          bookmarkedVerses: parsedBookmarkedVerses,
+          lastReadPosition: parsedLastReadPosition,
+          achievements: parsedAchievements,
+          unlockedReciters: parsedUnlockedReciters,
+        });
+      } else {
+        // Initialize default progress for new users
+        console.log("No user progress found, initializing default.");
+        setUserProgress({
+          points: 0,
+          dailyStreak: 0,
+          lastLoginDate: null,
+          versesRead: 0,
+          bookmarkedVerses: [],
+          lastReadPosition: null,
+          achievements: achievementsData.map(a => ({ ...a, achieved: false })),
+          unlockedReciters: recitersData.featured.map(r => r.id),
+        });
+      }
+    }, (error) => {
+      console.error("Error fetching user progress:", error);
+      showNotification("Failed to load user progress. Please try refreshing.", 'error');
     });
-  }, [userProgress.versesRead, userProgress.dailyStreak, showNotification]); // Dependencies for achievement checks.
 
+    return () => unsubscribe(); // Cleanup listener
+  }, [isAuthReady, db, userId, showNotification]); // Re-run if auth state or Firebase instances change
 
-  // Handler for selecting a surah to read.
-  const handleSelectSurah = (surahId) => {
+  // --- Save User Progress to Firestore (Debounced) ---
+  const saveProgressTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (!db || !userId || !isAuthReady) {
+      return;
+    }
+
+    // Clear any existing timeout to debounce saves
+    if (saveProgressTimeoutRef.current) {
+      clearTimeout(saveProgressTimeoutRef.current);
+    }
+
+    // Set a new timeout to save progress after a short delay
+    saveProgressTimeoutRef.current = setTimeout(async () => {
+      const appId = typeof __app_id !== 'undefined' ? __app_id : (db.app.options.projectId || 'default-app-id');
+      const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/quranProgress/data`);
+
+      try {
+        // Stringify complex objects/arrays before saving
+        const dataToSave = {
+          ...userProgress,
+          lastLoginDate: userProgress.lastLoginDate ? format(userProgress.lastLoginDate, 'yyyy-MM-dd') : null,
+          bookmarkedVerses: JSON.stringify(userProgress.bookmarkedVerses),
+          lastReadPosition: JSON.stringify(userProgress.lastReadPosition),
+          achievements: JSON.stringify(userProgress.achievements),
+          unlockedReciters: JSON.stringify(userProgress.unlockedReciters),
+        };
+        await setDoc(userDocRef, dataToSave, { merge: true });
+        console.log("User progress saved to Firestore.");
+      } catch (error) {
+        console.error("Error saving user progress:", error);
+        showNotification("Failed to save progress.", 'error');
+      }
+    }, 1000); // Save after 1 second of no changes
+
+    return () => {
+      if (saveProgressTimeoutRef.current) {
+        clearTimeout(saveProgressTimeoutRef.current);
+      }
+    };
+  }, [userProgress, db, userId, isAuthReady, showNotification]); // Re-save whenever userProgress changes
+
+  // --- Daily Streak Logic ---
+  useEffect(() => {
+    // Ensure `setUserProgress` is used here, not `updateUserProgress`
+    if (!userProgress.lastLoginDate) {
+      // First login or no previous login, set streak to 1
+      setUserProgress(prev => ({ // CORRECTED: Use setUserProgress
+        ...prev,
+        dailyStreak: 1,
+        lastLoginDate: startOfDay(new Date()),
+      }));
+      return;
+    }
+
+    const today = startOfDay(new Date());
+    const lastLogin = startOfDay(userProgress.lastLoginDate);
+    const yesterday = addDays(today, -1);
+
+    if (lastLogin.getTime() === today.getTime()) {
+      // Already logged in today, do nothing to streak
+      return;
+    } else if (lastLogin.getTime() === yesterday.getTime()) {
+      // Logged in yesterday, increment streak
+      setUserProgress(prev => ({ // CORRECTED: Use setUserProgress
+        ...prev,
+        dailyStreak: prev.dailyStreak + 1,
+        lastLoginDate: today,
+      }));
+      showNotification(`Daily streak: ${userProgress.dailyStreak + 1} days!`, 'success');
+    } else {
+      // Missed a day, reset streak
+      setUserProgress(prev => ({ // CORRECTED: Use setUserProgress
+        ...prev,
+        dailyStreak: 1,
+        lastLoginDate: today,
+      }));
+      showNotification("Daily streak reset. Keep going!", 'info');
+    }
+  }, [userProgress.lastLoginDate, setUserProgress, showNotification]); // Added setUserProgress and showNotification to dependencies
+
+  // --- Achievement Logic ---
+  useEffect(() => {
+    const updatedAchievements = userProgress.achievements.map(ach => {
+      if (ach.achieved) return ach; // Already achieved, no need to re-evaluate
+
+      switch (ach.id) {
+        case 'first-read':
+          if (userProgress.versesRead > 0) {
+            showNotification(`Achievement Unlocked: ${ach.title}!`, 'success');
+            return { ...ach, achieved: true };
+          }
+          break;
+        case 'first-week':
+          if (userProgress.dailyStreak >= 7) {
+            showNotification(`Achievement Unlocked: ${ach.title}!`, 'success');
+            return { ...ach, achieved: true };
+          }
+          break;
+        case 'practice-master':
+          // Assuming a 'practiceSessions' counter in userProgress
+          // if (userProgress.practiceSessions >= 100) {
+          //   showNotification(`Achievement Unlocked: ${ach.title}!`, 'success');
+          //   return { ...ach, achieved: true };
+          // }
+          break;
+        case 'quiz-whiz':
+          if (userProgress.points >= 500) {
+            showNotification(`Achievement Unlocked: ${ach.title}!`, 'success');
+            return { ...ach, achieved: true };
+          }
+          break;
+        default:
+          break;
+      }
+      return ach;
+    });
+
+    // Only update if there are actual changes to prevent infinite loops
+    if (JSON.stringify(updatedAchievements) !== JSON.stringify(userProgress.achievements)) {
+      setUserProgress(prev => ({ ...prev, achievements: updatedAchievements }));
+    }
+  }, [userProgress.versesRead, userProgress.dailyStreak, userProgress.points, userProgress.achievements, showNotification]); // Depend on relevant progress metrics and showNotification
+
+  // --- Handlers for App Navigation and Logic ---
+
+  const handleSelectSurah = useCallback((surahId, verseIdToHighlight = null) => {
     setSelectedSurahId(surahId);
     setCurrentView('quran-reader');
-  };
+    // If a specific verse is to be highlighted, the QuranReader component will handle scrolling to it.
+  }, []);
 
-  // Handler for changing surah within the reader.
-  const handleSurahChange = (newSurahId) => {
-    setSelectedSurahId(newSurahId);
-    // Optionally update last read position here if user navigates through surahs.
-    setLastReadPosition(prev => ({ ...prev, surahId: newSurahId, verseId: 1 }));
-  };
+  const handleBackToHome = useCallback(() => {
+    setCurrentView('home');
+    setSelectedSurahId(null); // Clear selected surah when going back to home
+  }, []);
 
-  // Handler for when a verse is read (e.g., scrolled into view or audio played).
-  const handleVerseRead = (surahId, verseId) => {
-    setUserProgress(prev => ({ ...prev, versesRead: prev.versesRead + 1 }));
-    setLastReadPosition({ surahId, verseId });
-  };
+  const handleVerseRead = useCallback((surahId, verseId) => {
+    setUserProgress(prev => {
+      const updatedVersesRead = prev.versesRead + 1;
+      return {
+        ...prev,
+        versesRead: updatedVersesRead,
+        lastReadPosition: { surahId, verseId },
+      };
+    });
+  }, []);
 
-  // Handler for toggling a bookmark on a verse.
-  const handleToggleBookmark = (verse) => {
-    setBookmarkedVerses(prev => {
-      const isBookmarked = prev.some(b => b.surahId === verse.surahId && b.verseId === verse.verseId);
+  const handleToggleBookmark = useCallback((surahId, verseId) => {
+    setUserProgress(prev => {
+      const isBookmarked = prev.bookmarkedVerses.some(
+        (b) => b.surahId === surahId && b.verseId === verseId
+      );
+
+      let updatedBookmarkedVerses;
       if (isBookmarked) {
-        showNotification('Bookmark removed.', 'info');
-        return prev.filter(b => !(b.surahId === verse.surahId && b.verseId === verse.verseId));
+        updatedBookmarkedVerses = prev.bookmarkedVerses.filter(
+          (b) => !(b.surahId === surahId && b.verseId === verseId)
+        );
+        showNotification("Bookmark removed.", 'info');
       } else {
-        showNotification('Verse bookmarked!', 'success');
-        return [...prev, verse];
+        // Fetch Arabic text for the bookmark
+        const surahMeta = quranData.surahs.find(s => s.id === surahId);
+        // In a real app, you'd fetch the actual verse text here if not already available.
+        // For now, we'll use a placeholder or assume it's fetched by QuranReader.
+        const arabicTextPlaceholder = `Surah ${surahMeta?.englishName || 'Unknown'}, Verse ${verseId}`;
+        updatedBookmarkedVerses = [...prev.bookmarkedVerses, { surahId, verseId, arabicText: arabicTextPlaceholder }];
+        showNotification("Verse bookmarked!", 'success');
+      }
+      return { ...prev, bookmarkedVerses: updatedBookmarkedVerses };
+    });
+  }, [showNotification]);
+
+  const handleVerseAudioPlay = useCallback((surahId, verseId) => {
+    setUserProgress(prev => ({
+      ...prev,
+      lastReadPosition: { surahId, verseId },
+    }));
+  }, []);
+
+  const handleContinueReading = useCallback(() => {
+    if (userProgress.lastReadPosition) {
+      handleSelectSurah(userProgress.lastReadPosition.surahId, userProgress.lastReadPosition.verseId);
+    } else {
+      showNotification("No last read position found. Starting from Al-Fatiha.", 'info');
+      handleSelectSurah(1); // Default to Al-Fatiha if no last position
+    }
+  }, [userProgress.lastReadPosition, handleSelectSurah, showNotification]);
+
+  const handleUnlockReciter = useCallback((reciterId, cost) => {
+    setUserProgress(prev => {
+      if (prev.points >= cost) {
+        const updatedUnlockedReciters = [...prev.unlockedReciters, reciterId];
+        showNotification(`Reciter unlocked! You spent ${cost} points.`, 'success');
+        return {
+          ...prev,
+          points: prev.points - cost,
+          unlockedReciters: updatedUnlockedReciters,
+        };
+      } else {
+        showNotification("Not enough points to unlock this reciter.", 'error');
+        return prev; // Return previous state if not enough points
       }
     });
-  };
+  }, [showNotification]);
 
-  // Handler to remove a bookmark.
-  const handleRemoveBookmark = (bookmarkToRemove) => {
-    setBookmarkedVerses(prev =>
-      prev.filter(b => !(b.surahId === bookmarkToRemove.surahId && b.verseId === bookmarkToRemove.verseId))
-    );
-    showNotification('Bookmark removed.', 'info');
-  };
+  const handleSelectReciterForListen = useCallback((id, name, englishName, alquranCloudId) => {
+    setSelectedReciterId(id);
+    setSelectedReciterName(name);
+    setSelectedReciterEnglishName(englishName);
+    setSelectedReciterAlquranCloudId(alquranCloudId);
+    setCurrentView('listen');
+  }, []);
 
-  // Handler to read a surah from the bookmarks list.
-  const handleReadBookmarkedSurah = (surahId) => {
-    setSelectedSurahId(surahId);
-    setCurrentView('quran-reader');
-  };
-
-  // Handler for earning points.
-  const handleEarnPoints = (amount) => {
-    setPoints(prev => prev + amount);
-    // showNotification(`+${amount} points!`, 'success'); // Notification handled by specific components (Quiz, Tasbeeh)
-  };
-
-  // Handler for selecting a reciter.
-  const handleSelectReciter = (reciterId, alquranCloudId) => {
-    const reciter = [...recitersData.featured, ...recitersData.free].find(r => r.id === reciterId);
-    if (reciter) {
-      setSelectedReciter(reciter);
-      showNotification(`Reciter selected: ${reciter.englishName}`, 'success');
+  // --- Render based on currentView ---
+  const renderContent = () => {
+    if (!isAuthReady) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-950 to-black text-green-100">
+          <p className="text-2xl mb-4 font-medium">Loading application...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-400"></div>
+          <p className="mt-4 text-sm text-green-300">Authenticating with Firebase...</p>
+        </div>
+      );
     }
-  };
 
-  // Handler for continuing reading from the last position.
-  const handleContinueReading = () => {
-    if (lastReadPosition.surahId) {
-      setSelectedSurahId(lastReadPosition.surahId);
-      setCurrentView('quran-reader');
-      showNotification(`Continuing from Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName} Verse ${lastReadPosition.verseId}`, 'info');
-    } else {
-      showNotification('No previous reading position found. Starting from Al-Fatiha.', 'info');
-      setSelectedSurahId(1);
-      setCurrentView('quran-reader');
-    }
-  };
-
-  // Main application rendering logic based on currentView state.
-  const renderView = () => {
     switch (currentView) {
       case 'home':
         return (
           <HomeDashboard
             setCurrentView={setCurrentView}
-            points={points}
+            points={userProgress.points}
             userProgress={userProgress}
-            unlockedReciters={recitersData} // Pass all reciters as unlocked
-            handleUnlockReciter={() => showNotification("Reciter already unlocked!", "info")} // Dummy function
+            unlockedReciters={userProgress.unlockedReciters}
+            handleUnlockReciter={handleUnlockReciter}
             showNotification={showNotification}
-            lastReadPosition={lastReadPosition}
+            lastReadPosition={userProgress.lastReadPosition}
             onContinueReading={handleContinueReading}
-            selectedReciterId={selectedReciter.id}
-            onSelectReciter={handleSelectReciter}
+            onSelectReciterForListen={handleSelectReciterForListen} // Correctly pass the handler
           />
         );
       case 'surah-selector':
-        return <SurahSelector onSelectSurah={handleSelectSurah} />;
+        return <SurahSelector onSelectSurah={handleSelectSurah} onBackToHome={handleBackToHome} />;
       case 'quran-reader':
         return (
           <QuranReader
             selectedSurahId={selectedSurahId}
             onBackToSurahList={() => setCurrentView('surah-selector')}
-            onSurahChange={handleSurahChange}
+            onSurahChange={handleSelectSurah}
             onVerseRead={handleVerseRead}
             onToggleBookmark={handleToggleBookmark}
-            bookmarkedVerses={bookmarkedVerses}
-            onVerseAudioPlay={handleVerseRead} // Reuse handleVerseRead for audio play tracking
+            bookmarkedVerses={userProgress.bookmarkedVerses}
+            onVerseAudioPlay={handleVerseAudioPlay}
+            selectedReciterAlquranCloudId={selectedReciterAlquranCloudId}
+            showNotification={showNotification}
+            onBackToHome={handleBackToHome} // Pass onBackToHome
           />
         );
+      case 'listen':
+        return (
+          <ListenPage
+            onBackToHome={handleBackToHome} // Pass onBackToHome
+            selectedReciterId={selectedReciterId}
+            selectedReciterName={selectedReciterName}
+            selectedReciterEnglishName={selectedReciterEnglishName}
+            selectedReciterAlquranCloudId={selectedReciterAlquranCloudId}
+            showNotification={showNotification}
+          />
+        );
+      case 'practice':
+        return <PracticePage onBackToHome={handleBackToHome} showNotification={showNotification} />; // Pass onBackToHome and showNotification
+      case 'prayer-times':
+        return <PrayerTimesPage onBackToHome={handleBackToHome} />; // Pass onBackToHome
       case 'bookmarks':
         return (
-          <BookmarkedVerses
-            bookmarkedVerses={bookmarkedVerses}
-            onRemoveBookmark={handleRemoveBookmark}
-            onReadBookmarkedSurah={handleReadBookmarkedSurah}
-            onBackToDashboard={() => setCurrentView('home')}
+          <BookmarksPage
+            onBackToHome={handleBackToHome} // Pass onBackToHome
+            bookmarkedVerses={userProgress.bookmarkedVerses}
+            onSelectSurah={handleSelectSurah}
+            onToggleBookmark={handleToggleBookmark}
           />
         );
-      case 'prayer-times':
-        return <PrayerTimesDisplay onBackToDashboard={() => setCurrentView('home')} />;
       case 'quiz':
-        return <Quiz onBackToDashboard={() => setCurrentView('home')} onEarnPoints={handleEarnPoints} showNotification={showNotification} quranData={quranData} />;
-      case 'tasbeeh-counter':
-        return <TasbeehCounter onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} onEarnPoints={handleEarnPoints} />;
-      case 'qibla-finder':
-        return <QiblaFinder onBackToDashboard={() => setCurrentView('home')} showNotification={showNotification} />;
-      case 'listen':
-        return <ListenView onBackToDashboard={() => setCurrentView('home')} selectedReciter={selectedReciter} showNotification={showNotification} quranData={quranData} />;
-      // Add other cases for 'practice' etc. when implemented.
+        return (
+          <QuizPage
+            onBackToHome={handleBackToHome} // Pass onBackToHome
+            updateUserProgress={setUserProgress} // Pass setUserProgress directly
+            showNotification={showNotification}
+          />
+        );
       default:
-        return <HomeDashboard setCurrentView={setCurrentView} points={points} userProgress={userProgress} unlockedReciters={recitersData} handleUnlockReciter={() => {}} showNotification={showNotification} lastReadPosition={lastReadPosition} onContinueReading={handleContinueReading} selectedReciterId={selectedReciter.id} onSelectReciter={handleSelectReciter} />;
+        return (
+          <div className="text-center text-red-400 py-8">
+            <p className="text-xl">Something went wrong. Unknown view.</p>
+            <button onClick={handleBackToHome} className="mt-4 bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg text-white">
+              Go to Home
+            </button>
+          </div>
+        );
     }
   };
 
   return (
-    // Main container with Tailwind CSS for overall styling.
-    <div className="min-h-screen bg-green-900 text-green-50 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
-      {/* Header section with app title and points display */}
-      <header className="w-full max-w-4xl bg-green-800 p-5 rounded-xl shadow-lg mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-green-100">My Quran App</h1>
-        <div className="text-xl font-semibold text-yellow-300 flex items-center">
-          <span className="mr-2">🌟</span> {points} Points
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-green-950 to-green-900 text-green-50 font-inter">
+      <div className="container mx-auto p-4 md:p-8">
+        <header className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-green-200 drop-shadow-lg animate-fade-in-down">
+            Quran App
+          </h1>
+          <p className="text-xl md:text-2xl text-green-300 mt-2 font-light animate-fade-in">Your Daily Companion for Quranic Reflection</p>
+          {userId && (
+            <p className="text-sm text-green-400 mt-2">User ID: <span className="font-mono text-green-300 break-all">{userId}</span></p>
+          )}
+          <div className="mt-6 p-4 bg-gradient-to-r from-green-800 to-green-700 rounded-xl shadow-xl inline-block transform hover:scale-105 transition-transform duration-300">
+            <p className="text-lg md:text-xl font-semibold flex items-center text-green-50">
+              <DollarSign size={24} className="text-yellow-300 mr-2" /> Points: <span className="ml-2 text-yellow-200">{userProgress.points}</span>
+            </p>
+          </div>
+        </header>
 
-      {/* Main content area where different views are rendered */}
-      <main className="w-full max-w-4xl flex-grow">
-        {renderView()} {/* Renders the active component based on currentView */}
-      </main>
+        <main>
+          {renderContent()}
+        </main>
 
-      {/* Notification message display */}
-      {notification && (
-        <NotificationMessage
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
-        />
-      )}
-
-      {/* Tailwind CSS Script - MUST be included for Tailwind classes to work */}
-      <script src="https://cdn.tailwindcss.com"></script>
-      {/* Custom CSS for Arabic font and scrollbar */}
-      <style jsx>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap'); /* Example Arabic font */
-
-        body {
-          font-family: 'Inter', sans-serif;
-        }
-
-        .font-arabic {
-          font-family: 'Amiri Quran', serif; /* Apply to Arabic text */
-        }
-
-        /* Custom Scrollbar for better aesthetics */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #10B981; /* green-500 */
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #065F46; /* green-800 */
-          border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #047857; /* green-700 */
-        }
-      `}</style>
+        {notification && (
+          <NotificationMessage
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+        )}
+      </div>
+      {/* Vercel Analytics and Speed Insights components */}
+      <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
+
+// --- Placeholder Components for other pages (Add full functionality later) ---
+
+const PrayerTimesPage = ({ onBackToHome }) => {
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const [prayerTimes, setPrayerTimes] = useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    // Attempt to get user's current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Fallback to a default location if geolocation fails
+          setLocation({ latitude: 53.72, longitude: -1.86 }); // Default to Halifax, UK
+        }
+      );
+    } else {
+      // Browser doesn't support Geolocation, use default
+      setLocation({ latitude: 53.72, longitude: -1.86 }); // Default to Halifax, UK
+    }
+  }, []);
+
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      const times = getPrayerTimes(location.latitude, location.longitude, currentDate);
+      setPrayerTimes(times);
+    }
+  }, [location, currentDate]);
+
+  const handlePrevDay = () => {
+    setCurrentDate(prevDate => addDays(prevDate, -1));
+  };
+
+  const handleNextDay = () => {
+    setCurrentDate(prevDate => addDays(prevDate, 1));
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Prayer Times</h2>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      <div className="text-center mb-6">
+        <p className="text-xl text-green-100 mb-2">Today: <span className="font-semibold">{format(currentDate, 'EEEE, MMMM d, yyyy')}</span></p>
+        <div className="flex justify-center items-center gap-4 mb-4">
+          <button onClick={handlePrevDay} className="bg-green-700 hover:bg-green-600 p-3 rounded-full shadow-md transition-colors"><ChevronLeft size={24} /></button>
+          <button onClick={handleNextDay} className="bg-green-700 hover:bg-green-600 p-3 rounded-full shadow-md transition-colors"><ChevronRight size={24} /></button>
+        </div>
+        {prayerTimes && prayerTimes.nextPrayer && (
+          <p className="text-2xl font-bold text-green-200 flex items-center justify-center">
+            <Clock9 size={28} className="mr-3 text-blue-300" />
+            Next Prayer: {prayerTimes.nextPrayer.name} in {prayerTimes.timeToNextPrayer}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {prayerTimes && prayerTimes.times.map((prayer) => (
+          <div key={prayer.name} className="bg-green-700 p-5 rounded-2xl shadow-lg flex items-center space-x-4">
+            <div className="text-4xl text-green-200 flex-shrink-0">{prayer.icon}</div>
+            <div>
+              <p className="text-xl font-semibold text-green-50">{prayer.name}</p>
+              <p className="text-2xl font-bold text-green-100">{format(prayer.time, 'h:mm a')}</p>
+            </div>
+          </div>
+        ))}
+        {!prayerTimes && (
+          <p className="col-span-full text-center text-green-300 text-lg">Loading prayer times or geolocation not available...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const BookmarksPage = ({ onBackToHome, bookmarkedVerses, onSelectSurah, onToggleBookmark }) => {
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Bookmarked Verses</h2>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      {bookmarkedVerses.length === 0 ? (
+        <p className="text-center text-green-300 text-lg py-8">You haven't bookmarked any verses yet. Start reading to save some!</p>
+      ) : (
+        <ul className="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
+          {bookmarkedVerses.map((bookmark, index) => {
+            const surah = quranData.surahs.find(s => s.id === bookmark.surahId);
+            return (
+              <li key={index} className="bg-green-700 p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-green-600">
+                <div>
+                  <p className="text-xl font-semibold text-green-50 mb-1">
+                    {surah?.englishName || `Surah ${bookmark.surahId}`} - Verse {bookmark.verseId}
+                  </p>
+                  {/* Displaying a placeholder as actual Arabic text isn't stored in bookmark object yet */}
+                  <p className="font-arabic text-right text-2xl text-green-200">{bookmark.arabicText || 'Arabic text placeholder'}</p>
+                </div>
+                <div className="flex items-center space-x-3 mt-3 sm:mt-0">
+                  <button
+                    onClick={() => onSelectSurah(bookmark.surahId)}
+                    className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-full text-white flex items-center shadow-md transition-colors"
+                  >
+                    <BookOpen size={18} className="mr-2" /> Read
+                  </button>
+                  <button
+                    onClick={() => onToggleBookmark(bookmark.surahId, bookmark.verseId)}
+                    className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-full text-white flex items-center shadow-md transition-colors"
+                  >
+                    <XCircle size={18} className="mr-2" /> Remove
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [feedback, setFeedback] = useState(null); // 'correct', 'incorrect', null
+  const [score, setScore] = useState(0);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("Combined"); // Default to Combined
+
+  // Function to get a random question based on category
+  const getRandomQuestion = useCallback((category) => {
+    const availableQuestions = category === "Combined"
+      ? quizQuestions
+      : quizQuestions.filter(q => q.category === category);
+
+    if (availableQuestions.length === 0) {
+      showNotification(`No questions available for category: ${category}`, 'error');
+      return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    return availableQuestions[randomIndex];
+  }, [showNotification]);
+
+
+  useEffect(() => {
+    if (quizStarted) {
+      setCurrentQuestion(getRandomQuestion(selectedCategory));
+      setFeedback(null);
+      setSelectedAnswer(null);
+    }
+  }, [quizStarted, selectedCategory, getRandomQuestion]); // Re-fetch question when category changes
+
+  const handleAnswer = (answer) => {
+    setSelectedAnswer(answer);
+    if (answer === currentQuestion.correctAnswer) {
+      setFeedback('correct');
+      setScore(prevScore => prevScore + 10); // Award points for correct answer
+      updateUserProgress(prev => ({ ...prev, points: prev.points + 10 })); // Update global points
+      showNotification("Correct! +10 points", 'success');
+    } else {
+      setFeedback('incorrect');
+      showNotification("Incorrect. Try again!", 'error');
+    }
+  };
+
+  const handleNextQuestion = () => {
+    setQuestionCount(prevCount => prevCount + 1);
+    setCurrentQuestion(getRandomQuestion(selectedCategory));
+    setFeedback(null);
+    setSelectedAnswer(null);
+  };
+
+  const startQuiz = () => {
+    setScore(0);
+    setQuestionCount(0);
+    setQuizStarted(true);
+    setSelectedAnswer(null);
+    setFeedback(null);
+    setCurrentQuestion(getRandomQuestion(selectedCategory));
+  };
+
+  const resetQuiz = () => {
+    setQuizStarted(false);
+    setScore(0);
+    setQuestionCount(0);
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setFeedback(null);
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Quran Quiz</h2>
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      {!quizStarted ? (
+        <div className="text-center py-8">
+          <p className="text-xl text-green-200 mb-4">Test your knowledge of the Quran!</p>
+          <div className="mb-6">
+            <label htmlFor="quiz-category" className="block text-green-200 font-medium mb-2">Select Category:</label>
+            <select
+              id="quiz-category"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full md:w-1/2 lg:w-1/3 p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+            >
+              {quizCategories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={startQuiz}
+            className="bg-green-600 hover:bg-green-500 px-8 py-4 rounded-full text-white text-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50 transform hover:scale-105"
+          >
+            Start Quiz
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="text-center text-green-200 text-lg">
+            <p className="font-semibold">Score: {score} | Question: {questionCount + 1}</p>
+          </div>
+
+          {currentQuestion ? (
+            <div className="bg-green-700 p-6 rounded-2xl shadow-lg border border-green-600">
+              <p className="text-xl md:text-2xl font-medium text-green-50 mb-5 leading-relaxed">
+                {currentQuestion.question}
+              </p>
+              <div className="space-y-3">
+                {currentQuestion.choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(choice)}
+                    disabled={selectedAnswer !== null} // Disable buttons after an answer is selected
+                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 border-2 ${
+                      selectedAnswer === choice
+                        ? feedback === 'correct'
+                          ? 'bg-green-500 border-green-400 text-white shadow-lg'
+                          : 'bg-red-500 border-red-400 text-white shadow-lg'
+                        : selectedAnswer !== null && choice === currentQuestion.correctAnswer
+                          ? 'bg-green-400 border-green-300 text-white shadow-lg' // Highlight correct answer after selection
+                          : 'bg-green-600 hover:bg-green-500 border-green-600 text-green-50 hover:border-green-500'
+                    } disabled:opacity-70 disabled:cursor-not-allowed`}
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
+              {feedback && (
+                <div className="mt-6 text-center">
+                  <p className={`text-lg font-bold ${feedback === 'correct' ? 'text-green-300' : 'text-red-300'}`}>
+                    {feedback === 'correct' ? 'Correct Answer!' : `Incorrect. Correct was: "${currentQuestion.correctAnswer}"`}
+                  </p>
+                  <button
+                    onClick={handleNextQuestion}
+                    className="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-full text-white font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
+                  >
+                    Next Question
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-xl text-green-300">Quiz finished or no questions available.</p>
+              <button
+                onClick={resetQuiz}
+                className="mt-4 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-full text-white font-semibold shadow-md transition-all duration-200"
+              >
+                Start New Quiz
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
