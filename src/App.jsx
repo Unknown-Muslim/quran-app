@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format, parseISO, startOfDay, addDays, differenceInSeconds } from 'date-fns';
 // NEW: Import Lucide React icons for a modern look
-import { Home, BookOpen, Headphones, Mic, Clock, Star, HelpCircle, ArrowLeft, ChevronLeft, ChevronRight, Play, Pause, Bookmark, CheckCircle, XCircle, Info, Sun, Moon, Cloud, Zap, Award, User, Clock9, CalendarDays, BarChart, Gem, DollarSign, CircleDot, Square } from 'lucide-react'; // Added CircleDot, Square for recording
+import { Home, BookOpen, Headphones, Mic, Clock, Star, HelpCircle, ArrowLeft, ChevronLeft, ChevronRight, Play, Pause, Bookmark, CheckCircle, XCircle, Info, Sun, Moon, Cloud, Zap, Award, User, Clock9, CalendarDays, BarChart, Gem, DollarSign, CircleDot, Square, MessageSquareText } from 'lucide-react'; // Added MessageSquareText for Islamic Q&A
 // NEW: Import Vercel Analytics component for web analytics
 import { Analytics } from '@vercel/analytics/react';
 // NEW: Import Vercel Speed Insights component for performance monitoring
@@ -184,7 +184,7 @@ const quizQuestions = [
     correctAnswer: "ٱللَّهُ ٱلصَّمَدُ",
     choices: [
       "ٱللَّهُ ٱلصَّمَدُ",
-      "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "لَمْ يَلِدْ وَلَمْ يُوُلَدْ",
       "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌ",
       "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ"
     ],
@@ -617,6 +617,11 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
         <Card icon={Bookmark} title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
         <Card icon={HelpCircle} title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
       </div>
+
+      {/* NEW: Islamic Q&A Card */}
+      <div className="grid grid-cols-1">
+        <Card icon={MessageSquareText} title="Islamic Q&A" description="Ask your Islamic questions" onClick={() => setCurrentView('deen-buddy')} />
+      </div>
     </div>
   );
 };
@@ -678,20 +683,54 @@ const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHo
 };
 
 // QuranReader component for displaying and interacting with Quranic verses.
-const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, selectedReciterAlquranCloudId, showNotification, onBackToHome }) => { // Added onBackToHome prop
+const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVerseRead, onToggleBookmark, bookmarkedVerses, onVerseAudioPlay, selectedReciterAlquranCloudId, showNotification, onBackToHome }) => {
   const [surahVerses, setSurahVerses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [highlightedVerseId, setHighlightedVerseId] = useState(null);
   const [selectedFont, setSelectedFont] = useState(fontFamilies[0].name); // Default to first font
   const [fontSize, setFontSize] = useState(fontSizes[1].className); // Default to Medium font size
+  // State for Quran script edition
+  const [quranScriptEdition, setQuranScriptEdition] = useState('quran-uthmani'); // 'quran-uthmani' for 15-line style, 'quran-simple' for standard digital
 
   const audioRef = useRef(new Audio());
   audioRef.current.volume = 0.8; // Set default audio volume
 
   const selectedSurahMeta = quranData.surahs.find(s => s.id === selectedSurahId);
 
-  // Effect to fetch surah verses from the API when selectedSurahId changes.
+  // Swipe gesture states
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const minSwipeDistance = 50; // Minimum distance for a swipe to be registered
+
+  // Handle touch start
+  const onTouchStart = (e) => {
+    touchEndX.current = 0; // Reset endX
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  // Handle touch move
+  const onTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  // Handle touch end (swipe detection)
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNextSurah();
+    } else if (isRightSwipe) {
+      handlePrevSurah();
+    }
+  };
+
+
+  // Effect to fetch surah verses from the API when selectedSurahId or quranScriptEdition changes.
   useEffect(() => {
     const fetchSurah = async () => {
       setIsLoading(true);
@@ -706,20 +745,19 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
       }
 
       try {
-        // Fetch Arabic and English translation of the surah.
-        const response = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/editions/quran-simple,en.sahih`);
+        // Fetch Arabic text of the surah based on selected edition.
+        // We are no longer fetching translation here as per user request.
+        const response = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/editions/${quranScriptEdition}`);
         const data = await response.json();
 
         // Improved check for data validity
         if (data.code === 200 && data.data && data.data.length >= 1) { // Check for at least Arabic data
           const arabicVerses = data.data[0].ayahs;
-          const translationVerses = data.data[1] ? data.data[1].ayahs : []; // Safely get translation if available
 
-          const combinedVerses = arabicVerses.map((arabicAyah, index) => ({
+          const combinedVerses = arabicVerses.map((arabicAyah) => ({
             id: arabicAyah.numberInSurah,
             arabic: arabicAyah.text,
-            // Audio is fetched on demand, so no need to store it here from this endpoint
-            translation: translationVerses[index] ? translationVerses[index].text : 'Translation not available.',
+            // Translation is intentionally removed as per user request
           }));
           setSurahVerses(combinedVerses);
         } else {
@@ -735,7 +773,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
     };
 
     fetchSurah();
-  }, [selectedSurahId]);
+  }, [selectedSurahId, quranScriptEdition]); // Dependency added for quranScriptEdition
 
   // Effect to manage audio playback and reset highlighted verse.
   useEffect(() => {
@@ -753,7 +791,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
   }, []);
 
   // Callback to play verse audio and update last read position.
-  const playVerseAudio = useCallback(async (verseId) => { // Removed audioUrl from here
+  const playVerseAudio = useCallback(async (verseId) => {
     // Use the passed selected reciter, or fallback to the first featured reciter
     const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
 
@@ -777,17 +815,19 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
         if (data.code === 200 && data.data && data.data.audio) {
             console.log("QuranReader: Audio URL received:", data.data.audio); // DEBUG: Log the audio URL
             audioRef.current.src = data.data.audio;
+            audioRef.current.load(); // Added load()
             audioRef.current.play().catch(error => {
                 console.error("QuranReader: Error playing audio:", error);
                 showNotification("Failed to play audio. Your browser might block autoplay, or there's a network issue.", 'error');
             });
         } else {
             console.error("QuranReader: Audio not found in API response:", data);
-            showNotification("Audio not available for this verse or reciter. Check console for details.", 'error');
+            setError("Audio not available for this verse or reciter. Check console for details."); // Set error for display
+            showNotification("Audio not available for this verse or reciter.", 'error');
         }
     } catch (error) {
         console.error("QuranReader: Fetch audio error:", error);
-        setError("Could not fetch audio. Check your internet connection."); // Set error for display
+        setError("Could not connect to Quran API for audio. Please check your internet connection."); // Set error for display
         showNotification("Could not fetch audio. Check your internet connection.", 'error');
     }
 
@@ -800,6 +840,8 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
       onSurahChange(selectedSurahId - 1); // Navigate to previous surah.
       audioRef.current.pause(); // Pause current audio.
       setHighlightedVerseId(null); // Clear highlight.
+    } else {
+      showNotification("You are at the first Surah.", 'info');
     }
   };
 
@@ -809,6 +851,8 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
       onSurahChange(selectedSurahId + 1); // Navigate to next surah.
       audioRef.current.pause(); // Pause current audio.
       setHighlightedVerseId(null); // Clear highlight.
+    } else {
+      showNotification("You are at the last Surah.", 'info');
     }
   };
 
@@ -859,7 +903,12 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
   }
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+    <div
+      className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToSurahList}
@@ -869,7 +918,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
           Back
         </button>
         <button
-          onClick={onBackToHome} // <-- ADDED HOME BUTTON
+          onClick={onBackToHome}
           className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
         >
           <Home size={20} className="mr-2" />
@@ -896,15 +945,16 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
         </div>
       </div>
 
-      {/* Font Controls */}
-      <div className="flex flex-wrap justify-center items-center gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
+      {/* Font and Quran Script Controls */}
+      <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
+        {/* Font Family */}
         <div className="flex items-center space-x-2">
           <label htmlFor="font-family" className="text-green-200 font-medium">Font:</label>
           <select
             id="font-family"
             value={selectedFont}
             onChange={handleFontFamilyChange}
-            className="p-2 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-2 focus:ring-green-400 border border-green-500 shadow-sm"
+            className="p-2 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-2 focus:ring-4 focus:ring-green-400 border border-green-500 shadow-sm"
           >
             {fontFamilies.map(font => (
               <option key={font.name} value={font.name}>
@@ -913,6 +963,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             ))}
           </select>
         </div>
+        {/* Font Size */}
         <div className="flex items-center space-x-2">
           <label className="text-green-200 font-medium">Font Size:</label>
           <button
@@ -929,7 +980,30 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
             +
           </button>
         </div>
+        {/* Quran Script Edition */}
+        <div className="flex items-center space-x-2 mt-4 md:mt-0">
+          <label className="text-green-200 font-medium">Quran Style:</label>
+          <button
+            onClick={() => setQuranScriptEdition('quran-uthmani')}
+            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              quranScriptEdition === 'quran-uthmani' ? 'bg-green-500 text-white' : 'bg-green-600 hover:bg-green-500 text-green-50'
+            }`}
+          >
+            Uthmani (15-line style)
+          </button>
+          <button
+            onClick={() => setQuranScriptEdition('quran-simple')}
+            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              quranScriptEdition === 'quran-simple' ? 'bg-green-500 text-white' : 'bg-green-600 hover:bg-green-500 text-green-50'
+            }`}
+          >
+            Simple (Standard Digital)
+          </button>
+        </div>
       </div>
+      <p className="text-center text-sm text-green-300 italic mb-4">
+        Note: "15-line style" refers to the Uthmani script often used in 15-line Mushafs; digital rendering may vary from exact physical page layouts.
+      </p>
 
       {/* Verses Display */}
       <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar p-2">
@@ -952,7 +1026,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
                 <Bookmark size={24} fill={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "currentColor" : "none"} strokeWidth={1.5} />
               </button>
             </div>
-            <p className="text-green-100 text-left mt-2 text-base md:text-lg">{verse.translation}</p>
+            {/* Translation removed as per user request */}
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => {
@@ -988,7 +1062,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
 
   // Function to fetch and play audio for a specific verse
   const playVerse = useCallback(async (surahId, verseId) => {
-    // Use the passed selectedReciterAlquranCloudId, or default to the first featured reciter
+    // Use the passed selectedReciterAlquranCloudId, or fallback to the first featured reciter
     const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
 
     if (!reciterToUse) {
@@ -1012,6 +1086,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
         console.log("ListenPage: Audio URL received:", data.data.audio); // DEBUG: Log the audio URL
         setCurrentAudioUrl(data.data.audio);
         audioRef.current.src = data.data.audio;
+        audioRef.current.load(); // Added load()
         audioRef.current.play().then(() => setIsPlaying(true)).catch(err => {
           console.error("ListenPage: Error playing audio:", err);
           setError("Failed to play audio. Your browser might block autoplay, or there's a network issue.");
@@ -1211,8 +1286,8 @@ const PracticePage = ({ onBackToHome, showNotification }) => {
         // Ensure data.data exists, is an array, and has at least two elements (Arabic and Translation)
         // Also check if ayahs property exists and is an array with at least one element
         if (data.code === 200 && data.data && Array.isArray(data.data) && data.data.length >= 2 &&
-            data.data[0].ayahs && Array.isArray(data.data[0].ayahs) && data.data[0].ayahs.length > 0 &&
-            data.data[1].ayahs && Array.isArray(data.data[1].ayahs) && data.data[1].ayahs.length > 0) {
+            data.data[0]?.ayahs && Array.isArray(data.data[0].ayahs) && data.data[0].ayahs.length > 0 &&
+            data.data[1]?.ayahs && Array.isArray(data.data[1].ayahs) && data.data[1].ayahs.length > 0) {
 
           const arabicAyah = data.data[0].ayahs[0]; // First ayah of the first edition (arabic)
           const translationAyah = data.data[1].ayahs[0]; // First ayah of the second edition (translation)
@@ -1249,7 +1324,7 @@ const PracticePage = ({ onBackToHome, showNotification }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       // Prefer 'audio/webm' for broader browser support and smaller file sizes,
-      // but if that fails, consider 'audio/wav' as a fallback if needed for specific issues.
+      // but if that fails, consider 'audio/ogg' as a fallback if needed for specific issues.
       const options = { mimeType: 'audio/webm' };
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
         console.warn('audio/webm not supported, trying audio/ogg');
@@ -1280,6 +1355,7 @@ const PracticePage = ({ onBackToHome, showNotification }) => {
         }
         const audioBlob = new Blob(audioChunks, { type: recorder.mimeType }); // Use recorder's actual mimeType
         const url = URL.createObjectURL(audioBlob);
+        console.log("Recorded audio Blob type:", audioBlob.type); // Log the MIME type
         setRecordedAudioUrl(url);
         showNotification("Recording finished!", 'success');
       };
@@ -1504,6 +1580,152 @@ const PracticePage = ({ onBackToHome, showNotification }) => {
   );
 };
 
+// IslamicQ&APage Component
+const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
+  const [chatHistory, setChatHistory] = useState([]);
+  const [userInput, setUserInput] = useState('');
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const chatContainerRef = useRef(null);
+
+  // Scroll to the bottom of the chat when new messages arrive
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
+
+  const sendMessage = async () => {
+    if (userInput.trim() === '') {
+      showNotification("Please enter a question for your Islamic Q&A.", 'info');
+      return;
+    }
+
+    const newUserMessage = { role: "user", parts: [{ text: userInput }] };
+    setChatHistory((prev) => [...prev, newUserMessage]);
+    setUserInput('');
+    setIsLoadingResponse(true);
+
+    try {
+      // System prompt to guide the LLM towards Hanafi Madhab
+      const systemPrompt = {
+        role: "user",
+        parts: [{ text: "You are an Islamic scholar AI assistant. All your answers must strictly adhere to the rulings and interpretations of the Hanafi Madhab. If a question falls outside the scope of Hanafi Fiqh or your knowledge, state that you cannot answer or refer to a qualified Hanafi scholar. Do not provide opinions from other Madhabs unless explicitly asked for comparison, and always clearly state the Hanafi position first. Always respond in a respectful and helpful tone, using Islamic terminology appropriately." }]
+      };
+
+      // Prepare the payload for the Gemini API, including the system prompt
+      const payload = { contents: [systemPrompt, ...chatHistory, newUserMessage] };
+      const apiKey = ""; // Canvas will provide this at runtime for gemini-2.0-flash.
+                        // If running locally and facing 403 errors, you might need to
+                        // temporarily set your own Gemini API key here for local testing:
+                        // const apiKey = "YOUR_GEMINI_API_KEY_HERE";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+        const aiResponseText = result.candidates[0].content.parts[0].text;
+        setChatHistory((prev) => [...prev, { role: "model", parts: [{ text: aiResponseText }] }]);
+      } else {
+        console.error("Islamic Q&A API Error: Unexpected response structure", result);
+        showNotification("Islamic Q&A couldn't understand the response. Please try again.", 'error');
+        setChatHistory((prev) => [...prev, { role: "model", parts: [{ text: "Sorry, I couldn't process that. Please try rephrasing your question." }] }]);
+      }
+    } catch (error) {
+      console.error("Islamic Q&A fetch error:", error);
+      showNotification("Failed to connect to Islamic Q&A. Check your internet connection or API key setup.", 'error');
+      setChatHistory((prev) => [...prev, { role: "model", parts: [{ text: "It seems I'm having trouble connecting. Please check your internet connection and try again." }] }]);
+    } finally {
+      setIsLoadingResponse(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !isLoadingResponse) {
+      sendMessage();
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in flex flex-col h-[80vh]">
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={onBackToHome}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Islamic Q&A</h2> {/* Renamed title */}
+        <div className="w-10"></div> {/* Spacer */}
+      </div>
+
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-green-700 rounded-2xl shadow-inner mb-4 space-y-4">
+        {chatHistory.length === 0 && !isLoadingResponse ? (
+          <div className="text-center text-green-300 text-lg py-8">
+            <MessageSquareText size={48} className="mx-auto mb-4 text-green-400" />
+            <p>Assalamu alaikum! I'm your Islamic Q&A assistant. I strive to answer questions according to the Hanafi Madhab. How can I help you today?</p>
+            <p className="text-sm mt-2 opacity-80"> (e.g., "What is the meaning of Surah Al-Ikhlas?", "How do I perform Wudu according to Hanafi Fiqh?", "Tell me about Prophet Muhammad (PBUH).")</p>
+            <p className="text-xs mt-4 text-yellow-300">Disclaimer: This AI aims to provide guidance based on the Hanafi Madhab but is not a substitute for a qualified human scholar. Always consult with knowledgeable individuals for important religious matters.</p>
+          </div>
+        ) : (
+          chatHistory.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[75%] p-3 rounded-lg shadow-md ${
+                  message.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-br-none'
+                    : 'bg-green-600 text-white rounded-bl-none'
+                }`}
+              >
+                <p className="text-sm opacity-80 mb-1">{message.role === 'user' ? 'You' : 'Islamic Q&A'}</p>
+                <p className="text-base">{message.parts[0].text}</p>
+              </div>
+            </div>
+          ))
+        )}
+        {isLoadingResponse && (
+          <div className="flex justify-start">
+            <div className="max-w-[75%] p-3 rounded-lg shadow-md bg-green-600 text-white rounded-bl-none animate-pulse">
+              <p className="text-sm opacity-80 mb-1">Islamic Q&A</p>
+              <p className="text-base">Typing...</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center space-x-3">
+        <input
+          type="text"
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Ask your Islamic Q&A..."
+          className="flex-1 p-3 rounded-xl bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          disabled={isLoadingResponse}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={isLoadingResponse || userInput.trim() === ''}
+          className="bg-green-600 hover:bg-green-500 px-5 py-3 rounded-xl text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <MessageSquareText size={20} className="inline-block mr-2" /> Send
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
 // --- Main App Component ---
 export default function App() {
@@ -1514,7 +1736,7 @@ export default function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   // App UI State
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'surah-selector', 'quran-reader', 'listen', 'practice', 'prayer-times', 'bookmarks', 'quiz'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'surah-selector', 'quran-reader', 'listen', 'practice', 'prayer-times', 'bookmarks', 'quiz', 'deen-buddy'
   const [notification, setNotification] = useState(null);
 
   // Quran Reader State
@@ -1954,6 +2176,13 @@ export default function App() {
             showNotification={showNotification}
           />
         );
+      case 'deen-buddy': // This case now handles Islamic Q&A
+        return (
+          <DeenBuddyPage
+            onBackToHome={handleBackToHome}
+            showNotification={showNotification}
+          />
+        );
       default:
         return (
           <div className="text-center text-red-400 py-8">
@@ -1971,7 +2200,7 @@ export default function App() {
       <div className="container mx-auto p-4 md:p-8">
         <header className="text-center mb-8">
           <h1 className="text-5xl md:text-6xl font-extrabold text-green-200 drop-shadow-lg animate-fade-in-down">
-            Quran App
+            Nurul Quran {/* The new app name! */}
           </h1>
           <p className="text-xl md:text-2xl text-green-300 mt-2 font-light animate-fade-in">Your Daily Companion for Quranic Reflection</p>
           {userId && (
