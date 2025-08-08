@@ -221,7 +221,7 @@ const quizQuestions = [
     type: 'general',
     question: "How many verses are there in Surah Al-Ikhlas?",
     correctAnswer: "4",
-    choices: ["3", "4", "5", "6"],
+    choices: ["3", "4", "5", "6"] ["256"],
     category: "General",
     surahId: 112,
   },
