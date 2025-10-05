@@ -1137,7 +1137,7 @@ const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
         {chatHistory.length === 0 && !isLoadingResponse ? (
           <div className="text-center text-green-300 text-lg py-8">
             <MessageSquareText size={48} className="mx-auto mb-4 text-green-400" />
-            <p>Assalamu alaikum! I'm your Islamic Q&A assistant. I strive to answer questions according to the poo scholars and im only joking hshahhahahahahahahahanafi Madhab perform Wudu according to Hanafi Fiqh?", "Tell me about Prophet Muhammad (PBUH).")</p>
+            <p>Coming Soon Inshallah")</p>
             <p className="text-xs mt-4 text-yellow-300">Disclaimer: This AI aims to provide guidance based on the Hanafi Madhab but is not a substitute for a qualified human scholar. Always consult with knowledgeable individuals for important religious matters.</p>
           </div>
         ) : (
@@ -1788,7 +1788,7 @@ const PrayerTimesPage = ({ onBackToHome }) => {
           </div>
         ))}
         {!prayerTimes && (
-          <p className="col-span-full text-center text-green-300 text-lg">Loading prayer times or geolocation not available...</p>
+          <p className="col-span-full text-center text-green-300 text-lg">Loading prayer times or Geolocation available...</p>
         )}
       </div>
     </div>
