@@ -1707,35 +1707,28 @@ export default function App() {
 
 // --- Placeholder Components for other pages (Add full functionality later) ---
 
-const PrayerTimesPage = ({ onBackToHome }) => {
-  // ============================================================
-// PracticePage Component
-// Paste this ANYWHERE in your App.jsx BEFORE the closing export
-// (e.g. just above the line that starts: const PrayerTimesPage = ...)
-//
-// All icons used (Home, Mic, Square, Play, ArrowLeft, BookOpen)
-// are already imported in your existing lucide-react import line.
 // ============================================================
-
+// PracticePage — Record & play back your Quran recitation
+// ============================================================
 const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVersesRead }) => {
-  const [selectedSurahId, setSelectedSurahId] = React.useState(1);
-  const [selectedVerseId, setSelectedVerseId] = React.useState(1);
-  const [verseText, setVerseText] = React.useState('');
-  const [isLoadingVerse, setIsLoadingVerse] = React.useState(false);
+  const [selectedSurahId, setSelectedSurahId] = useState(1);
+  const [selectedVerseId, setSelectedVerseId] = useState(1);
+  const [verseText, setVerseText] = useState('');
+  const [isLoadingVerse, setIsLoadingVerse] = useState(false);
 
   // Recording state
-  const [isRecording, setIsRecording] = React.useState(false);
-  const [audioUrl, setAudioUrl] = React.useState(null);
-  const [recordingTime, setRecordingTime] = React.useState(0);
-  const mediaRecorderRef = React.useRef(null);
-  const chunksRef = React.useRef([]);
-  const timerRef = React.useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef = useRef(null);
 
   const selectedSurah = surahs.find(s => s.id === selectedSurahId);
   const verseCount = selectedSurah ? selectedSurah.numberOfVerses : 1;
 
-  // Fetch verse text whenever surah or verse selection changes
-  React.useEffect(() => {
+  // Fetch verse text whenever surah or verse changes
+  useEffect(() => {
     const fetchVerse = async () => {
       setIsLoadingVerse(true);
       setVerseText('');
@@ -1759,16 +1752,14 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
   }, [selectedSurahId, selectedVerseId]);
 
   // Reset recording when verse changes
-  React.useEffect(() => {
+  useEffect(() => {
     setAudioUrl(null);
     setRecordingTime(0);
   }, [selectedSurahId, selectedVerseId]);
 
   // Cleanup timer on unmount
-  React.useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
   const handleSurahChange = (e) => {
@@ -1784,7 +1775,6 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       chunksRef.current = [];
-
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
 
@@ -1807,12 +1797,11 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
       setAudioUrl(null);
       setRecordingTime(0);
 
-      // Start timer
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
     } catch (err) {
-      showNotification('Microphone access denied. Please allow microphone access in your browser.', 'error');
+      showNotification('Microphone access denied. Please allow microphone access in your browser settings.', 'error');
     }
   };
 
@@ -1848,13 +1837,12 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
         <div className="w-20"></div>
       </div>
 
-      {/* Step 1 – Choose Verse */}
+      {/* Step 1 — Choose Verse */}
       <div className="mb-6">
         <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
           Step 1 — Choose a Verse
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Surah dropdown */}
           <div>
             <label className="block text-green-200 font-medium mb-1 text-sm">Surah</label>
             <select
@@ -1869,8 +1857,6 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
               ))}
             </select>
           </div>
-
-          {/* Verse dropdown */}
           <div>
             <label className="block text-green-200 font-medium mb-1 text-sm">
               Verse ({verseCount} total)
@@ -1888,7 +1874,7 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
         </div>
       </div>
 
-      {/* Step 2 – Read the Verse */}
+      {/* Step 2 — Read the Verse */}
       <div className="mb-6">
         <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
           Step 2 — Read the Verse
@@ -1909,21 +1895,18 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
         </p>
       </div>
 
-      {/* Step 3 – Record */}
+      {/* Step 3 — Record */}
       <div className="mb-6">
         <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
           Step 3 — Record Your Recitation
         </p>
         <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-6 flex flex-col items-center gap-4">
-          {/* Recording status indicator */}
           {isRecording && (
             <div className="flex items-center gap-3 text-red-400 font-semibold animate-pulse">
               <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
               Recording — {formatTime(recordingTime)}
             </div>
           )}
-
-          {/* Record / Stop button */}
           <div className="flex items-center gap-4">
             {!isRecording ? (
               <button
@@ -1944,7 +1927,6 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
               </button>
             )}
           </div>
-
           <p className="text-green-400 text-sm text-center">
             {!verseText
               ? 'Load a verse first before recording.'
@@ -1955,7 +1937,7 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
         </div>
       </div>
 
-      {/* Step 4 – Playback */}
+      {/* Step 4 — Playback */}
       {audioUrl && (
         <div>
           <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -1963,14 +1945,12 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
           </p>
           <div className="bg-black bg-opacity-20 border border-green-500 rounded-2xl p-6 flex flex-col items-center gap-3">
             <p className="text-green-200 text-base text-center">
-              Listen to your recording and compare it with the verse above. 
-              Re-record as many times as you need!
+              Listen to your recording and compare it with the verse above. Re-record as many times as you need!
             </p>
             <audio
               controls
               src={audioUrl}
-              className="w-full max-w-md mt-2 rounded-full"
-              style={{ filter: 'invert(1) hue-rotate(90deg)' }}
+              className="w-full max-w-md mt-2"
             />
             <p className="text-green-400 text-xs mt-1">✅ Recording ready — how did it sound?</p>
           </div>
@@ -1980,6 +1960,8 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
     </div>
   );
 };
+
+const PrayerTimesPage = ({ onBackToHome }) => {
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -2289,5 +2271,3 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
     </div>
   );
 };
-
-
