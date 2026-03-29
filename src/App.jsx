@@ -1708,6 +1708,278 @@ export default function App() {
 // --- Placeholder Components for other pages (Add full functionality later) ---
 
 const PrayerTimesPage = ({ onBackToHome }) => {
+  // ============================================================
+// PracticePage Component
+// Paste this ANYWHERE in your App.jsx BEFORE the closing export
+// (e.g. just above the line that starts: const PrayerTimesPage = ...)
+//
+// All icons used (Home, Mic, Square, Play, ArrowLeft, BookOpen)
+// are already imported in your existing lucide-react import line.
+// ============================================================
+
+const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVersesRead }) => {
+  const [selectedSurahId, setSelectedSurahId] = React.useState(1);
+  const [selectedVerseId, setSelectedVerseId] = React.useState(1);
+  const [verseText, setVerseText] = React.useState('');
+  const [isLoadingVerse, setIsLoadingVerse] = React.useState(false);
+
+  // Recording state
+  const [isRecording, setIsRecording] = React.useState(false);
+  const [audioUrl, setAudioUrl] = React.useState(null);
+  const [recordingTime, setRecordingTime] = React.useState(0);
+  const mediaRecorderRef = React.useRef(null);
+  const chunksRef = React.useRef([]);
+  const timerRef = React.useRef(null);
+
+  const selectedSurah = surahs.find(s => s.id === selectedSurahId);
+  const verseCount = selectedSurah ? selectedSurah.numberOfVerses : 1;
+
+  // Fetch verse text whenever surah or verse selection changes
+  React.useEffect(() => {
+    const fetchVerse = async () => {
+      setIsLoadingVerse(true);
+      setVerseText('');
+      try {
+        const res = await fetch(
+          `https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${selectedVerseId}/quran-uthmani`
+        );
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+          setVerseText(data.data.text);
+        } else {
+          showNotification('Could not load verse text.', 'error');
+        }
+      } catch (err) {
+        showNotification('Network error loading verse.', 'error');
+      } finally {
+        setIsLoadingVerse(false);
+      }
+    };
+    fetchVerse();
+  }, [selectedSurahId, selectedVerseId]);
+
+  // Reset recording when verse changes
+  React.useEffect(() => {
+    setAudioUrl(null);
+    setRecordingTime(0);
+  }, [selectedSurahId, selectedVerseId]);
+
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const handleSurahChange = (e) => {
+    setSelectedSurahId(Number(e.target.value));
+    setSelectedVerseId(1);
+  };
+
+  const handleVerseChange = (e) => {
+    setSelectedVerseId(Number(e.target.value));
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunksRef.current = [];
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerRef.current);
+        showNotification('Recording saved! Play it back to check your recitation.', 'success');
+        if (incrementVersesRead) incrementVersesRead();
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setAudioUrl(null);
+      setRecordingTime(0);
+
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      showNotification('Microphone access denied. Please allow microphone access in your browser.', 'error');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(timerRef.current);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => setCurrentPage('home')}
+          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+        >
+          <Home size={20} className="mr-2" />
+          Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">
+          Practice Recitation
+        </h2>
+        <div className="w-20"></div>
+      </div>
+
+      {/* Step 1 – Choose Verse */}
+      <div className="mb-6">
+        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
+          Step 1 — Choose a Verse
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Surah dropdown */}
+          <div>
+            <label className="block text-green-200 font-medium mb-1 text-sm">Surah</label>
+            <select
+              value={selectedSurahId}
+              onChange={handleSurahChange}
+              className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+            >
+              {surahs.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.id}. {s.englishName} — {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Verse dropdown */}
+          <div>
+            <label className="block text-green-200 font-medium mb-1 text-sm">
+              Verse ({verseCount} total)
+            </label>
+            <select
+              value={selectedVerseId}
+              onChange={handleVerseChange}
+              className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+            >
+              {Array.from({ length: verseCount }, (_, i) => i + 1).map(v => (
+                <option key={v} value={v}>Verse {v}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 2 – Read the Verse */}
+      <div className="mb-6">
+        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
+          Step 2 — Read the Verse
+        </p>
+        <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-6 min-h-[110px] flex items-center justify-center">
+          {isLoadingVerse ? (
+            <p className="text-green-300 animate-pulse text-lg">Loading verse...</p>
+          ) : verseText ? (
+            <p className="font-arabic text-3xl md:text-4xl leading-loose text-green-50 text-right w-full">
+              {verseText}
+            </p>
+          ) : (
+            <p className="text-green-400 text-lg">Select a verse above to see the text.</p>
+          )}
+        </div>
+        <p className="text-xs text-green-400 mt-2 text-right">
+          {selectedSurah?.englishName} ({selectedSurahId}:{selectedVerseId})
+        </p>
+      </div>
+
+      {/* Step 3 – Record */}
+      <div className="mb-6">
+        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
+          Step 3 — Record Your Recitation
+        </p>
+        <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-6 flex flex-col items-center gap-4">
+          {/* Recording status indicator */}
+          {isRecording && (
+            <div className="flex items-center gap-3 text-red-400 font-semibold animate-pulse">
+              <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
+              Recording — {formatTime(recordingTime)}
+            </div>
+          )}
+
+          {/* Record / Stop button */}
+          <div className="flex items-center gap-4">
+            {!isRecording ? (
+              <button
+                onClick={startRecording}
+                disabled={isLoadingVerse || !verseText}
+                className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-4 rounded-full text-white text-lg font-semibold flex items-center gap-3 shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-red-400 focus:ring-opacity-50 transform hover:scale-105"
+              >
+                <Mic size={22} />
+                {audioUrl ? 'Re-record' : 'Start Recording'}
+              </button>
+            ) : (
+              <button
+                onClick={stopRecording}
+                className="bg-gray-700 hover:bg-gray-600 px-8 py-4 rounded-full text-white text-lg font-semibold flex items-center gap-3 shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-opacity-50"
+              >
+                <Square size={22} fill="currentColor" />
+                Stop Recording
+              </button>
+            )}
+          </div>
+
+          <p className="text-green-400 text-sm text-center">
+            {!verseText
+              ? 'Load a verse first before recording.'
+              : isRecording
+              ? 'Recite the verse above clearly, then press Stop.'
+              : 'Press the button and recite the verse. Press Stop when finished.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Step 4 – Playback */}
+      {audioUrl && (
+        <div>
+          <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
+            Step 4 — Play Back &amp; Check
+          </p>
+          <div className="bg-black bg-opacity-20 border border-green-500 rounded-2xl p-6 flex flex-col items-center gap-3">
+            <p className="text-green-200 text-base text-center">
+              Listen to your recording and compare it with the verse above. 
+              Re-record as many times as you need!
+            </p>
+            <audio
+              controls
+              src={audioUrl}
+              className="w-full max-w-md mt-2 rounded-full"
+              style={{ filter: 'invert(1) hue-rotate(90deg)' }}
+            />
+            <p className="text-green-400 text-xs mt-1">✅ Recording ready — how did it sound?</p>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
