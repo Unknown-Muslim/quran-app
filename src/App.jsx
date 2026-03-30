@@ -1708,6 +1708,225 @@ export default function App() {
 // --- Placeholder Components for other pages (Add full functionality later) ---
 
 // ============================================================
+// ListenPage — Pick a reciter & surah and stream audio
+// ============================================================
+const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, selectedReciterEnglishName, selectedReciterAlquranCloudId, showNotification }) => {
+  const allReciters = [...recitersData.featured, ...recitersData.free];
+
+  const [activeReciterId, setActiveReciterId]     = useState(selectedReciterId || allReciters[0].id);
+  const [selectedSurahId, setSelectedSurahId]     = useState(1);
+  const [verses, setVerses]                       = useState([]);
+  const [isLoadingVerses, setIsLoadingVerses]     = useState(false);
+  const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
+  const [isPlaying, setIsPlaying]                 = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio]       = useState(false);
+  const audioRef = useRef(new Audio());
+
+  const activeReciter = allReciters.find(r => r.id === activeReciterId) || allReciters[0];
+  const selectedSurah = quranData.surahs.find(s => s.id === selectedSurahId);
+
+  // Fetch verse texts for selected surah
+  useEffect(() => {
+    const fetchVerses = async () => {
+      setIsLoadingVerses(true);
+      setVerses([]);
+      setIsPlaying(false);
+      setCurrentVerseIndex(0);
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      try {
+        const res = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/quran-uthmani`);
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+          setVerses(data.data.ayahs.map(a => ({ id: a.numberInSurah, text: a.text })));
+        } else {
+          showNotification('Could not load surah verses.', 'error');
+        }
+      } catch {
+        showNotification('Network error loading surah.', 'error');
+      } finally {
+        setIsLoadingVerses(false);
+      }
+    };
+    fetchVerses();
+  }, [selectedSurahId]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => { audio.pause(); audio.src = ''; };
+  }, []);
+
+  const playVerse = useCallback(async (verseIndex) => {
+    const verse = verses[verseIndex];
+    if (!verse) return;
+    setIsLoadingAudio(true);
+    audioRef.current.pause();
+    audioRef.current.src = '';
+    try {
+      const res = await fetch(
+        `https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verse.id}/${activeReciter.alquranCloudId}`
+      );
+      const data = await res.json();
+      if (data.code === 200 && data.data?.audio) {
+        audioRef.current.src = data.data.audio;
+        audioRef.current.load();
+        await audioRef.current.play();
+        setIsPlaying(true);
+        setCurrentVerseIndex(verseIndex);
+        audioRef.current.onended = () => {
+          const next = verseIndex + 1;
+          if (next < verses.length) {
+            playVerse(next);
+          } else {
+            setIsPlaying(false);
+            showNotification('Surah complete!', 'success');
+          }
+        };
+      } else {
+        showNotification('Audio not available for this verse.', 'error');
+        setIsPlaying(false);
+      }
+    } catch {
+      showNotification('Could not load audio. Check your connection.', 'error');
+      setIsPlaying(false);
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  }, [verses, selectedSurahId, activeReciter]);
+
+  const handlePlayPause = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      if (audioRef.current.src && audioRef.current.paused) {
+        audioRef.current.play();
+        setIsPlaying(true);
+      } else {
+        playVerse(currentVerseIndex);
+      }
+    }
+  };
+
+  const handlePrev = () => {
+    const prev = Math.max(0, currentVerseIndex - 1);
+    playVerse(prev);
+  };
+
+  const handleNext = () => {
+    const next = Math.min(verses.length - 1, currentVerseIndex + 1);
+    playVerse(next);
+  };
+
+  const handleVerseClick = (idx) => {
+    playVerse(idx);
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <button onClick={onBackToHome} className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md">
+          <Home size={20} className="mr-2" /> Home
+        </button>
+        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Listen</h2>
+        <div className="w-20"></div>
+      </div>
+
+      {/* Reciter picker */}
+      <div className="mb-6">
+        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">Choose Reciter</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {allReciters.map(r => (
+            <button
+              key={r.id}
+              onClick={() => { setActiveReciterId(r.id); setIsPlaying(false); audioRef.current.pause(); audioRef.current.src = ''; }}
+              className={`p-3 rounded-2xl flex flex-col items-center border-2 transition-all duration-200 ${activeReciterId === r.id ? 'border-green-400 bg-green-600' : 'border-green-700 bg-green-700 hover:bg-green-600'}`}
+            >
+              <img src={r.imageUrl} alt={r.englishName} className="w-14 h-14 rounded-full mb-2 border-2 border-green-400" onError={e => { e.target.src = 'https://placehold.co/56x56/6EE7B7/047857?text=R'; }} />
+              <p className="text-xs font-semibold text-center text-green-50 leading-tight">{r.englishName}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Surah picker */}
+      <div className="mb-6">
+        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">Choose Surah</p>
+        <select
+          value={selectedSurahId}
+          onChange={e => setSelectedSurahId(Number(e.target.value))}
+          className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+        >
+          {quranData.surahs.map(s => (
+            <option key={s.id} value={s.id}>{s.id}. {s.englishName} — {s.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Player controls */}
+      <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-5 mb-6 flex flex-col items-center gap-4">
+        <div className="text-center">
+          <p className="text-green-100 font-bold text-lg">{selectedSurah?.englishName} <span className="font-arabic text-2xl text-green-200">{selectedSurah?.name}</span></p>
+          <p className="text-green-300 text-sm mt-1">
+            {isLoadingVerses ? 'Loading verses...' : verses.length > 0 ? `Verse ${verses[currentVerseIndex]?.id ?? 1} of ${verses.length} · ${activeReciter.englishName}` : ''}
+          </p>
+        </div>
+
+        {/* Arabic verse display */}
+        {verses.length > 0 && !isLoadingVerses && (
+          <p className="font-arabic text-2xl md:text-3xl leading-loose text-green-50 text-right w-full px-2">
+            {verses[currentVerseIndex]?.text}
+          </p>
+        )}
+        {isLoadingVerses && <p className="text-green-300 animate-pulse">Loading surah...</p>}
+
+        {/* Controls */}
+        <div className="flex items-center gap-5 mt-2">
+          <button onClick={handlePrev} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === 0} className="bg-green-700 hover:bg-green-600 disabled:opacity-40 p-3 rounded-full shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-green-500">
+            <ChevronLeft size={24} />
+          </button>
+          <button onClick={handlePlayPause} disabled={isLoadingAudio || verses.length === 0 || isLoadingVerses} className="bg-green-500 hover:bg-green-400 disabled:opacity-40 p-5 rounded-full shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-green-400 transform hover:scale-105">
+            {isLoadingAudio ? (
+              <div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
+              <Pause size={28} fill="currentColor" />
+            ) : (
+              <Play size={28} fill="currentColor" />
+            )}
+          </button>
+          <button onClick={handleNext} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === verses.length - 1} className="bg-green-700 hover:bg-green-600 disabled:opacity-40 p-3 rounded-full shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-green-500">
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      </div>
+
+      {/* Verse list */}
+      {verses.length > 0 && (
+        <div>
+          <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">All Verses — tap to jump</p>
+          <ul className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+            {verses.map((v, idx) => (
+              <li key={v.id}>
+                <button
+                  onClick={() => handleVerseClick(idx)}
+                  className={`w-full text-right p-4 rounded-xl border transition-all duration-200 font-arabic text-xl leading-loose ${idx === currentVerseIndex ? 'bg-green-600 border-green-400 text-white' : 'bg-green-700 border-green-700 hover:bg-green-600 text-green-100'}`}
+                >
+                  <span className="float-left text-xs text-green-300 mt-1 font-sans font-semibold">{v.id}</span>
+                  {v.text}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================
 // PracticePage — Record & play back your Quran recitation
 // ============================================================
 const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVersesRead }) => {
