@@ -771,152 +771,142 @@ const achievementsData = [
 // --- Quiz Data ---
 // Comprehensive quiz questions covering various topics and question types.
 const quizQuestions = [
-  {
-    id: 1,
-    type: 'translation',
-    question: "What is the English translation of Surah Al-Fatiha, Verse 1:\n\"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\"",
-    correctAnswer: "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
-    choices: [
-      "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
-      "All praise is due to Allah, Lord of the worlds.",
-      "The Most Gracious, the Most Merciful.",
-      "Master of the Day of Judgment."
-    ],
-    category: "Short Surahs",
-    surahId: 1,
-    verseId: 1
-  },
-  {
-    id: 2,
-    type: 'next-verse',
-    question: "Which verse comes AFTER Surah Al-Ikhlas, Verse 1:\n\"قُلْ هُوَ ٱللَّهُ أَحَدٌ\"",
-    correctAnswer: "ٱللَّهُ ٱلصَّمَدُ",
-    choices: [
-      "ٱللَّهُ ٱلصَّمَدُ",
-      "لَمْ يَلِدْ وَلَمْ يُوُلَدْ",
-      "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌ",
-      "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ"
-    ],
-    category: "Short Surahs",
-    surahId: 112,
-    verseId: 1
-  },
-  {
-    id: 3,
-    type: 'translation',
-    question: "What is the English translation of Surah An-Nas, Verse 1:\n\"قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ\"",
-    correctAnswer: "Say, 'I seek refuge in the Lord of mankind,'",
-    choices: [
-      "Say, 'I seek refuge in the Lord of mankind,'",
-      "The King of mankind,",
-      "The God of mankind,",
-      "From the evil of the whisperer who withdraws."
-    ],
-    category: "Short Surahs",
-    surahId: 114,
-    verseId: 1
-  },
-  {
-    id: 4,
-    type: 'general',
-    question: "Which Surah is known as 'The Opening'?",
-    correctAnswer: "Al-Fatiha",
-    choices: ["Al-Baqarah", "Al-Fatiha", "An-Nas", "Al-Ikhlas"],
-    category: "General",
-    surahId: 1,
-  },
-  {
-    id: 5,
-    type: 'general',
-    question: "How many verses are there in Surah Al-Ikhlas?",
-    correctAnswer: "4",
-    choices: ["3", "4", "5", "6"] ["256"],
-    category: "General",
-    surahId: 112,
-  },
-  {
-    id: 6,
-    type: 'prophets',
-    question: "Which prophet's story is prominently featured in Surah Yusuf?",
-    correctAnswer: "Yusuf (Joseph)",
-    choices: ["Musa (Moses)", "Isa (Jesus)", "Yusuf (Joseph)", "Ibrahim (Abraham)"],
-    category: "Prophets",
-    surahId: 12,
-  },
-  {
-    id: 7,
-    type: 'general',
-    question: "What is the longest Surah in the Quran?",
-    correctAnswer: "Al-Baqarah",
-    choices: ["Al-Imran", "An-Nisa", "Al-Baqarah", "Al-Maidah"],
-    category: "General",
-    surahId: 2,
-  },
-  {
-    id: 8,
-    type: 'short-surahs',
-    question: "Which Surah begins with 'Say, He is Allah, [the] One,'?",
-    correctAnswer: "Al-Ikhlas",
-    choices: ["Al-Kafirun", "Al-Falaq", "An-Nas", "Al-Ikhlas"],
-    category: "Short Surahs",
-    surahId: 112,
-  },
-  {
-    id: 9,
-    type: 'stories',
-    question: "What is the name of the cave mentioned in Surah Al-Kahf?",
-    correctAnswer: "Al-Kahf (The Cave)",
-    choices: ["Hira", "Thawr", "Al-Kahf (The Cave)", "Uhud"],
-    category: "Stories",
-    surahId: 18,
-  },
-  {
-    id: 10,
-    type: 'general',
-    question: "Which Surah is also known as 'The Spider'?",
-    correctAnswer: "Al-Ankabut",
-    choices: ["Al-Ankabut", "An-Nahl", "Al-Naml", "Al-Fil"],
-    category: "General",
-    surahId: 29,
-  },
-  {
-    id: 11,
-    type: 'history',
-    question: "The first revelation came down in which month?",
-    correctAnswer: "Ramadan",
-    choices: ["Shawwal", "Rabi' al-Awwal", "Ramadan", "Muharram"],
-    category: "History",
-  },
-  {
-    id: 12,
-    type: 'general',
-    question: "Which angel delivered the revelation to Prophet Muhammad (PBUH)?",
-    correctAnswer: "Jibreel (Gabriel)",
-    choices: ["Israfil", "Mikail", "Jibreel (Gabriel)", "Azrael"],
-    category: "General",
-  },
-  {
-    id: 13,
-    type: 'short-surahs',
-    question: "What is the meaning of 'Al-Fatiha'?",
-    correctAnswer: "The Opening",
-    choices: ["The Cow", "The Opening", "The Chapter", "The People"],
-    category: "Short Surahs",
-    surahId: 1,
-  },
-  // You can add many more quiz questions here following this structure.
+  // ── General ────────────────────────────────────────────────────────────────
+  { id:1, category:"General", question:"How many Surahs are in the Quran?", correctAnswer:"114", choices:["99","110","114","124"] },
+  { id:2, category:"General", question:"How many verses (Ayaat) are in the Quran?", correctAnswer:"6,236", choices:["5,000","6,236","6,666","7,777"] },
+  { id:3, category:"General", question:"Which is the longest Surah in the Quran?", correctAnswer:"Al-Baqarah", choices:["Al-Baqarah","An-Nisa","Al-Imran","At-Tawbah"] },
+  { id:4, category:"General", question:"Which is the shortest Surah in the Quran?", correctAnswer:"Al-Kawthar", choices:["Al-Ikhlas","An-Nas","Al-Kawthar","Al-Asr"] },
+  { id:5, category:"General", question:"Which Surah is known as 'The Opening'?", correctAnswer:"Al-Fatiha", choices:["Al-Fatiha","Al-Baqarah","An-Nas","Al-Ikhlas"] },
+  { id:6, category:"General", question:"Which angel delivered the revelation to the Prophet ﷺ?", correctAnswer:"Jibreel (Gabriel)", choices:["Jibreel (Gabriel)","Mikail","Israfil","Azrael"] },
+  { id:7, category:"General", question:"In how many years was the Quran revealed?", correctAnswer:"23 years", choices:["10 years","15 years","23 years","30 years"] },
+  { id:8, category:"General", question:"Which Surah does NOT begin with Bismillah?", correctAnswer:"At-Tawbah", choices:["At-Tawbah","Al-Kahf","Al-Anfal","Al-Hajj"] },
+  { id:9, category:"General", question:"How many Makki Surahs are there?", correctAnswer:"86", choices:["60","86","90","98"] },
+  { id:10, category:"General", question:"Which Surah is called the heart of the Quran?", correctAnswer:"Ya-Sin", choices:["Al-Fatiha","Ya-Sin","Al-Kahf","Al-Baqarah"] },
+  { id:11, category:"General", question:"In how many parts (Juz) is the Quran divided?", correctAnswer:"30", choices:["20","25","30","40"] },
+  { id:12, category:"General", question:"Which Surah contains Ayat al-Kursi?", correctAnswer:"Al-Baqarah", choices:["Al-Imran","Al-Baqarah","An-Nisa","Al-Maidah"] },
+  { id:13, category:"General", question:"What is Ayat al-Kursi? (its verse number in Al-Baqarah)", correctAnswer:"Verse 255", choices:["Verse 100","Verse 186","Verse 255","Verse 286"] },
+  { id:14, category:"General", question:"Which Surah has a prostration (Sajda) in its last verse?", correctAnswer:"Al-Alaq", choices:["Al-Alaq","Al-Fajr","At-Tariq","Al-Qadr"] },
+  { id:15, category:"General", question:"How many Surahs begin with the letters 'Alif Lam Mim'?", correctAnswer:"6", choices:["3","5","6","8"] },
+  { id:16, category:"General", question:"Which is the only Surah named after a woman?", correctAnswer:"Maryam", choices:["Maryam","Hadija","Fatima","Zainab"] },
+  { id:17, category:"General", question:"Which Surah is recited in every unit (Rak'ah) of prayer?", correctAnswer:"Al-Fatiha", choices:["Al-Ikhlas","Al-Fatiha","Al-Baqarah","Al-Kawthar"] },
+  { id:18, category:"General", question:"What does 'Quran' literally mean?", correctAnswer:"That which is read/recited", choices:["The Book","The Light","That which is read/recited","The Message"] },
+  { id:19, category:"General", question:"Which Surah contains the story of Dhul-Qarnayn?", correctAnswer:"Al-Kahf", choices:["Al-Anbiya","Al-Kahf","Al-Isra","Ta-Ha"] },
+  { id:20, category:"General", question:"How many times is the word 'Allah' mentioned in the Quran?", correctAnswer:"2,699", choices:["999","1,500","2,699","5,000"] },
+
+  // ── Prophets ───────────────────────────────────────────────────────────────
+  { id:21, category:"Prophets", question:"Which prophet is mentioned most in the Quran?", correctAnswer:"Musa (Moses)", choices:["Ibrahim (Abraham)","Isa (Jesus)","Musa (Moses)","Muhammad ﷺ"] },
+  { id:22, category:"Prophets", question:"Which Surah is entirely dedicated to the story of Yusuf (Joseph)?", correctAnswer:"Surah Yusuf (12)", choices:["Surah Yusuf (12)","Surah Ibrahim (14)","Surah Maryam (19)","Surah Yunus (10)"] },
+  { id:23, category:"Prophets", question:"How many prophets are mentioned by name in the Quran?", correctAnswer:"25", choices:["10","18","25","40"] },
+  { id:24, category:"Prophets", question:"Which prophet was swallowed by a whale?", correctAnswer:"Yunus (Jonah)", choices:["Musa (Moses)","Yunus (Jonah)","Ayyub (Job)","Idris (Enoch)"] },
+  { id:25, category:"Prophets", question:"Which prophet built the Kaaba with his son?", correctAnswer:"Ibrahim (Abraham)", choices:["Adam","Nuh (Noah)","Ibrahim (Abraham)","Ismail (Ishmael)"] },
+  { id:26, category:"Prophets", question:"Which prophet was given the ability to speak to animals and birds?", correctAnswer:"Sulayman (Solomon)", choices:["Dawud (David)","Sulayman (Solomon)","Idris","Ilyas"] },
+  { id:27, category:"Prophets", question:"Which prophet built the Ark?", correctAnswer:"Nuh (Noah)", choices:["Ibrahim (Abraham)","Nuh (Noah)","Hud","Salih"] },
+  { id:28, category:"Prophets", question:"Which prophet was born without a father?", correctAnswer:"Isa (Jesus)", choices:["Yahya (John)","Isa (Jesus)","Idris","Ismail"] },
+  { id:29, category:"Prophets", question:"Which prophet was thrown into fire and was saved by Allah?", correctAnswer:"Ibrahim (Abraham)", choices:["Musa (Moses)","Ibrahim (Abraham)","Ismail","Yunus"] },
+  { id:30, category:"Prophets", question:"Which prophet was known for his extreme patience and was afflicted with illness?", correctAnswer:"Ayyub (Job)", choices:["Ayyub (Job)","Musa (Moses)","Hud","Shuaib"] },
+  { id:31, category:"Prophets", question:"Which prophet received the Zabur (Psalms)?", correctAnswer:"Dawud (David)", choices:["Sulayman (Solomon)","Dawud (David)","Ibrahim (Abraham)","Musa (Moses)"] },
+  { id:32, category:"Prophets", question:"Which prophet received the Injeel (Gospel)?", correctAnswer:"Isa (Jesus)", choices:["Yahya (John)","Isa (Jesus)","Musa (Moses)","Ibrahim (Abraham)"] },
+  { id:33, category:"Prophets", question:"Which prophet received the Torah?", correctAnswer:"Musa (Moses)", choices:["Ibrahim (Abraham)","Dawud (David)","Musa (Moses)","Harun (Aaron)"] },
+  { id:34, category:"Prophets", question:"In which Surah is the story of prophet Hud mentioned?", correctAnswer:"Surah Hud (11)", choices:["Surah Hud (11)","Surah Al-Araf (7)","Surah Yunus (10)","Surah Nuh (71)"] },
+  { id:35, category:"Prophets", question:"Which prophet was known as 'Khalilullah' (Friend of Allah)?", correctAnswer:"Ibrahim (Abraham)", choices:["Musa (Moses)","Ibrahim (Abraham)","Muhammad ﷺ","Sulayman (Solomon)"] },
+  { id:36, category:"Prophets", question:"Which prophet is known as 'Kalimullah' (One who spoke to Allah)?", correctAnswer:"Musa (Moses)", choices:["Musa (Moses)","Ibrahim (Abraham)","Isa (Jesus)","Adam"] },
+  { id:37, category:"Prophets", question:"Which prophet was raised to the heavens without dying?", correctAnswer:"Idris (Enoch)", choices:["Isa (Jesus)","Idris (Enoch)","Ibrahim (Abraham)","Ilyas (Elijah)"] },
+  { id:38, category:"Prophets", question:"What miracle was given to Prophet Musa ﷺ?", correctAnswer:"His staff turning into a snake", choices:["Splitting the sea only","Speaking to animals","His staff turning into a snake","Flying to the heavens"] },
+  { id:39, category:"Prophets", question:"Which prophet is mentioned in both the Quran and the Bible as a carpenter?", correctAnswer:"None — the Quran does not describe Isa as a carpenter", choices:["None — the Quran does not describe Isa as a carpenter","Zakariyya","Yusuf (Joseph)","Isa (Jesus)"] },
+  { id:40, category:"Prophets", question:"Which prophet had the ability to make iron soft with his hands?", correctAnswer:"Dawud (David)", choices:["Sulayman (Solomon)","Dawud (David)","Ibrahim (Abraham)","Idris"] },
+
+  // ── Short Surahs ───────────────────────────────────────────────────────────
+  { id:41, category:"Short Surahs", question:"What is the meaning of 'Al-Ikhlas'?", correctAnswer:"Sincerity / Purity of Faith", choices:["Sincerity / Purity of Faith","The Elephant","The Pen","The Dawn"] },
+  { id:42, category:"Short Surahs", question:"How many verses does Surah Al-Ikhlas have?", correctAnswer:"4", choices:["3","4","5","6"] },
+  { id:43, category:"Short Surahs", question:"Which Surah declares that Allah is As-Samad (The Eternal Refuge)?", correctAnswer:"Al-Ikhlas", choices:["Al-Ikhlas","Al-Falaq","An-Nas","Al-Kawthar"] },
+  { id:44, category:"Short Surahs", question:"How many verses does Surah Al-Fatiha have?", correctAnswer:"7", choices:["5","6","7","8"] },
+  { id:45, category:"Short Surahs", question:"What is the meaning of 'Al-Kawthar'?", correctAnswer:"Abundance / The River in Paradise", choices:["The Elephant","Abundance / The River in Paradise","The Morning","The Night"] },
+  { id:46, category:"Short Surahs", question:"Which Surah mentions the 'People of the Elephant'?", correctAnswer:"Al-Fil", choices:["Al-Fil","Al-Humazah","At-Takathur","Al-Qadr"] },
+  { id:47, category:"Short Surahs", question:"What is the meaning of 'Al-Asr'?", correctAnswer:"The Time / The Afternoon", choices:["The Time / The Afternoon","The Morning","The Night","The Star"] },
+  { id:48, category:"Short Surahs", question:"Which Surah is known as a third of the Quran in reward?", correctAnswer:"Al-Ikhlas", choices:["Al-Fatiha","Al-Ikhlas","Al-Baqarah","Al-Kawthar"] },
+  { id:49, category:"Short Surahs", question:"Which two Surahs are known as Al-Mu'awwidhatayn (The Two Protections)?", correctAnswer:"Al-Falaq and An-Nas", choices:["Al-Ikhlas and Al-Fatiha","Al-Falaq and An-Nas","Al-Fil and Quraish","Al-Kawthar and Al-Asr"] },
+  { id:50, category:"Short Surahs", question:"Surah An-Nas asks for refuge from the evil of whom?", correctAnswer:"The whispering retreater (shaitan)", choices:["Humans","Jinns only","The whispering retreater (shaitan)","Evil eye"] },
+  { id:51, category:"Short Surahs", question:"What does 'Al-Falaq' mean?", correctAnswer:"The Daybreak / The Dawn", choices:["The Daybreak / The Dawn","The Mankind","The Jinn","The Night"] },
+  { id:52, category:"Short Surahs", question:"How many verses does Surah Al-Kawthar have?", correctAnswer:"3", choices:["3","4","5","6"] },
+  { id:53, category:"Short Surahs", question:"Which Surah says 'Truly with hardship comes ease'?", correctAnswer:"Ash-Sharh (Al-Inshirah)", choices:["Ad-Duhaa","Ash-Sharh (Al-Inshirah)","Al-Alaq","Al-Qadr"] },
+  { id:54, category:"Short Surahs", question:"In Surah Al-Asr, how many types of people are described as successful?", correctAnswer:"Those with faith, good deeds, truth, and patience", choices:["Only those who pray","Only the rich","Those with faith, good deeds, truth, and patience","Only the scholars"] },
+  { id:55, category:"Short Surahs", question:"Which Surah begins with 'Have you not seen what your Lord did to the companions of the elephant?'", correctAnswer:"Al-Fil", choices:["Al-Humazah","Al-Fil","Quraish","Al-Maun"] },
+
+  // ── Stories ────────────────────────────────────────────────────────────────
+  { id:56, category:"Stories", question:"Which Surah tells the story of the Companions of the Cave (Ashaab al-Kahf)?", correctAnswer:"Al-Kahf", choices:["Al-Kahf","Al-Anbiya","Al-Isra","Al-Qasas"] },
+  { id:57, category:"Stories", question:"What did the Companions of the Cave flee from?", correctAnswer:"A tyrant king who forced idol worship", choices:["A flood","A tyrant king who forced idol worship","A plague","An invading army"] },
+  { id:58, category:"Stories", question:"Who was the Queen of Sheba (Bilqis) in the Quran?", correctAnswer:"A queen who visited Sulayman", choices:["A prophetess","A queen who visited Sulayman","Maryam's mother","The wife of Pharaoh"] },
+  { id:59, category:"Stories", question:"Which Surah tells the story of Luqman the Wise?", correctAnswer:"Surah Luqman (31)", choices:["Surah Luqman (31)","Surah Al-Kahf (18)","Surah Maryam (19)","Surah Ibrahim (14)"] },
+  { id:60, category:"Stories", question:"In the story of Musa ﷺ, what was the name of the Pharaoh's wife who raised him?", correctAnswer:"Asiya", choices:["Asiya","Khadijah","Maryam","Zulaikha"] },
+  { id:61, category:"Stories", question:"What miracle did Salih's ﷺ people ask for and then betray?", correctAnswer:"A she-camel from a rock", choices:["A well of water","A she-camel from a rock","A tree that produced gold","Rain from the sky"] },
+  { id:62, category:"Stories", question:"In Surah Al-Qasas, who did Musa ﷺ accidentally kill?", correctAnswer:"An Egyptian (Coptic man)", choices:["A soldier of Pharaoh","An Egyptian (Coptic man)","A slave","A guard of the palace"] },
+  { id:63, category:"Stories", question:"What city did Prophet Lut ﷺ live in?", correctAnswer:"Sodom (Sadum)", choices:["Madyan","Sodom (Sadum)","Babylon","Nineveh"] },
+  { id:64, category:"Stories", question:"Which prophet's wife became a pillar of salt?", correctAnswer:"Lut (Lot)", choices:["Nuh (Noah)","Ibrahim (Abraham)","Lut (Lot)","Musa (Moses)"] },
+  { id:65, category:"Stories", question:"In Surah Yusuf, how many brothers did Yusuf have?", correctAnswer:"11 brothers (including Binyamin)", choices:["7","9","11 brothers (including Binyamin)","12"] },
+  { id:66, category:"Stories", question:"Who interpreted Yusuf's ﷺ dream about the seven fat and seven lean cows?", correctAnswer:"Yusuf ﷺ himself", choices:["The King's minister","Yusuf ﷺ himself","A wise man of Egypt","His father Yaqub"] },
+  { id:67, category:"Stories", question:"Which Surah mentions the story of Maryam (Mary) in detail?", correctAnswer:"Maryam (19)", choices:["Maryam (19)","Al-Imran (3)","An-Nisa (4)","Al-Baqarah (2)"] },
+  { id:68, category:"Stories", question:"What miracle was Isa ﷺ given that is mentioned in Surah Al-Maidah?", correctAnswer:"Bringing the dead back to life", choices:["Splitting the sea","Walking on water","Bringing the dead back to life","Turning water into milk"] },
+  { id:69, category:"Stories", question:"Which surah tells the story of Dhul-Qarnayn and the building of a wall against Yajuj and Majuj?", correctAnswer:"Al-Kahf", choices:["Al-Kahf","Al-Anbiya","Al-Isra","Al-Qasas"] },
+  { id:70, category:"Stories", question:"In the story of Nuh ﷺ, what was his people's punishment?", correctAnswer:"A great flood", choices:["A great flood","A fire from the sky","An earthquake","A plague of locusts"] },
+
+  // ── History ────────────────────────────────────────────────────────────────
+  { id:71, category:"History", question:"In which cave did the first revelation descend?", correctAnswer:"Cave Hira (Jabal al-Nour)", choices:["Cave Thawr","Cave Hira (Jabal al-Nour)","Cave Uhud","Cave Saur"] },
+  { id:72, category:"History", question:"In which month was the Quran first revealed?", correctAnswer:"Ramadan", choices:["Muharram","Rajab","Ramadan","Shawwal"] },
+  { id:73, category:"History", question:"Which was the first Surah revealed to the Prophet ﷺ?", correctAnswer:"Al-Alaq (first 5 verses)", choices:["Al-Fatiha","Al-Muddaththir","Al-Alaq (first 5 verses)","Al-Ikhlas"] },
+  { id:74, category:"History", question:"Who was the first to compile the Quran into a single book (Mushaf)?", correctAnswer:"Abu Bakr As-Siddiq (ra)", choices:["Uthman ibn Affan (ra)","Umar ibn al-Khattab (ra)","Abu Bakr As-Siddiq (ra)","Ali ibn Abi Talib (ra)"] },
+  { id:75, category:"History", question:"Who standardised and distributed the official Mushaf across the Muslim world?", correctAnswer:"Uthman ibn Affan (ra)", choices:["Umar ibn al-Khattab (ra)","Uthman ibn Affan (ra)","Ali ibn Abi Talib (ra)","Zaid ibn Thabit (ra)"] },
+  { id:76, category:"History", question:"Which companion was the chief scribe who compiled the Quran under Abu Bakr and Uthman?", correctAnswer:"Zaid ibn Thabit (ra)", choices:["Abdullah ibn Masud (ra)","Ubayy ibn Kab (ra)","Zaid ibn Thabit (ra)","Muawiyah ibn Abi Sufyan (ra)"] },
+  { id:77, category:"History", question:"The Quran was revealed over how many years?", correctAnswer:"23 years", choices:["10 years","20 years","23 years","40 years"] },
+  { id:78, category:"History", question:"Which Surah was the last to be revealed?", correctAnswer:"Al-Maidah (some scholars say) or An-Nasr", choices:["Al-Kawthar","Al-Ikhlas","Al-Maidah (some scholars say) or An-Nasr","Al-Fatiha"] },
+  { id:79, category:"History", question:"In which city was the Quran first revealed?", correctAnswer:"Makkah", choices:["Madinah","Makkah","Jerusalem","Ta'if"] },
+  { id:80, category:"History", question:"What is the name of the Night of Power mentioned in the Quran?", correctAnswer:"Laylat al-Qadr", choices:["Laylat al-Miraj","Laylat al-Bara'ah","Laylat al-Qadr","Laylat al-Mawlid"] },
+  { id:81, category:"History", question:"Which Surah describes Laylat al-Qadr as better than a thousand months?", correctAnswer:"Al-Qadr (97)", choices:["Al-Qadr (97)","Ad-Dukhan (44)","Al-Baqarah (2)","Al-Isra (17)"] },
+  { id:82, category:"History", question:"What event does Surah Al-Fil describe?", correctAnswer:"The Year of the Elephant — Abraha's attack on the Kaaba", choices:["The Battle of Badr","The Hijra to Madinah","The Year of the Elephant — Abraha's attack on the Kaaba","The conquest of Makkah"] },
+  { id:83, category:"History", question:"Which Surah was revealed to comfort the Prophet ﷺ when revelation briefly stopped?", correctAnswer:"Ad-Duhaa", choices:["Al-Inshirah","Ad-Duhaa","Al-Alaq","Al-Qadr"] },
+  { id:84, category:"History", question:"The Battle of Badr is alluded to in which Surah?", correctAnswer:"Al-Anfal (8)", choices:["Al-Anfal (8)","Al-Imran (3)","At-Tawbah (9)","Al-Baqarah (2)"] },
+  { id:85, category:"History", question:"Which Surah refers to the hypocrites of Madinah?", correctAnswer:"Al-Munafiqun (63)", choices:["Al-Munafiqun (63)","Al-Baqarah (2)","An-Nisa (4)","Al-Ahzab (33)"] },
+
+  // ── Pillars & Worship ──────────────────────────────────────────────────────
+  { id:86, category:"Pillars & Worship", question:"How many times is Salah (prayer) explicitly commanded in the Quran?", correctAnswer:"The Quran does not state a fixed number — Hadith specifies 5", choices:["3 times","5 times","The Quran does not state a fixed number — Hadith specifies 5","10 times"] },
+  { id:87, category:"Pillars & Worship", question:"Which Surah mentions fasting in Ramadan?", correctAnswer:"Al-Baqarah (2:183-185)", choices:["Al-Baqarah (2:183-185)","Al-Maidah (5)","An-Nisa (4)","At-Tawbah (9)"] },
+  { id:88, category:"Pillars & Worship", question:"The Quran mentions Zakat alongside Salah how many times?", correctAnswer:"Around 32 times", choices:["5 times","10 times","Around 32 times","50 times"] },
+  { id:89, category:"Pillars & Worship", question:"Which Surah contains the ruling on Hajj?", correctAnswer:"Al-Baqarah and Al-Hajj", choices:["Al-Hajj only","Al-Baqarah only","Al-Baqarah and Al-Hajj","At-Tawbah"] },
+  { id:90, category:"Pillars & Worship", question:"In which direction did Muslims first pray before the Qibla changed?", correctAnswer:"Jerusalem (Bayt al-Maqdis)", choices:["Makkah","Jerusalem (Bayt al-Maqdis)","Madinah","Iraq"] },
+  { id:91, category:"Pillars & Worship", question:"Which verse commands believers to 'establish prayer and give Zakat'?", correctAnswer:"Found throughout, including Al-Baqarah 2:43", choices:["Found throughout, including Al-Baqarah 2:43","Only in Al-Maidah","Only in Al-Hajj","Al-Fatiha 1:5"] },
+  { id:92, category:"Pillars & Worship", question:"What does the Quran say about the direction of prayer (Qibla) in Al-Baqarah?", correctAnswer:"Turn your face toward Al-Masjid Al-Haram", choices:["Turn your face toward Jerusalem","Turn your face toward Al-Masjid Al-Haram","Turn toward the East","Turn toward the West"] },
+  { id:93, category:"Pillars & Worship", question:"Which Surah forbids consuming alcohol and gambling?", correctAnswer:"Al-Maidah (5:90)", choices:["Al-Baqarah","An-Nisa","Al-Maidah (5:90)","Al-Anam"] },
+  { id:94, category:"Pillars & Worship", question:"The Quran states Zakat is for which categories of people?", correctAnswer:"8 categories including the poor, debtors, and travellers", choices:["Only the poor","The poor and orphans only","8 categories including the poor, debtors, and travellers","Unlimited — at giver's discretion"] },
+  { id:95, category:"Pillars & Worship", question:"Which Surah contains the verse of Wudu (ablution) instructions?", correctAnswer:"Al-Maidah (5:6)", choices:["Al-Maidah (5:6)","An-Nisa (4:43)","Al-Baqarah (2:222)","Al-Hajj (22)"] },
+
+  // ── Names & Meanings ───────────────────────────────────────────────────────
+  { id:96, category:"Names & Meanings", question:"What does 'Al-Baqarah' mean?", correctAnswer:"The Cow", choices:["The Cow","The Camel","The Horse","The Goat"] },
+  { id:97, category:"Names & Meanings", question:"What does 'Al-Kahf' mean?", correctAnswer:"The Cave", choices:["The Light","The Cave","The Mountain","The Rock"] },
+  { id:98, category:"Names & Meanings", question:"What does 'An-Nahl' mean?", correctAnswer:"The Bee", choices:["The Bee","The Ant","The Spider","The Fly"] },
+  { id:99, category:"Names & Meanings", question:"What does 'Al-Naml' mean?", correctAnswer:"The Ant", choices:["The Bee","The Spider","The Ant","The Elephant"] },
+  { id:100, category:"Names & Meanings", question:"What does 'Al-Ankabut' mean?", correctAnswer:"The Spider", choices:["The Spider","The Ant","The Bee","The Locust"] },
+  { id:101, category:"Names & Meanings", question:"What does 'Al-Mulk' mean?", correctAnswer:"The Sovereignty / Dominion", choices:["The King","The Sovereignty / Dominion","The Power","The Glory"] },
+  { id:102, category:"Names & Meanings", question:"What does 'Ar-Rahman' mean?", correctAnswer:"The Most Gracious / Most Merciful", choices:["The Creator","The Most Gracious / Most Merciful","The All-Knowing","The All-Powerful"] },
+  { id:103, category:"Names & Meanings", question:"What does 'Al-Maidah' mean?", correctAnswer:"The Table Spread (with food)", choices:["The Feast","The Table Spread (with food)","The Meal","The Banquet"] },
+  { id:104, category:"Names & Meanings", question:"What does 'Al-Isra' mean?", correctAnswer:"The Night Journey", choices:["The Ascension","The Night Journey","The Night Prayer","The Night Sky"] },
+  { id:105, category:"Names & Meanings", question:"What does 'Al-Fath' mean?", correctAnswer:"The Victory / Conquest", choices:["The Opening","The Victory / Conquest","The Peace","The Treaty"] },
+  { id:106, category:"Names & Meanings", question:"What does 'Al-Hujurat' mean?", correctAnswer:"The Private Apartments / Inner Chambers", choices:["The Private Apartments / Inner Chambers","The Walls","The Gates","The Rooms of the Mosque"] },
+  { id:107, category:"Names & Meanings", question:"What does 'Ar-Rum' mean?", correctAnswer:"The Romans / Byzantines", choices:["The Romans / Byzantines","The Persians","The Greeks","The Arabs"] },
+  { id:108, category:"Names & Meanings", question:"What does 'Al-Furqan' mean?", correctAnswer:"The Criterion (between right and wrong)", choices:["The Distinction","The Criterion (between right and wrong)","The Balance","The Truth"] },
+  { id:109, category:"Names & Meanings", question:"What does 'Al-Hijr' refer to?", correctAnswer:"The Rocky Tract — homeland of the people of Thamud", choices:["A mountain in Makkah","The Rocky Tract — homeland of the people of Thamud","The valley of Mina","A gate in Paradise"] },
+  { id:110, category:"Names & Meanings", question:"What does 'At-Talaq' mean?", correctAnswer:"The Divorce", choices:["The Marriage","The Divorce","The Separation","The Inheritance"] },
 ];
 
-// Categories available for the quiz, including a 'Combined' option.
 const quizCategories = [
-    "Combined", // For a mix of all questions
-    "General",
-    "Prophets",
-    "Short Surahs",
-    "Stories",
-    "History"
-    // Add more categories as you add more questions
+  "Combined",
+  "General",
+  "Prophets",
+  "Short Surahs",
+  "Stories",
+  "History",
+  "Pillars & Worship",
+  "Names & Meanings",
 ];
+
 
 // Define available font families for the Quran reader, with Tailwind CSS class names.
 const fontFamilies = [
@@ -2788,27 +2778,40 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
   const [score, setScore] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Combined"); // Default to Combined
+  const [selectedCategory, setSelectedCategory] = useState("Combined");
+  const [seenIds, setSeenIds] = useState(new Set());
 
-  // Function to get a random question based on category
-  const getRandomQuestion = useCallback((category) => {
-    const availableQuestions = category === "Combined"
+  // Returns a random question not yet seen this session; resets when pool exhausted
+  const getRandomQuestion = useCallback((category, currentSeenIds) => {
+    const pool = category === "Combined"
       ? quizQuestions
       : quizQuestions.filter(q => q.category === category);
 
-    if (availableQuestions.length === 0) {
-      showNotification(`No questions available for category: ${category}`, 'error');
-      return null;
+    if (pool.length === 0) {
+      showNotification(`No questions available for: ${category}`, 'error');
+      return { question: null, newSeenIds: currentSeenIds };
     }
 
-    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    return availableQuestions[randomIndex];
+    let unseen = pool.filter(q => !currentSeenIds.has(q.id));
+    if (unseen.length === 0) {
+      // All seen — reset the pool
+      unseen = pool;
+      showNotification('All questions completed! Shuffling again…', 'info');
+      return { question: unseen[Math.floor(Math.random() * unseen.length)], newSeenIds: new Set() };
+    }
+
+    const chosen = unseen[Math.floor(Math.random() * unseen.length)];
+    const newSet = new Set(currentSeenIds);
+    newSet.add(chosen.id);
+    return { question: chosen, newSeenIds: newSet };
   }, [showNotification]);
 
 
   useEffect(() => {
     if (quizStarted) {
-      setCurrentQuestion(getRandomQuestion(selectedCategory));
+      const { question, newSeenIds } = getRandomQuestion(selectedCategory, new Set());
+      setCurrentQuestion(question);
+      setSeenIds(newSeenIds);
       setFeedback(null);
       setSelectedAnswer(null);
     }
@@ -2828,19 +2831,24 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
   };
 
   const handleNextQuestion = () => {
+    const { question, newSeenIds } = getRandomQuestion(selectedCategory, seenIds);
     setQuestionCount(prevCount => prevCount + 1);
-    setCurrentQuestion(getRandomQuestion(selectedCategory));
+    setCurrentQuestion(question);
+    setSeenIds(newSeenIds);
     setFeedback(null);
     setSelectedAnswer(null);
   };
 
   const startQuiz = () => {
+    const freshSeen = new Set();
+    const { question, newSeenIds } = getRandomQuestion(selectedCategory, freshSeen);
     setScore(0);
     setQuestionCount(0);
     setQuizStarted(true);
     setSelectedAnswer(null);
     setFeedback(null);
-    setCurrentQuestion(getRandomQuestion(selectedCategory));
+    setSeenIds(newSeenIds);
+    setCurrentQuestion(question);
   };
 
   const resetQuiz = () => {
@@ -2850,6 +2858,7 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
     setCurrentQuestion(null);
     setSelectedAnswer(null);
     setFeedback(null);
+    setSeenIds(new Set());
   };
 
   return (
@@ -2877,7 +2886,7 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
             <span className="p-score-badge"><Star size={12} /> Score: {score}</span>
-            <span className="p-score-badge"><CircleDot size={12} /> Q {questionCount + 1}</span>
+            <span className="p-score-badge"><CircleDot size={12} /> Q {questionCount + 1} of {(selectedCategory === 'Combined' ? quizQuestions : quizQuestions.filter(q => q.category === selectedCategory)).length}</span>
           </div>
 
           {currentQuestion ? (
