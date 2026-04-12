@@ -13,6 +13,615 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore'; // Correct import statement
 
+
+// ─── Premium Style Injection ─────────────────────────────────────────────────
+const PremiumStyles = () => {
+  React.useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap';
+    document.head.appendChild(link);
+
+    const style = document.createElement('style');
+    style.id = 'nurul-premium';
+    style.textContent = `
+      :root {
+        --ink: #060a12;
+        --ink-2: #0c1221;
+        --ink-3: #131928;
+        --ink-4: #1b2236;
+        --ink-5: #232d46;
+        --gold: #c9a454;
+        --gold-l: #e2c27a;
+        --gold-d: #8a6d2e;
+        --gold-dim: rgba(201,164,84,0.18);
+        --cream: #f0e6d3;
+        --cream-2: #d4c4a8;
+        --cream-3: #a89880;
+        --cream-4: #5e5145;
+      }
+      * { box-sizing: border-box; }
+      body { background: var(--ink) !important; margin:0; }
+
+      .p-app {
+        min-height: 100vh;
+        background: var(--ink);
+        background-image:
+          radial-gradient(ellipse 70% 50% at 15% -10%, rgba(201,164,84,0.07) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 40% at 85% 110%, rgba(201,164,84,0.05) 0%, transparent 55%);
+        font-family: 'DM Sans', sans-serif;
+        color: var(--cream);
+      }
+
+      /* ── Header ── */
+      .p-header { text-align:center; padding: 40px 0 32px; }
+      .p-logo {
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 300;
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--cream);
+        margin: 0 0 6px;
+        line-height: 1;
+      }
+      .p-logo span { color: var(--gold); }
+      .p-tagline {
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        color: var(--gold);
+        margin-bottom: 20px;
+      }
+      .p-points-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 22px;
+        background: var(--ink-3);
+        border: 1px solid var(--gold-dim);
+        border-radius: 100px;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        color: var(--gold-l);
+        margin-top: 8px;
+      }
+
+      /* ── Nav Cards ── */
+      .p-card {
+        background: linear-gradient(145deg, var(--ink-3), var(--ink-2));
+        border: 1px solid var(--gold-dim);
+        border-radius: 20px;
+        padding: 28px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.32s cubic-bezier(.4,0,.2,1), border-color 0.25s, box-shadow 0.32s;
+        position: relative;
+        overflow: hidden;
+      }
+      .p-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.35), transparent);
+      }
+      .p-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(201,164,84,0.45);
+        box-shadow: 0 28px 60px rgba(0,0,0,0.55), 0 0 25px rgba(201,164,84,0.09);
+      }
+      .p-card-icon {
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(201,164,84,0.14), rgba(201,164,84,0.04));
+        border: 1px solid rgba(201,164,84,0.25);
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 14px;
+        color: var(--gold);
+        transition: border-color 0.25s;
+      }
+      .p-card:hover .p-card-icon { border-color: rgba(201,164,84,0.55); }
+      .p-card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--cream);
+        letter-spacing: 0.04em;
+        margin-bottom: 5px;
+      }
+      .p-card-desc {
+        font-size: 0.76rem;
+        color: var(--cream-3);
+        letter-spacing: 0.03em;
+      }
+
+      /* ── Section wrappers ── */
+      .p-section {
+        background: linear-gradient(160deg, var(--ink-3), var(--ink-2));
+        border: 1px solid var(--gold-dim);
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      .p-section::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.3), transparent);
+      }
+      .p-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: var(--cream);
+        letter-spacing: 0.05em;
+        margin: 0 0 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .p-section-title::after {
+        content: '';
+        flex: 1; height: 1px;
+        background: linear-gradient(90deg, rgba(201,164,84,0.25), transparent);
+      }
+
+      /* ── Verse of the Day ── */
+      .p-votd {
+        background: linear-gradient(150deg, var(--ink-3), var(--ink-2) 60%, rgba(201,164,84,0.04) 100%);
+        border: 1px solid rgba(201,164,84,0.22);
+        border-radius: 24px;
+        padding: 44px 36px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 28px;
+      }
+      .p-votd::before, .p-votd::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.4), transparent);
+      }
+      .p-votd::after {
+        top: auto; bottom: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.15), transparent);
+      }
+      .p-votd-ornament {
+        font-size: 0.6rem;
+        letter-spacing: 0.8em;
+        color: var(--gold-d);
+        margin-bottom: 16px;
+        display: block;
+      }
+      .p-votd-label {
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic;
+        font-size: 0.82rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 22px;
+      }
+      .p-votd-arabic {
+        font-family: 'Amiri', serif;
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
+        line-height: 2.1;
+        color: var(--cream);
+        direction: rtl;
+        margin-bottom: 18px;
+        text-shadow: 0 0 30px rgba(201,164,84,0.12);
+      }
+      .p-votd-ref {
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold-d);
+        margin-bottom: 14px;
+      }
+      .p-votd-trans {
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic;
+        font-size: 1.15rem;
+        color: var(--cream-2);
+        line-height: 1.9;
+        max-width: 560px;
+        margin: 0 auto 28px;
+      }
+
+      /* ── Buttons ── */
+      .p-btn-gold {
+        background: linear-gradient(135deg, var(--gold-d), var(--gold));
+        color: var(--ink);
+        border: none;
+        border-radius: 100px;
+        padding: 11px 28px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: box-shadow 0.25s, transform 0.2s;
+        display: inline-flex; align-items: center; gap: 7px;
+      }
+      .p-btn-gold:hover {
+        box-shadow: 0 0 24px rgba(201,164,84,0.4);
+        transform: translateY(-1px);
+      }
+      .p-btn-ghost {
+        background: transparent;
+        color: var(--cream-2);
+        border: 1px solid rgba(201,164,84,0.22);
+        border-radius: 100px;
+        padding: 9px 20px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition: all 0.22s;
+        display: inline-flex; align-items: center; gap: 7px;
+      }
+      .p-btn-ghost:hover { border-color: var(--gold); color: var(--gold-l); }
+      .p-play-btn {
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-d), var(--gold));
+        border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--ink);
+        box-shadow: 0 0 30px rgba(201,164,84,0.28);
+        transition: all 0.28s;
+      }
+      .p-play-btn:hover { transform: scale(1.08); box-shadow: 0 0 40px rgba(201,164,84,0.5); }
+      .p-play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+      .p-ctrl-btn {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: var(--ink-3);
+        border: 1px solid var(--gold-dim);
+        color: var(--cream-2);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+      }
+      .p-ctrl-btn:hover { border-color: rgba(201,164,84,0.4); color: var(--gold-l); }
+      .p-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+      /* ── Input / Select ── */
+      .p-input, .p-select {
+        background: var(--ink-2);
+        border: 1px solid var(--gold-dim);
+        border-radius: 12px;
+        padding: 13px 18px;
+        color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        appearance: none;
+      }
+      .p-input::placeholder { color: var(--cream-4); }
+      .p-input:focus, .p-select:focus {
+        border-color: rgba(201,164,84,0.5);
+        box-shadow: 0 0 0 3px rgba(201,164,84,0.07);
+      }
+      .p-select option { background: var(--ink-2); color: var(--cream); }
+      .p-select-wrap { position: relative; }
+      .p-select-wrap::after {
+        content: '›';
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%) rotate(90deg);
+        color: var(--gold-d); pointer-events: none;
+        font-size: 1.1rem;
+      }
+
+      /* ── Surah list ── */
+      .p-surah-item {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.08);
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 6px;
+      }
+      .p-surah-item:hover {
+        background: var(--ink-3);
+        border-color: rgba(201,164,84,0.3);
+        transform: translateX(3px);
+      }
+      .p-surah-num {
+        min-width: 34px; height: 34px;
+        border: 1px solid rgba(201,164,84,0.28);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem;
+        color: var(--gold);
+      }
+
+      /* ── Reciter Card ── */
+      .p-reciter-card {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.1);
+        border-radius: 16px;
+        padding: 22px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+      }
+      .p-reciter-card:hover {
+        border-color: rgba(201,164,84,0.32);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      }
+      .p-reciter-img {
+        width: 70px; height: 70px;
+        border-radius: 50%;
+        border: 2px solid rgba(201,164,84,0.35);
+        margin-bottom: 12px;
+        object-fit: cover;
+      }
+      .p-locked-badge {
+        position: absolute; top: 10px; right: 10px;
+        font-size: 0.6rem; letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        background: rgba(201,164,84,0.12);
+        border: 1px solid rgba(201,164,84,0.22);
+        border-radius: 100px;
+        color: var(--gold);
+      }
+
+      /* ── Progress bars ── */
+      .p-progress-bar {
+        height: 3px; background: var(--ink-4);
+        border-radius: 100px; overflow: hidden;
+        margin: 10px 0 6px;
+      }
+      .p-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-d), var(--gold));
+        border-radius: 100px;
+        transition: width 0.7s ease-out;
+      }
+
+      /* ── Achievement items ── */
+      .p-achievement {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+      .p-achievement.achieved {
+        background: rgba(201,164,84,0.08);
+        border-color: rgba(201,164,84,0.2);
+      }
+      .p-achievement.locked {
+        background: var(--ink-2);
+        border-color: rgba(255,255,255,0.04);
+        opacity: 0.55;
+      }
+
+      /* ── Verse display (reader) ── */
+      .p-verse-row {
+        border-left: 2px solid rgba(201,164,84,0.12);
+        padding: 18px 22px;
+        margin-bottom: 6px;
+        border-radius: 0 12px 12px 0;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .p-verse-row:hover { background: rgba(201,164,84,0.04); border-left-color: rgba(201,164,84,0.4); }
+      .p-verse-row.playing {
+        background: rgba(201,164,84,0.08) !important;
+        border-left-color: var(--gold) !important;
+        box-shadow: 0 0 20px rgba(201,164,84,0.06);
+      }
+
+      /* ── Notification ── */
+      .p-notif {
+        position: fixed; bottom: 24px;
+        left: 50%; transform: translateX(-50%);
+        background: var(--ink-3);
+        border: 1px solid rgba(201,164,84,0.25);
+        border-radius: 14px;
+        padding: 14px 22px;
+        display: flex; align-items: center; gap: 12px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+        z-index: 9999;
+        min-width: 280px;
+        animation: fadeInUp 0.35s ease;
+      }
+      .p-notif.success { border-color: rgba(100,200,100,0.3); }
+      .p-notif.error   { border-color: rgba(200,80,80,0.32); }
+
+      /* ── Player panel ── */
+      .p-player {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.18);
+        border-radius: 20px;
+        padding: 26px;
+        margin-bottom: 20px;
+      }
+
+      /* ── Quiz answer btn ── */
+      .p-quiz-btn {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.1);
+        border-radius: 12px;
+        padding: 15px 20px;
+        width: 100%;
+        text-align: left;
+        color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .p-quiz-btn:hover:not(:disabled) {
+        background: var(--ink-3);
+        border-color: rgba(201,164,84,0.32);
+      }
+      .p-quiz-btn.correct {
+        background: rgba(80,170,80,0.12);
+        border-color: rgba(80,170,80,0.4);
+        color: #9ee09e;
+      }
+      .p-quiz-btn.incorrect {
+        background: rgba(200,60,60,0.12);
+        border-color: rgba(200,60,60,0.35);
+        color: #e09e9e;
+      }
+      .p-quiz-btn:disabled { opacity: 0.75; cursor: not-allowed; }
+
+      /* ── Prayer row ── */
+      .p-prayer-row {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        background: var(--ink-2);
+        border: 1px solid rgba(255,255,255,0.04);
+        transition: background 0.2s;
+      }
+      .p-prayer-row.next-prayer {
+        background: rgba(201,164,84,0.08);
+        border-color: rgba(201,164,84,0.25);
+      }
+
+      /* ── Misc ── */
+      .gold-line {
+        height: 1px; margin: 24px 0;
+        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.28), transparent);
+      }
+      .p-label {
+        font-size: 0.7rem; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--gold-d);
+        margin-bottom: 10px; display: block;
+      }
+      .font-arabic { font-family: 'Amiri', serif; }
+      .p-score-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(201,164,84,0.1);
+        border: 1px solid rgba(201,164,84,0.22);
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 0.85rem; color: var(--gold-l);
+      }
+
+      /* ── Reciter picker row ── */
+      .p-reciter-pick {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.1);
+        border-radius: 14px;
+        padding: 14px;
+        display: flex; flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      .p-reciter-pick.active {
+        border-color: rgba(201,164,84,0.5);
+        background: rgba(201,164,84,0.07);
+      }
+      .p-reciter-pick:hover { border-color: rgba(201,164,84,0.3); }
+
+      /* Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: var(--ink-2); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gold-d); border-radius: 4px; }
+
+      /* Animations */
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+      @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in-down { animation: fadeInDown 0.6s ease forwards; }
+      @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+
+      /* Spinner */
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .p-spinner {
+        width: 22px; height: 22px;
+        border: 2px solid rgba(201,164,84,0.25);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      /* Deen buddy chat */
+      .p-chat-bubble-user {
+        background: rgba(201,164,84,0.1);
+        border: 1px solid rgba(201,164,84,0.2);
+        border-radius: 18px 18px 4px 18px;
+        padding: 12px 18px;
+        max-width: 78%;
+        margin-left: auto;
+        font-size: 0.88rem;
+        color: var(--cream-2);
+        line-height: 1.6;
+      }
+      .p-chat-bubble-ai {
+        background: var(--ink-2);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 4px 18px 18px 18px;
+        padding: 14px 18px;
+        max-width: 88%;
+        font-size: 0.88rem;
+        color: var(--cream);
+        line-height: 1.7;
+      }
+      .p-chat-input-row {
+        display: flex; gap: 10px; align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid rgba(201,164,84,0.1);
+        margin-top: 16px;
+      }
+      
+      /* Bookmarks */
+      .p-bookmark-row {
+        background: var(--ink-2);
+        border: 1px solid rgba(201,164,84,0.09);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 10px;
+        transition: all 0.2s;
+      }
+      .p-bookmark-row:hover {
+        border-color: rgba(201,164,84,0.28);
+        background: var(--ink-3);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      try { document.head.removeChild(link); document.head.removeChild(style); } catch(e){}
+    };
+  }, []);
+  return null;
+};
+
 // --- COMPLETE QURAN DATA (All 114 Surahs) ---
 // This data provides metadata for each Surah of the Quran.
 // It includes Arabic and English names, and the number of verses.
@@ -404,16 +1013,14 @@ function getPrayerTimes(latitude, longitude, date = new Date()) {
 
 // NotificationMessage component for displaying temporary messages to the user.
 const NotificationMessage = ({ message, type, onClose }) => {
-  const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
-  const textColor = 'text-white';
   const IconComponent = type === 'success' ? CheckCircle : type === 'error' ? XCircle : Info;
-
+  const iconColor = type === 'success' ? '#7ec87e' : type === 'error' ? '#e07e7e' : '#c9a454';
   return (
-    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-2xl flex items-center space-x-3 transition-all duration-500 transform animate-fade-in-up z-50 ${bgColor} ${textColor}`}>
-      <IconComponent size={24} className="flex-shrink-0" />
-      <p className="font-semibold text-base md:text-lg">{message}</p>
-      <button onClick={onClose} className="ml-4 text-white hover:text-gray-200 focus:outline-none p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors">
-        <XCircle size={20} />
+    <div className={`p-notif ${type || 'info'}`}>
+      <IconComponent size={20} style={{ color: iconColor, flexShrink: 0 }} />
+      <p style={{ fontSize: '0.88rem', color: 'var(--cream-2)', flex: 1 }}>{message}</p>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cream-3)', padding: '2px' }}>
+        <XCircle size={16} />
       </button>
     </div>
   );
@@ -423,16 +1030,12 @@ const NotificationMessage = ({ message, type, onClose }) => {
 
 // Card component for navigation and feature display on the dashboard.
 const Card = ({ icon: Icon, title, description, onClick }) => (
-  <button
-    onClick={onClick}
-    className="bg-gradient-to-br from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center text-center transition-all transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 relative overflow-hidden group"
-  >
-    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-2xl"></div>
-    <div className="text-5xl mb-3 text-green-200 group-hover:text-white transition-colors duration-300">
-      {Icon && <Icon size={48} strokeWidth={1.5} />}
+  <button onClick={onClick} className="p-card" style={{ width: '100%', background: 'none' }}>
+    <div className="p-card-icon">
+      {Icon && <Icon size={24} strokeWidth={1.5} />}
     </div>
-    <h3 className="text-xl md:text-2xl font-semibold mb-1 text-green-50 group-hover:text-white transition-colors duration-300">{title}</h3>
-    <p className="text-sm md:text-base opacity-90 text-green-100 group-hover:text-green-50 transition-colors duration-300">{description}</p>
+    <div className="p-card-title">{title}</div>
+    <div className="p-card-desc">{description}</div>
   </button>
 );
 
@@ -451,60 +1054,38 @@ const ReciterCard = ({ reciter, onSelectReciter, points, isUnlocked, onUnlock, s
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-700 to-green-800 p-4 rounded-2xl shadow-lg flex flex-col items-center text-center relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+    <div className="p-reciter-card">
       <img
         src={reciter.imageUrl}
         alt={reciter.englishName}
-        className="w-24 h-24 rounded-full object-cover mb-3 border-4 border-green-400 shadow-md group-hover:border-green-300 transition-colors duration-300"
-        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/6EE7B7/047857?text=Reciter"; }} // Fallback image
+        className="p-reciter-img"
+        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/1b2236/c9a454?text=R"; }}
       />
-      <p className="font-arabic text-xl text-green-50 font-medium">{reciter.name}</p>
-      <p className="text-sm text-green-200 mb-3">{reciter.englishName}</p>
-      <button
-        onClick={handleAction}
-        className={`mt-2 py-2 px-5 rounded-full font-semibold transition-all duration-300 flex items-center shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 ${
-          isUnlocked ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-green-800 text-green-300 cursor-default opacity-80'
-        }`}
-      >
-        {isUnlocked ? (
-          <>
-            <Play size={20} className="mr-2" fill="currentColor" />
-            Listen
-          </>
-        ) : (
-          <>
-            <Gem size={20} className="mr-2" />
-            Unlock ({reciter.cost} pts)
-          </>
-        )}
+      <p className="font-arabic" style={{ fontSize: '1.1rem', color: 'var(--cream)', marginBottom: '4px' }}>{reciter.name}</p>
+      <p style={{ fontSize: '0.78rem', color: 'var(--cream-3)', marginBottom: '14px', letterSpacing: '0.03em' }}>{reciter.englishName}</p>
+      <button onClick={handleAction} className={isUnlocked ? 'p-btn-gold' : 'p-btn-ghost'} style={{ fontSize: '0.75rem' }}>
+        {isUnlocked ? (<><Play size={14} fill="currentColor" /> Listen</>) : (<><Gem size={14} /> {reciter.cost} pts</>)}
       </button>
-      {!isUnlocked && (
-        <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
-          Locked
-        </div>
-      )}
+      {!isUnlocked && <span className="p-locked-badge">Locked</span>}
     </div>
   );
 };
 
 // ProgressCard component to display individual user progress metrics.
 const ProgressCard = ({ title, value, unit, icon: Icon, progressBar, progressPercent, milestoneText }) => (
-  <div className="bg-gradient-to-br from-green-700 to-green-800 p-5 rounded-2xl shadow-lg flex flex-col items-center text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-    <div className="text-5xl mb-3 text-green-200">
-      {Icon && <Icon size={48} strokeWidth={1.5} />}
+  <div className="p-reciter-card" style={{ padding: '26px 20px' }}>
+    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(201,164,84,0.12), rgba(201,164,84,0.04))', border: '1px solid rgba(201,164,84,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px', color: 'var(--gold)' }}>
+      {Icon && <Icon size={22} strokeWidth={1.5} />}
     </div>
-    <h3 className="text-xl font-semibold text-green-50 mb-1">{title}</h3>
-    <p className="text-3xl font-bold text-green-200">{value}</p>
-    <p className="text-sm text-green-300">{unit}</p>
+    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem', color: 'var(--cream-2)', marginBottom: '8px', letterSpacing: '0.04em' }}>{title}</p>
+    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '2rem', fontWeight: 500, color: 'var(--gold-l)', lineHeight: 1 }}>{value}</p>
+    <p style={{ fontSize: '0.72rem', color: 'var(--cream-4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '4px' }}>{unit}</p>
     {progressBar && (
-      <div className="w-full mt-4">
-        <div className="h-3 bg-green-900 rounded-full overflow-hidden shadow-inner">
-          <div
-            className="h-full bg-green-400 rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${progressPercent}%` }}
-          ></div>
+      <div style={{ width: '100%', marginTop: '14px' }}>
+        <div className="p-progress-bar">
+          <div className="p-progress-fill" style={{ width: `${progressPercent}%` }}></div>
         </div>
-        <p className="text-xs text-green-300 mt-2 font-medium">{milestoneText}</p>
+        <p style={{ fontSize: '0.7rem', color: 'var(--cream-4)', marginTop: '6px' }}>{milestoneText}</p>
       </div>
     )}
   </div>
@@ -512,21 +1093,22 @@ const ProgressCard = ({ title, value, unit, icon: Icon, progressBar, progressPer
 
 // AchievementsCard component to display unlocked and pending achievements.
 const AchievementsCard = ({ achievements }) => (
-  <div className="bg-gradient-to-br from-green-700 to-green-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-    <h3 className="text-2xl font-bold text-green-50 mb-4 flex items-center">
-      <Award size={32} className="text-yellow-400 mr-3" strokeWidth={1.5} /> Achievements
-    </h3>
-    <ul className="space-y-3">
+  <div className="p-reciter-card" style={{ alignItems: 'stretch', padding: '22px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+      <Award size={18} style={{ color: 'var(--gold)' }} strokeWidth={1.5} />
+      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--cream)', letterSpacing: '0.05em' }}>Achievements</span>
+    </div>
+    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
       {achievements.map((achievement) => (
-        <li key={achievement.id} className={`flex items-center p-2 rounded-lg ${achievement.achieved ? 'bg-green-600 text-green-200' : 'bg-green-800 text-green-400 opacity-90'}`}>
-          <span className="text-2xl mr-3 flex-shrink-0">{achievement.icon}</span>
+        <li key={achievement.id} className={`p-achievement ${achievement.achieved ? 'achieved' : 'locked'}`}>
+          <span style={{ color: achievement.achieved ? 'var(--gold)' : 'var(--cream-4)', flexShrink: 0 }}>{achievement.icon}</span>
           <div>
-            <p className="font-medium text-lg">{achievement.title}</p>
-            <p className="text-xs text-green-300">{achievement.description}</p>
+            <p style={{ fontSize: '0.85rem', color: achievement.achieved ? 'var(--cream)' : 'var(--cream-3)', fontWeight: 500 }}>{achievement.title}</p>
+            <p style={{ fontSize: '0.72rem', color: 'var(--cream-4)' }}>{achievement.description}</p>
           </div>
         </li>
-        ))}
-      </ul>
+      ))}
+    </ul>
   </div>
 );
 
@@ -535,92 +1117,71 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
   const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Top Navigation Cards for main features */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card icon={BookOpen} title="Read Quran" description="Browse surahs and verses" onClick={() => setCurrentView('surah-selector')} />
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      {/* Navigation cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
+        <Card icon={BookOpen} title="Read" description="Browse surahs" onClick={() => setCurrentView('surah-selector')} />
         <Card icon={Headphones} title="Listen" description="Beautiful recitations" onClick={() => setCurrentView('listen')} />
         <Card icon={Mic} title="Practice" description="Record & improve" onClick={() => setCurrentView('practice')} />
         <Card icon={Clock} title="Prayer Times" description="Hanafi calculations" onClick={() => setCurrentView('prayer-times')} />
       </div>
 
-      {/* Dynamic Verse of the Day display */}
-      <div className="bg-gradient-to-br from-green-800 to-green-900 p-8 rounded-3xl shadow-2xl text-white text-center transform hover:scale-[1.01] transition-transform duration-300 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10 rounded-3xl"></div>
-        <p className="text-lg md:text-xl mb-3 font-semibold text-green-200">Verse of the Day</p>
-        <p className="font-arabic text-4xl md:text-5xl mb-4 leading-relaxed text-green-50 font-extrabold drop-shadow-md">
-          {verseOfTheDay.arabic}
-        </p>
-        <p className="text-sm italic mb-4 opacity-80 text-green-100">At-Talaq (65:2)</p> {/* Hardcoded for now, can be dynamic */}
-        <p className="text-base md:text-lg text-green-100">"{verseOfTheDay.translation}"</p>
-        <div className="mt-6">
-          <button className="bg-white bg-opacity-20 p-4 rounded-full hover:bg-opacity-30 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50 shadow-lg">
-            <Play size={28} className="text-white" fill="currentColor" />
-          </button>
-        </div>
+      {/* Verse of the Day */}
+      <div className="p-votd">
+        <span className="p-votd-ornament">✦ &nbsp; ✦ &nbsp; ✦</span>
+        <div className="p-votd-label">Verse of the Day</div>
+        <div className="p-votd-arabic">{verseOfTheDay.arabic}</div>
+        <div className="p-votd-ref">At-Talaq · 65:2</div>
+        <div className="p-votd-trans">"{verseOfTheDay.translation}"</div>
+        <button className="p-play-btn" style={{ margin: '0 auto' }}>
+          <Play size={24} fill="currentColor" />
+        </button>
       </div>
 
-      {/* Display of available reciters */}
-      <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl text-green-50">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-green-100">Available Reciters</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Reciters */}
+      <div className="p-section">
+        <div className="p-section-title">
+          <Headphones size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+          Available Reciters
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
           {[...recitersData.featured, ...recitersData.free].map((reciter) => (
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
-              points={points} // Points are passed but not used for unlocking here
-              isUnlocked={userProgress.unlockedReciters.includes(reciter.id)} // Check if reciter is unlocked
-              onUnlock={handleUnlockReciter} // Pass unlock handler
-              onSelectReciter={onSelectReciterForListen} // Correctly pass the prop received by HomeDashboard
+              points={points}
+              isUnlocked={userProgress.unlockedReciters.includes(reciter.id)}
+              onUnlock={handleUnlockReciter}
+              onSelectReciter={onSelectReciterForListen}
               showNotification={showNotification}
             />
           ))}
         </div>
       </div>
 
-      {/* User Progress Summary section */}
-      <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl text-green-50">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-green-100">Your Progress</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <ProgressCard
-            title="Daily Streak"
-            value={userProgress.dailyStreak}
-            unit="Days in a row"
-            icon={Zap} // Using Zap icon for streak
-            progressBar={false}
-          />
-          <ProgressCard
-            title="Verses Read"
-            value={userProgress.versesRead}
-            unit="verses"
-            icon={BookOpen} // Using BookOpen icon for verses read
-            progressBar={true}
-            progressPercent={(userProgress.versesRead % 100) / 100 * 100}
-            milestoneText={`${100 - (userProgress.versesRead % 100)} verses to next milestone`}
-          />
+      {/* Progress */}
+      <div className="p-section">
+        <div className="p-section-title">
+          <BarChart size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+          Your Progress
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
+          <ProgressCard title="Daily Streak" value={userProgress.dailyStreak} unit="Days in a row" icon={Zap} progressBar={false} />
+          <ProgressCard title="Verses Read" value={userProgress.versesRead} unit="verses" icon={BookOpen} progressBar={true} progressPercent={(userProgress.versesRead % 100) / 100 * 100} milestoneText={`${100 - (userProgress.versesRead % 100)} to next milestone`} />
           <AchievementsCard achievements={userProgress.achievements} />
         </div>
       </div>
 
-      {/* NEW: Continue Reading Section - visible only if a last read position exists */}
+      {/* Continue Reading */}
       {lastReadPosition && (
-          <Card
-              icon={ArrowLeft} // Using ArrowLeft for continue reading
-              title="Continue Reading"
-              description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} from Verse ${lastReadPosition.verseId}`}
-              onClick={onContinueReading}
-          />
+        <Card icon={ArrowLeft} title="Continue Reading" description={`Resume Surah ${quranData.surahs.find(s => s.id === lastReadPosition.surahId)?.englishName || 'Unknown'} · Verse ${lastReadPosition.verseId}`} onClick={onContinueReading} />
       )}
 
-      {/* Bookmarked Verses & Quiz Cards - arranged in a grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card icon={Bookmark} title="Bookmarked Verses" description="Access your saved verses" onClick={() => setCurrentView('bookmarks')} />
-        <Card icon={HelpCircle} title="Quiz Me!" description="Test your Quran knowledge" onClick={() => setCurrentView('quiz')} />
-      </div>
-
-      {/* NEW: Islamic Q&A Card */}
-      <div className="grid grid-cols-1">
-        <Card icon={MessageSquareText} title="Islamic Q&A" description="Ask your Islamic questions" onClick={() => setCurrentView('deen-buddy')} />
+      {/* Bottom feature cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
+        <Card icon={Bookmark} title="Bookmarks" description="Saved verses" onClick={() => setCurrentView('bookmarks')} />
+        <Card icon={HelpCircle} title="Quiz" description="Test your knowledge" onClick={() => setCurrentView('quiz')} />
+        <Card icon={MessageSquareText} title="Islamic Q&A" description="Ask your questions" onClick={() => setCurrentView('deen-buddy')} />
       </div>
     </div>
   );
@@ -638,44 +1199,36 @@ const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHo
   );
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
-      <div className="flex justify-between items-center mb-6"> {/* Added header for buttons */}
-        <button
-          onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-        >
-          <Home size={20} className="mr-2" /> {/* Home icon */}
-          Home
-        </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Select a Surah</h2>
-        <div className="w-20"></div> {/* Spacer to balance header */}
+    <div className="p-section animate-fade-in">
+      <div className="p-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+        <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', letterSpacing: '0.05em', margin: 0 }}>Select a Surah</h2>
+        <div style={{ width: '80px' }}></div>
       </div>
       <input
         type="text"
-        placeholder="Search Surah by name or number..."
-        className="w-full p-4 mb-6 rounded-xl bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-lg"
+        placeholder="Search by name or number…"
+        className="p-input"
+        style={{ marginBottom: '20px' }}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto custom-scrollbar p-2">
+      <ul className="custom-scrollbar" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '8px', maxHeight: '62vh', overflowY: 'auto', padding: '2px', listStyle: 'none', margin: 0 }}>
         {filteredSurahs.length > 0 ? (
           filteredSurahs.map((surah) => (
             <li key={surah.id}>
-              <button
-                onClick={() => onSelectSurah(surah.id)}
-                className="w-full text-left p-5 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 rounded-xl transition-all duration-300 flex justify-between items-center text-green-50 shadow-md hover:shadow-lg transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-xl"></div>
-                <div>
-                  <p className="font-semibold text-xl text-green-50 group-hover:text-white transition-colors duration-300">{surah.englishName}</p>
-                  <p className="font-arabic text-2xl text-green-200 group-hover:text-green-100 transition-colors duration-300">{surah.name}</p>
+              <button onClick={() => onSelectSurah(surah.id)} className="p-surah-item">
+                <span className="p-surah-num">{surah.id}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ color: 'var(--cream)', fontSize: '0.92rem', fontWeight: 500, marginBottom: '2px' }}>{surah.englishName}</p>
+                  <p className="font-arabic" style={{ fontSize: '1.1rem', color: 'var(--gold-l)' }}>{surah.name}</p>
                 </div>
-                <span className="text-base text-green-300 group-hover:text-green-200 transition-colors duration-300">{surah.numberOfVerses} Verses</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--cream-4)', letterSpacing: '0.06em' }}>{surah.numberOfVerses}v</span>
               </button>
             </li>
           ))
         ) : (
-          <p className="text-center text-green-300 col-span-full py-8 text-lg">No surahs found matching your search.</p>
+          <p className="text-center  col-span-full py-8 text-lg">No surahs found matching your search.</p>
         )}
       </ul>
     </div>
@@ -874,23 +1427,23 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
   };
 
   if (isLoading) {
-    return <div className="text-center text-green-200 text-xl py-8 animate-pulse">Loading Surah...</div>;
+    return <div style={{ textAlign: "center", color: "var(--cream-3)", padding: "48px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem" }} className="animate-pulse">Loading Surah…</div>;
   }
 
   if (error) {
     return (
-        <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+        <div className="p-section animate-fade-in">
             <div className="flex justify-between items-center mb-6">
                 <button
                     onClick={onBackToSurahList}
-                    className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+                    className="p-btn-ghost"
                 >
                     <ArrowLeft size={20} className="mr-2" />
                     Back
                 </button>
                 <button
                     onClick={onBackToHome}
-                    className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+                    className="p-btn-ghost"
                 >
                     <Home size={20} className="mr-2" />
                     Home
@@ -904,138 +1457,70 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
 
   return (
     <div
-      className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in"
+      className="p-section animate-fade-in"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={onBackToSurahList}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back
-        </button>
-        <button
-          onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-        >
-          <Home size={20} className="mr-2" />
-          Home
-        </button>
-        <h2 className="text-3xl md:text-4xl font-bold text-center flex-grow text-green-100">
-          {selectedSurahMeta?.englishName} <span className="font-arabic text-4xl md:text-5xl ml-2 text-green-200">{selectedSurahMeta?.name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)', flexWrap: 'wrap' }}>
+        <button onClick={onBackToSurahList} className="p-btn-ghost"><ArrowLeft size={14} /> Back</button>
+        <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.6rem', fontWeight: 400, color: 'var(--cream)', flex: 1, textAlign: 'center', margin: 0 }}>
+          {selectedSurahMeta?.englishName} <span className="font-arabic" style={{ fontSize: '1.8rem', color: 'var(--gold-l)' }}>{selectedSurahMeta?.name}</span>
         </h2>
-        <div className="flex space-x-2">
-          <button
-            onClick={handlePrevSurah}
-            disabled={selectedSurahId === 1}
-            className="bg-green-700 hover:bg-green-600 px-3 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={handleNextSurah}
-            disabled={selectedSurahId === quranData.surahs.length}
-            className="bg-green-700 hover:bg-green-600 px-3 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        <button onClick={handlePrevSurah} disabled={selectedSurahId === 1} className="p-ctrl-btn"><ChevronLeft size={18} /></button>
+        <button onClick={handleNextSurah} disabled={selectedSurahId === quranData.surahs.length} className="p-ctrl-btn"><ChevronRight size={18} /></button>
       </div>
 
-      {/* Font and Quran Script Controls */}
-      <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-6 p-4 bg-green-700 rounded-2xl shadow-inner border border-green-600">
-        {/* Font Family */}
-        <div className="flex items-center space-x-2">
-          <label htmlFor="font-family" className="text-green-200 font-medium">Font:</label>
-          <select
-            id="font-family"
-            value={selectedFont}
-            onChange={handleFontFamilyChange}
-            className="p-2 rounded-lg bg-green-600 text-green-50 focus:outline-none focus:ring-2 focus:ring-4 focus:ring-green-400 border border-green-500 shadow-sm"
-          >
-            {fontFamilies.map(font => (
-              <option key={font.name} value={font.name}>
-                {font.name}
-              </option>
-            ))}
+      {/* Font and Script Controls */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', padding: '14px 18px', background: 'var(--ink-2)', border: '1px solid rgba(201,164,84,0.1)', borderRadius: '14px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="p-label" style={{ margin: 0 }}>Font</span>
+          <select value={selectedFont} onChange={handleFontFamilyChange} className="p-select" style={{ width: 'auto', padding: '6px 12px' }}>
+            {fontFamilies.map(font => <option key={font.name} value={font.name}>{font.name}</option>)}
           </select>
         </div>
-        {/* Font Size */}
-        <div className="flex items-center space-x-2">
-          <label className="text-green-200 font-medium">Font Size:</label>
-          <button
-            onClick={() => handleFontSizeChange('decrease')}
-            className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-md text-green-50 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
-          >
-            -
-          </button>
-          <span className="text-green-50 text-xl font-bold">{fontSize.replace('text-', '')}</span> {/* Display current size */}
-          <button
-            onClick={() => handleFontSizeChange('increase')}
-            className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-md text-green-50 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
-          >
-            +
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="p-label" style={{ margin: 0 }}>Size</span>
+          <button onClick={() => handleFontSizeChange('decrease')} className="p-ctrl-btn" style={{ width: '32px', height: '32px' }}>−</button>
+          <span style={{ color: 'var(--gold)', fontSize: '0.85rem', minWidth: '24px', textAlign: 'center' }}>{fontSize.replace('text-', '')}</span>
+          <button onClick={() => handleFontSizeChange('increase')} className="p-ctrl-btn" style={{ width: '32px', height: '32px' }}>+</button>
         </div>
-        {/* Quran Script Edition */}
-        <div className="flex items-center space-x-2 mt-4 md:mt-0">
-          <label className="text-green-200 font-medium">Quran Style:</label>
-          <button
-            onClick={() => setQuranScriptEdition('quran-uthmani')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-              quranScriptEdition === 'quran-uthmani' ? 'bg-green-500 text-white' : 'bg-green-600 hover:bg-green-500 text-green-50'
-            }`}
-          >
-            Uthmani (15-line style)
-          </button>
-          <button
-            onClick={() => setQuranScriptEdition('quran-simple')}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-              quranScriptEdition === 'quran-simple' ? 'bg-green-500 text-white' : 'bg-green-600 hover:bg-green-500 text-green-50'
-            }`}
-          >
-            Simple (Standard Digital)
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="p-label" style={{ margin: 0 }}>Script</span>
+          <button onClick={() => setQuranScriptEdition('quran-uthmani')} className={quranScriptEdition === 'quran-uthmani' ? 'p-btn-gold' : 'p-btn-ghost'} style={{ fontSize: '0.72rem', padding: '6px 14px' }}>Uthmani</button>
+          <button onClick={() => setQuranScriptEdition('quran-simple')} className={quranScriptEdition === 'quran-simple' ? 'p-btn-gold' : 'p-btn-ghost'} style={{ fontSize: '0.72rem', padding: '6px 14px' }}>Simple</button>
         </div>
       </div>
-      <p className="text-center text-sm text-green-300 italic mb-4">
-        Note: "15-line style" refers to the Uthmani script often used in 15-line Mushafs; digital rendering may vary from exact physical page layouts.
-      </p>
 
       {/* Verses Display */}
-      <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar p-2">
+      <div className="custom-scrollbar" style={{ maxHeight: '62vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {surahVerses.map((verse) => (
           <div
             key={verse.id}
-            className={`p-5 rounded-2xl shadow-lg transition-all duration-300 border ${
-              highlightedVerseId === verse.id ? 'bg-green-600 border-green-400 animate-pulse-once' : 'bg-green-700 border-green-700 hover:shadow-xl'
-            }`}
+            className={`p-verse-row${highlightedVerseId === verse.id ? ' playing' : ''}`}
           >
-            <div className="flex justify-between items-start mb-3">
-              <p className={`font-arabic text-right leading-loose ${fontSize} ${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'} text-green-50 font-medium`}>
-                {verse.arabic} <span className="text-sm opacity-70 text-green-200">({verse.id})</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+              <p className={`font-arabic ${fontSize} ${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'}`} style={{ textAlign: 'right', direction: 'rtl', lineHeight: 2, color: 'var(--cream)', flex: 1 }}>
+                {verse.arabic} <span style={{ fontSize: '0.75rem', color: 'var(--gold-d)', opacity: 0.9 }}>({verse.id})</span>
               </p>
               <button
                 onClick={() => onToggleBookmark(selectedSurahId, verse.id)}
-                className="ml-4 text-yellow-400 hover:text-yellow-300 focus:outline-none p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors"
-                title={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "Remove Bookmark" : "Add Bookmark"}
+                style={{ marginLeft: '12px', background: 'none', border: 'none', cursor: 'pointer', color: bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? 'var(--gold)' : 'var(--cream-4)', padding: '4px', flexShrink: 0, transition: 'color 0.2s' }}
+                title="Toggle Bookmark"
               >
-                <Bookmark size={24} fill={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "currentColor" : "none"} strokeWidth={1.5} />
+                <Bookmark size={18} fill={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "currentColor" : "none"} strokeWidth={1.5} />
               </button>
             </div>
-            {/* Translation removed as per user request */}
-            <div className="mt-4 flex justify-end">
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => {
-                  playVerseAudio(verse.id); // Now only pass verse.id
-                  onVerseRead(selectedSurahId, verse.id); // Mark verse as read
+                  playVerseAudio(verse.id);
+                  onVerseRead(selectedSurahId, verse.id);
                 }}
-                className="bg-green-600 hover:bg-green-500 px-5 py-2 rounded-full text-white flex items-center shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50"
+                className="p-btn-gold" style={{ fontSize: '0.72rem', padding: '8px 18px' }}
               >
-                <Play size={20} className="mr-2" fill="currentColor" />
+                <Play size={12} className="mr-2" fill="currentColor" />
                 Play
               </button>
             </div>
@@ -1120,23 +1605,23 @@ const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in flex flex-col h-[80vh]">
+    <div className="p-section animate-fade-in" style={{ display: "flex", flexDirection: "column", minHeight: "75vh" }}>
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+          className="p-btn-ghost"
         >
           <Home size={20} className="mr-2" />
           Home
         </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Islamic Q&A</h2> {/* Renamed title */}
+        <h2 style={{ fontFamily: "\'Cormorant Garamond\', serif", fontSize: "1.7rem", fontWeight: 400, color: "var(--cream)", margin: 0 }}>Islamic Q&A</h2> {/* Renamed title */}
         <div className="w-10"></div> {/* Spacer */}
       </div>
 
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-green-700 rounded-2xl shadow-inner mb-4 space-y-4">
+      <div ref={chatContainerRef} className="custom-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "16px", background: "var(--ink-2)", borderRadius: "14px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "12px", border: "1px solid rgba(201,164,84,0.08)" }}>
         {chatHistory.length === 0 && !isLoadingResponse ? (
-          <div className="text-center text-green-300 text-lg py-8">
-            <MessageSquareText size={48} className="mx-auto mb-4 text-green-400" />
+          <div style={{ textAlign: "center", padding: "32px 0", color: "var(--cream-3)" }}>
+            <MessageSquareText size={48} style={{ color: "var(--gold-d)", display: "block", margin: "0 auto 16px" }} />
             <p>Coming Soon Inshallah")</p>
             <p className="text-xs mt-4 text-yellow-300">Disclaimer: This AI aims to provide guidance based on the Hanafi Madhab but is not a substitute for a qualified human scholar. Always consult with knowledgeable individuals for important religious matters.</p>
           </div>
@@ -1144,45 +1629,41 @@ const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
       chatHistory.map((message, index) => (
         <div
           key={index}
-          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          style={{ display: "flex", justifyContent: message.role === "user" ? "flex-end" : "flex-start" }}
         >
           <div
-            className={`max-w-[75%] p-3 rounded-lg shadow-md ${
-              message.role === 'user'
-                ? 'bg-blue-600 text-white rounded-br-none'
-                : 'bg-green-600 text-white rounded-bl-none'
-            }`}
+className={message.role === 'user' ? 'p-chat-bubble-user' : 'p-chat-bubble-ai'}
           >
-            <p className="text-sm opacity-80 mb-1">{message.role === 'user' ? 'You' : 'Islamic Q&A'}</p>
-            <p className="text-base">{message.parts[0].text}</p>
+            <p style={{ fontSize: "0.7rem", color: "var(--gold-d)", marginBottom: "6px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{message.role === 'user' ? 'You' : 'AI Guide'}</p>
+            <p style={{ fontSize: "0.88rem" }}>{message.parts[0].text}</p>
           </div>
         </div>
       ))
     )}
     {isLoadingResponse && (
-          <div className="flex justify-start">
-            <div className="max-w-[75%] p-3 rounded-lg shadow-md bg-green-600 text-white rounded-bl-none animate-pulse">
-              <p className="text-sm opacity-80 mb-1">Islamic Q&A</p>
-              <p className="text-base">Typing...</p>
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <div className="p-chat-bubble-ai animate-pulse">
+              <p style={{ fontSize: '0.7rem', color: 'var(--gold-d)', marginBottom: '6px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>AI Guide</p>
+              <p style={{ fontSize: '0.88rem' }}>Thinking…</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="p-chat-input-row">
         <input
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Ask your Islamic Q&A..."
-          className="flex-1 p-3 rounded-xl bg-green-700 text-green-50 placeholder-green-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+          className="p-input" style={{ flex: 1 }}
           disabled={isLoadingResponse}
         />
         <button
           onClick={sendMessage}
           disabled={isLoadingResponse || userInput.trim() === ''}
-          className="bg-green-600 hover:bg-green-500 px-5 py-3 rounded-xl text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-btn-gold" style={{ opacity: (isLoadingResponse || userInput.trim() === '') ? 0.4 : 1 }}
         >
           <MessageSquareText size={20} className="inline-block mr-2" /> Send
         </button>
@@ -1569,10 +2050,10 @@ export default function App() {
   const renderContent = () => {
     if (!isAuthReady) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-950 to-black text-green-100">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br  to-black ">
           <p className="text-2xl mb-4 font-medium">Loading application...</p>
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-400"></div>
-          <p className="mt-4 text-sm text-green-300">Authenticating with Firebase...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 "></div>
+          <p className="mt-4 text-sm ">Authenticating with Firebase...</p>
         </div>
       );
     }
@@ -1658,9 +2139,9 @@ export default function App() {
         );
       default:
         return (
-          <div className="text-center text-red-400 py-8">
+          <div style={{ color: "#e07e7e", textAlign: "center", padding: "32px 0" }}>
             <p className="text-xl">Something went wrong. Unknown view.</p>
-            <button onClick={handleBackToHome} className="mt-4 bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg text-white">
+            <button onClick={handleBackToHome} className="p-btn-gold">
               Go to Home
             </button>
           </div>
@@ -1669,20 +2150,17 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-950 to-green-900 text-green-50 font-inter">
-      <div className="container mx-auto p-4 md:p-8">
-        <header className="text-center mb-8">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-green-200 drop-shadow-lg animate-fade-in-down">
-            Nurul Quran {/* The new app name! */}
-          </h1>
-          <p className="text-xl md:text-2xl text-green-300 mt-2 font-light animate-fade-in">Your Daily Companion for Quranic Reflection</p>
-          {userId && (
-            <p className="text-sm text-green-400 mt-2">User ID: <span className="font-mono text-green-300 break-all">{userId}</span></p>
-          )}
-          <div className="mt-6 p-4 bg-gradient-to-r from-green-800 to-green-700 rounded-xl shadow-xl inline-block transform hover:scale-105 transition-transform duration-300">
-            <p className="text-lg md:text-xl font-semibold flex items-center text-green-50">
-              <DollarSign size={24} className="text-yellow-300 mr-2" /> Points: <span className="ml-2 text-yellow-200">{userProgress.points}</span>
-            </p>
+    <div className="p-app">
+      <PremiumStyles />
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px 60px' }}>
+        <header className="p-header animate-fade-in-down">
+          <h1 className="p-logo">Nurul <span>Quran</span></h1>
+          <p className="p-tagline">Your Daily Companion for Quranic Reflection</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+            <span className="p-points-badge">
+              <Star size={13} style={{ color: 'var(--gold)' }} />
+              {userProgress.points} points
+            </span>
           </div>
         </header>
 
@@ -1698,7 +2176,6 @@ export default function App() {
           />
         )}
       </div>
-      {/* Vercel Analytics and Speed Insights components */}
       <Analytics />
       <SpeedInsights />
     </div>
@@ -1824,80 +2301,74 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
-
+    <div className="p-section animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <button onClick={onBackToHome} className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md">
-          <Home size={20} className="mr-2" /> Home
-        </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Listen</h2>
-        <div className="w-20"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+        <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Listen</h2>
+        <div style={{ width: '72px' }}></div>
       </div>
 
       {/* Reciter picker */}
-      <div className="mb-6">
-        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">Choose Reciter</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div style={{ marginBottom: '24px' }}>
+        <span className="p-label">Choose Reciter</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
           {allReciters.map(r => (
             <button
               key={r.id}
               onClick={() => { setActiveReciterId(r.id); setIsPlaying(false); audioRef.current.pause(); audioRef.current.src = ''; }}
-              className={`p-3 rounded-2xl flex flex-col items-center border-2 transition-all duration-200 ${activeReciterId === r.id ? 'border-green-400 bg-green-600' : 'border-green-700 bg-green-700 hover:bg-green-600'}`}
+              className={`p-reciter-pick${activeReciterId === r.id ? ' active' : ''}`}
             >
-              <img src={r.imageUrl} alt={r.englishName} className="w-14 h-14 rounded-full mb-2 border-2 border-green-400" onError={e => { e.target.src = 'https://placehold.co/56x56/6EE7B7/047857?text=R'; }} />
-              <p className="text-xs font-semibold text-center text-green-50 leading-tight">{r.englishName}</p>
+              <img src={r.imageUrl} alt={r.englishName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid rgba(201,164,84,0.3)', marginBottom: '8px', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/56x56/1b2236/c9a454?text=R'; }} />
+              <p style={{ fontSize: '0.72rem', color: 'var(--cream-2)', lineHeight: 1.3 }}>{r.englishName}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Surah picker */}
-      <div className="mb-6">
-        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">Choose Surah</p>
-        <select
-          value={selectedSurahId}
-          onChange={e => setSelectedSurahId(Number(e.target.value))}
-          className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
-        >
-          {quranData.surahs.map(s => (
-            <option key={s.id} value={s.id}>{s.id}. {s.englishName} — {s.name}</option>
-          ))}
-        </select>
+      <div style={{ marginBottom: '24px' }}>
+        <span className="p-label">Choose Surah</span>
+        <div className="p-select-wrap">
+          <select value={selectedSurahId} onChange={e => setSelectedSurahId(Number(e.target.value))} className="p-select">
+            {quranData.surahs.map(s => (
+              <option key={s.id} value={s.id}>{s.id}. {s.englishName} — {s.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Player controls */}
-      <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-5 mb-6 flex flex-col items-center gap-4">
-        <div className="text-center">
-          <p className="text-green-100 font-bold text-lg">{selectedSurah?.englishName} <span className="font-arabic text-2xl text-green-200">{selectedSurah?.name}</span></p>
-          <p className="text-green-300 text-sm mt-1">
-            {isLoadingVerses ? 'Loading verses...' : verses.length > 0 ? `Verse ${verses[currentVerseIndex]?.id ?? 1} of ${verses.length} · ${activeReciter.englishName}` : ''}
+      {/* Player */}
+      <div className="p-player" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem', color: 'var(--cream)' }}>
+            {selectedSurah?.englishName} <span className="font-arabic" style={{ fontSize: '1.5rem', color: 'var(--gold-l)' }}>{selectedSurah?.name}</span>
+          </p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--cream-3)', marginTop: '4px', letterSpacing: '0.04em' }}>
+            {isLoadingVerses ? 'Loading…' : verses.length > 0 ? `Verse ${(verses[currentVerseIndex]?.id ?? 1)} of ${verses.length} · ${activeReciter.englishName}` : ''}
           </p>
         </div>
-
-        {/* Arabic verse display */}
         {verses.length > 0 && !isLoadingVerses && (
-          <p className="font-arabic text-2xl md:text-3xl leading-loose text-green-50 text-right w-full px-2">
+          <p className="font-arabic" style={{ fontSize: '1.9rem', lineHeight: 2, color: 'var(--cream)', direction: 'rtl', textAlign: 'right', width: '100%', padding: '0 8px' }}>
             {verses[currentVerseIndex]?.text}
           </p>
         )}
-        {isLoadingVerses && <p className="text-green-300 animate-pulse">Loading surah...</p>}
+        {isLoadingVerses && <p style={{ color: 'var(--cream-3)', fontSize: '0.85rem' }}>Loading surah…</p>}
 
-        {/* Controls */}
-        <div className="flex items-center gap-5 mt-2">
-          <button onClick={handlePrev} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === 0} className="bg-green-700 hover:bg-green-600 disabled:opacity-40 p-3 rounded-full shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-green-500">
-            <ChevronLeft size={24} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px' }}>
+          <button onClick={handlePrev} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === 0} className="p-ctrl-btn">
+            <ChevronLeft size={20} />
           </button>
-          <button onClick={handlePlayPause} disabled={isLoadingAudio || verses.length === 0 || isLoadingVerses} className="bg-green-500 hover:bg-green-400 disabled:opacity-40 p-5 rounded-full shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-green-400 transform hover:scale-105">
+          <button onClick={handlePlayPause} disabled={isLoadingAudio || verses.length === 0 || isLoadingVerses} className="p-play-btn">
             {isLoadingAudio ? (
-              <div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="p-spinner" />
             ) : isPlaying ? (
-              <Pause size={28} fill="currentColor" />
+              <Pause size={24} fill="currentColor" />
             ) : (
-              <Play size={28} fill="currentColor" />
+              <Play size={24} fill="currentColor" />
             )}
           </button>
-          <button onClick={handleNext} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === verses.length - 1} className="bg-green-700 hover:bg-green-600 disabled:opacity-40 p-3 rounded-full shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-green-500">
+          <button onClick={handleNext} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === verses.length - 1} className="p-ctrl-btn">
             <ChevronRight size={24} />
           </button>
         </div>
@@ -1906,15 +2377,16 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
       {/* Verse list */}
       {verses.length > 0 && (
         <div>
-          <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">All Verses — tap to jump</p>
-          <ul className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+          <span className="p-label">All Verses — tap to jump</span>
+          <ul className="custom-scrollbar" style={{ maxHeight: '280px', overflowY: 'auto', listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {verses.map((v, idx) => (
               <li key={v.id}>
                 <button
                   onClick={() => handleVerseClick(idx)}
-                  className={`w-full text-right p-4 rounded-xl border transition-all duration-200 font-arabic text-xl leading-loose ${idx === currentVerseIndex ? 'bg-green-600 border-green-400 text-white' : 'bg-green-700 border-green-700 hover:bg-green-600 text-green-100'}`}
+                  className={idx === currentVerseIndex ? 'p-verse-row playing' : 'p-verse-row'}
+                  style={{ width: '100%', textAlign: 'right', direction: 'rtl', fontFamily: "'Amiri', serif", fontSize: '1.15rem', lineHeight: 2, cursor: 'pointer', background: 'none', border: 'none' }}
                 >
-                  <span className="float-left text-xs text-green-300 mt-1 font-sans font-semibold">{v.id}</span>
+                  <span style={{ float: 'left', fontSize: '0.7rem', color: 'var(--gold-d)', fontFamily: "'DM Sans', sans-serif", direction: 'ltr', marginTop: '12px' }}>{v.id}</span>
                   {v.text}
                 </button>
               </li>
@@ -2039,35 +2511,25 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+    <div className="p-section animate-fade-in">
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => setCurrentPage('home')}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-        >
-          <Home size={20} className="mr-2" />
-          Home
-        </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">
-          Practice Recitation
-        </h2>
-        <div className="w-20"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+        <button onClick={() => setCurrentPage('home')} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Practice Recitation</h2>
+        <div style={{ width: '72px' }}></div>
       </div>
 
       {/* Step 1 — Choose Verse */}
       <div className="mb-6">
-        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
-          Step 1 — Choose a Verse
-        </p>
+        <span className="p-label">Step 1 — Choose a Verse</span>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-green-200 font-medium mb-1 text-sm">Surah</label>
+            <label className="p-label">Surah</label>
             <select
               value={selectedSurahId}
               onChange={handleSurahChange}
-              className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+              className="p-select"
             >
               {surahs.map(s => (
                 <option key={s.id} value={s.id}>
@@ -2077,13 +2539,13 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
             </select>
           </div>
           <div>
-            <label className="block text-green-200 font-medium mb-1 text-sm">
+            <label className="p-label">
               Verse ({verseCount} total)
             </label>
             <select
               value={selectedVerseId}
               onChange={handleVerseChange}
-              className="w-full p-3 rounded-xl bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
+              className="p-select"
             >
               {Array.from({ length: verseCount }, (_, i) => i + 1).map(v => (
                 <option key={v} value={v}>Verse {v}</option>
@@ -2095,31 +2557,27 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
 
       {/* Step 2 — Read the Verse */}
       <div className="mb-6">
-        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
-          Step 2 — Read the Verse
-        </p>
-        <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-6 min-h-[110px] flex items-center justify-center">
+        <span className="p-label">Step 2 — Read the Verse</span>
+        <div className="p-player" style={{ minHeight: "110px", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {isLoadingVerse ? (
-            <p className="text-green-300 animate-pulse text-lg">Loading verse...</p>
+            <p style={{ color: "var(--cream-3)", fontFamily: "'Cormorant Garamond', serif" }} className="animate-pulse">Loading verse…</p>
           ) : verseText ? (
-            <p className="font-arabic text-3xl md:text-4xl leading-loose text-green-50 text-right w-full">
+            <p className="font-arabic" style={{ fontSize: "2rem", lineHeight: 2, color: "var(--cream)", direction: "rtl", textAlign: "right", width: "100%" }}>
               {verseText}
             </p>
           ) : (
-            <p className="text-green-400 text-lg">Select a verse above to see the text.</p>
+            <p style={{ color: "var(--cream-3)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>Select a verse above to see the text.</p>
           )}
         </div>
-        <p className="text-xs text-green-400 mt-2 text-right">
+        <p style={{ fontSize: "0.72rem", color: "var(--cream-4)", marginTop: "8px", textAlign: "right" }}>
           {selectedSurah?.englishName} ({selectedSurahId}:{selectedVerseId})
         </p>
       </div>
 
       {/* Step 3 — Record */}
       <div className="mb-6">
-        <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
-          Step 3 — Record Your Recitation
-        </p>
-        <div className="bg-black bg-opacity-20 border border-green-600 rounded-2xl p-6 flex flex-col items-center gap-4">
+        <span className="p-label">Step 3 — Record Your Recitation</span>
+        <div className="p-player" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "18px" }}>
           {isRecording && (
             <div className="flex items-center gap-3 text-red-400 font-semibold animate-pulse">
               <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
@@ -2146,7 +2604,7 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
               </button>
             )}
           </div>
-          <p className="text-green-400 text-sm text-center">
+          <p className=" text-sm text-center">
             {!verseText
               ? 'Load a verse first before recording.'
               : isRecording
@@ -2159,11 +2617,11 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
       {/* Step 4 — Playback */}
       {audioUrl && (
         <div>
-          <p className="text-green-300 text-sm font-semibold uppercase tracking-widest mb-3">
+          <p className=" text-sm font-semibold uppercase tracking-widest mb-3">
             Step 4 — Play Back &amp; Check
           </p>
-          <div className="bg-black bg-opacity-20 border border-green-500 rounded-2xl p-6 flex flex-col items-center gap-3">
-            <p className="text-green-200 text-base text-center">
+          <div className="bg-black bg-opacity-20 border  rounded-2xl p-6 flex flex-col items-center gap-3">
+            <p className=" text-base text-center">
               Listen to your recording and compare it with the verse above. Re-record as many times as you need!
             </p>
             <audio
@@ -2171,7 +2629,7 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
               src={audioUrl}
               className="w-full max-w-md mt-2"
             />
-            <p className="text-green-400 text-xs mt-1">✅ Recording ready — how did it sound?</p>
+            <p className=" text-xs mt-1">✅ Recording ready — how did it sound?</p>
           </div>
         </div>
       )}
@@ -2223,45 +2681,47 @@ const PrayerTimesPage = ({ onBackToHome }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+    <div className="p-section animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+          className="p-btn-ghost"
         >
           <Home size={20} className="mr-2" />
           Home
         </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Prayer Times</h2>
+        <h2 style={{ fontFamily: "\'Cormorant Garamond\', serif", fontSize: "1.7rem", fontWeight: 400, color: "var(--cream)", margin: 0 }}>Prayer Times</h2>
         <div className="w-10"></div> {/* Spacer */}
       </div>
 
-      <div className="text-center mb-6">
-        <p className="text-xl text-green-100 mb-2">Today: <span className="font-semibold">{format(currentDate, 'EEEE, MMMM d, yyyy')}</span></p>
-        <div className="flex justify-center items-center gap-4 mb-4">
-          <button onClick={handlePrevDay} className="bg-green-700 hover:bg-green-600 p-3 rounded-full shadow-md transition-colors"><ChevronLeft size={24} /></button>
-          <button onClick={handleNextDay} className="bg-green-700 hover:bg-green-600 p-3 rounded-full shadow-md transition-colors"><ChevronRight size={24} /></button>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <p style={{ color: 'var(--cream-2)', marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}>
+          {format(currentDate, 'EEEE, MMMM d, yyyy')}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '18px' }}>
+          <button onClick={handlePrevDay} className="p-ctrl-btn"><ChevronLeft size={20} /></button>
+          <button onClick={handleNextDay} className="p-ctrl-btn"><ChevronRight size={20} /></button>
         </div>
         {prayerTimes && prayerTimes.nextPrayer && (
-          <p className="text-2xl font-bold text-green-200 flex items-center justify-center">
-            <Clock9 size={28} className="mr-3 text-blue-300" />
-            Next Prayer: {prayerTimes.nextPrayer.name} in {prayerTimes.timeToNextPrayer}
-          </p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(201,164,84,0.08)', border: '1px solid rgba(201,164,84,0.22)', borderRadius: '100px', padding: '10px 22px' }}>
+            <Clock9 size={18} style={{ color: 'var(--gold)' }} />
+            <span style={{ color: 'var(--cream)', fontSize: '0.88rem', letterSpacing: '0.03em' }}>Next: <strong>{prayerTimes.nextPrayer.name}</strong> in {prayerTimes.timeToNextPrayer}</span>
+          </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {prayerTimes && prayerTimes.times.map((prayer) => (
-          <div key={prayer.name} className="bg-green-700 p-5 rounded-2xl shadow-lg flex items-center space-x-4">
-            <div className="text-4xl text-green-200 flex-shrink-0">{prayer.icon}</div>
-            <div>
-              <p className="text-xl font-semibold text-green-50">{prayer.name}</p>
-              <p className="text-2xl font-bold text-green-100">{format(prayer.time, 'h:mm a')}</p>
+          <div key={prayer.name} className={`p-prayer-row${prayerTimes.nextPrayer?.name === prayer.name ? ' next-prayer' : ''}`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ color: 'var(--gold)', opacity: 0.8 }}>{prayer.icon}</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--cream)' }}>{prayer.name}</span>
             </div>
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: prayerTimes.nextPrayer?.name === prayer.name ? 'var(--gold-l)' : 'var(--cream-2)' }}>{format(prayer.time, 'h:mm a')}</span>
           </div>
         ))}
         {!prayerTimes && (
-          <p className="col-span-full text-center text-green-300 text-lg">Loading prayer times or Geolocation available...</p>
+          <p style={{ color: 'var(--cream-3)', textAlign: 'center', padding: '24px 0' }}>Loading prayer times…</p>
         )}
       </div>
     </div>
@@ -2270,38 +2730,38 @@ const PrayerTimesPage = ({ onBackToHome }) => {
 
 const BookmarksPage = ({ onBackToHome, bookmarkedVerses, onSelectSurah, onToggleBookmark }) => {
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
+    <div className="p-section animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
+          className="p-btn-ghost"
         >
           <Home size={20} className="mr-2" />
           Home
         </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Bookmarked Verses</h2>
+        <h2 style={{ fontFamily: "\'Cormorant Garamond\', serif", fontSize: "1.7rem", fontWeight: 400, color: "var(--cream)", margin: 0 }}>Bookmarked Verses</h2>
         <div className="w-10"></div> {/* Spacer */}
       </div>
 
       {bookmarkedVerses.length === 0 ? (
-        <p className="text-center text-green-300 text-lg py-8">You haven't bookmarked any verses yet. Start reading to save some!</p>
+        <p style={{ color: "var(--cream-3)", textAlign: "center", padding: "32px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", fontStyle: "italic" }}>No bookmarks yet. Start reading to save verses.</p>
       ) : (
         <ul className="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
           {bookmarkedVerses.map((bookmark, index) => {
             const surah = quranData.surahs.find(s => s.id === bookmark.surahId);
             return (
-              <li key={index} className="bg-green-700 p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-green-600">
+              <li key={index} className="p-bookmark-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                 <div>
-                  <p className="text-xl font-semibold text-green-50 mb-1">
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", color: "var(--cream)", marginBottom: "4px" }}>
                     {surah?.englishName || `Surah ${bookmark.surahId}`} - Verse {bookmark.verseId}
                   </p>
                   {/* Displaying a placeholder as actual Arabic text isn't stored in bookmark object yet */}
-                  <p className="font-arabic text-right text-2xl text-green-200">{bookmark.arabicText || 'Arabic text placeholder'}</p>
+                  <p className="font-arabic text-right text-2xl ">{bookmark.arabicText || 'Arabic text placeholder'}</p>
                 </div>
                 <div className="flex items-center space-x-3 mt-3 sm:mt-0">
                   <button
                     onClick={() => onSelectSurah(bookmark.surahId)}
-                    className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-full text-white flex items-center shadow-md transition-colors"
+                    className=" hover: px-4 py-2 rounded-full text-white flex items-center shadow-md transition-colors"
                   >
                     <BookOpen size={18} className="mr-2" /> Read
                   </button>
@@ -2393,96 +2853,63 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-3xl shadow-2xl mb-6 text-green-50 animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={onBackToHome}
-          className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-xl flex items-center transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-md"
-        >
-          <Home size={20} className="mr-2" />
-          Home
-        </button>
-        <h2 className="text-2xl md:text-3xl font-bold text-center flex-grow text-green-100">Quran Quiz</h2>
-        <div className="w-10"></div> {/* Spacer */}
+    <div className="p-section animate-fade-in">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+        <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Quran Quiz</h2>
+        <div style={{ width: '72px' }}></div>
       </div>
 
       {!quizStarted ? (
-        <div className="text-center py-8">
-          <p className="text-xl text-green-200 mb-4">Test your knowledge of the Quran!</p>
-          <div className="mb-6">
-            <label htmlFor="quiz-category" className="block text-green-200 font-medium mb-2">Select Category:</label>
-            <select
-              id="quiz-category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full md:w-1/2 lg:w-1/3 p-3 rounded-lg bg-green-700 text-green-50 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-inner text-base"
-            >
-              {quizCategories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+        <div style={{ textAlign: 'center', padding: '32px 0' }}>
+          <p style={{ color: 'var(--cream-2)', marginBottom: '28px', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', fontStyle: 'italic' }}>Test your knowledge of the Quran</p>
+          <div style={{ marginBottom: '28px', maxWidth: '320px', margin: '0 auto 28px' }}>
+            <span className="p-label">Select Category</span>
+            <div className="p-select-wrap">
+              <select id="quiz-category" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="p-select">
+                {quizCategories.map(category => (<option key={category} value={category}>{category}</option>))}
+              </select>
+            </div>
           </div>
-          <button
-            onClick={startQuiz}
-            className="bg-green-600 hover:bg-green-500 px-8 py-4 rounded-full text-white text-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50 transform hover:scale-105"
-          >
-            Start Quiz
-          </button>
+          <button onClick={startQuiz} className="p-btn-gold" style={{ fontSize: '0.88rem', padding: '14px 40px' }}>Begin Quiz</button>
         </div>
       ) : (
-        <div className="space-y-6">
-          <div className="text-center text-green-200 text-lg">
-            <p className="font-semibold">Score: {score} | Question: {questionCount + 1}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+            <span className="p-score-badge"><Star size={12} /> Score: {score}</span>
+            <span className="p-score-badge"><CircleDot size={12} /> Q {questionCount + 1}</span>
           </div>
 
           {currentQuestion ? (
-            <div className="bg-green-700 p-6 rounded-2xl shadow-lg border border-green-600">
-              <p className="text-xl md:text-2xl font-medium text-green-50 mb-5 leading-relaxed">
+            <div style={{ background: 'var(--ink-2)', border: '1px solid rgba(201,164,84,0.12)', borderRadius: '16px', padding: '26px' }}>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.25rem', color: 'var(--cream)', marginBottom: '22px', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                 {currentQuestion.question}
               </p>
-              <div className="space-y-3">
+              <div>
                 {currentQuestion.choices.map((choice, index) => (
                   <button
                     key={index}
                     onClick={() => handleAnswer(choice)}
-                    disabled={selectedAnswer !== null} // Disable buttons after an answer is selected
-                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 border-2 ${
-                      selectedAnswer === choice
-                        ? feedback === 'correct'
-                          ? 'bg-green-500 border-green-400 text-white shadow-lg'
-                          : 'bg-red-500 border-red-400 text-white shadow-lg'
-                        : selectedAnswer !== null && choice === currentQuestion.correctAnswer
-                          ? 'bg-green-400 border-green-300 text-white shadow-lg' // Highlight correct answer after selection
-                          : 'bg-green-600 hover:bg-green-500 border-green-600 text-green-50 hover:border-green-500'
-                    } disabled:opacity-70 disabled:cursor-not-allowed`}
+                    disabled={selectedAnswer !== null}
+                    className={`p-quiz-btn ${selectedAnswer === choice ? (feedback === 'correct' ? 'correct' : 'incorrect') : (selectedAnswer !== null && choice === currentQuestion.correctAnswer ? 'correct' : '')}`}
                   >
                     {choice}
                   </button>
                 ))}
               </div>
               {feedback && (
-                <div className="mt-6 text-center">
-                  <p className={`text-lg font-bold ${feedback === 'correct' ? 'text-green-300' : 'text-red-300'}`}>
-                    {feedback === 'correct' ? 'Correct Answer!' : `Incorrect. Correct was: "${currentQuestion.correctAnswer}"`}
+                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.9rem', color: feedback === 'correct' ? '#9ee09e' : '#e09e9e', marginBottom: '14px' }}>
+                    {feedback === 'correct' ? '✦ Correct' : `Incorrect — correct: "${currentQuestion.correctAnswer}"`}
                   </p>
-                  <button
-                    onClick={handleNextQuestion}
-                    className="mt-4 bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-full text-white font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50"
-                  >
-                    Next Question
-                  </button>
+                  <button onClick={handleNextQuestion} className="p-btn-gold">Next Question</button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-xl text-green-300">Quiz finished or no questions available.</p>
-              <button
-                onClick={resetQuiz}
-                className="mt-4 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-full text-white font-semibold shadow-md transition-all duration-200"
-              >
-                Start New Quiz
-              </button>
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ color: 'var(--cream-2)', marginBottom: '20px', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem' }}>Quiz complete</p>
+              <button onClick={resetQuiz} className="p-btn-gold">New Quiz</button>
             </div>
           )}
         </div>
@@ -2490,4 +2917,3 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
     </div>
   );
 };
-
