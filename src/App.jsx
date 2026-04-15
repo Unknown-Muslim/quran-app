@@ -26,19 +26,19 @@ const PremiumStyles = () => {
     style.id = 'nurul-premium';
     style.textContent = `
       :root {
-        --ink: #060a12;
-        --ink-2: #0c1221;
-        --ink-3: #131928;
-        --ink-4: #1b2236;
-        --ink-5: #232d46;
-        --gold: #c9a454;
-        --gold-l: #e2c27a;
-        --gold-d: #8a6d2e;
-        --gold-dim: rgba(201,164,84,0.18);
-        --cream: #f0e6d3;
-        --cream-2: #d4c4a8;
-        --cream-3: #a89880;
-        --cream-4: #5e5145;
+        --ink:   #050810;
+        --ink-2: #080d1b;
+        --ink-3: #0d1427;
+        --ink-4: #131d36;
+        --ink-5: #1a2644;
+        --moon:   #8ba7d4;
+        --moon-l: #c2d5ee;
+        --moon-d: #4a6a9c;
+        --moon-dim: rgba(139,167,212,0.16);
+        --cream:   #e8edf5;
+        --cream-2: #bbc8e0;
+        --cream-3: #7a8fad;
+        --cream-4: #3d5070;
       }
       * { box-sizing: border-box; }
       body { background: var(--ink) !important; margin:0; }
@@ -47,13 +47,12 @@ const PremiumStyles = () => {
         min-height: 100vh;
         background: var(--ink);
         background-image:
-          radial-gradient(ellipse 70% 50% at 15% -10%, rgba(201,164,84,0.07) 0%, transparent 60%),
-          radial-gradient(ellipse 60% 40% at 85% 110%, rgba(201,164,84,0.05) 0%, transparent 55%);
+          radial-gradient(ellipse 70% 50% at 20% -5%, rgba(60,100,180,0.09) 0%, transparent 60%),
+          radial-gradient(ellipse 55% 40% at 80% 105%, rgba(80,120,200,0.06) 0%, transparent 55%);
         font-family: 'DM Sans', sans-serif;
         color: var(--cream);
       }
 
-      /* ── Header ── */
       .p-header { text-align:center; padding: 40px 0 32px; }
       .p-logo {
         font-family: 'Cormorant Garamond', serif;
@@ -65,554 +64,293 @@ const PremiumStyles = () => {
         margin: 0 0 6px;
         line-height: 1;
       }
-      .p-logo span { color: var(--gold); }
+      .p-logo span { color: var(--moon-l); }
       .p-tagline {
         font-family: 'Cormorant Garamond', serif;
         font-style: italic;
         font-size: 1rem;
         letter-spacing: 0.08em;
-        color: var(--gold);
+        color: var(--moon);
         margin-bottom: 20px;
       }
       .p-points-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        display: inline-flex; align-items: center; gap: 8px;
         padding: 8px 22px;
         background: var(--ink-3);
-        border: 1px solid var(--gold-dim);
+        border: 1px solid var(--moon-dim);
         border-radius: 100px;
-        font-size: 0.82rem;
-        letter-spacing: 0.06em;
-        color: var(--gold-l);
+        font-size: 0.82rem; letter-spacing: 0.06em;
+        color: var(--moon-l);
         margin-top: 8px;
       }
 
       /* ── Nav Cards ── */
       .p-card {
         background: linear-gradient(145deg, var(--ink-3), var(--ink-2));
-        border: 1px solid var(--gold-dim);
+        border: 1px solid var(--moon-dim);
         border-radius: 20px;
         padding: 28px 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        display: flex; flex-direction: column;
+        align-items: center; text-align: center;
         cursor: pointer;
         transition: transform 0.32s cubic-bezier(.4,0,.2,1), border-color 0.25s, box-shadow 0.32s;
-        position: relative;
-        overflow: hidden;
+        position: relative; overflow: hidden;
       }
       .p-card::before {
         content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.35), transparent);
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(139,167,212,0.3), transparent);
       }
       .p-card:hover {
         transform: translateY(-5px);
-        border-color: rgba(201,164,84,0.45);
-        box-shadow: 0 28px 60px rgba(0,0,0,0.55), 0 0 25px rgba(201,164,84,0.09);
+        border-color: rgba(139,167,212,0.4);
+        box-shadow: 0 28px 60px rgba(0,0,0,0.55), 0 0 25px rgba(100,140,220,0.08);
       }
       .p-card-icon {
-        width: 56px; height: 56px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(201,164,84,0.14), rgba(201,164,84,0.04));
-        border: 1px solid rgba(201,164,84,0.25);
+        width: 56px; height: 56px; border-radius: 50%;
+        background: linear-gradient(135deg, rgba(139,167,212,0.14), rgba(139,167,212,0.04));
+        border: 1px solid rgba(139,167,212,0.22);
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: 14px;
-        color: var(--gold);
+        margin-bottom: 14px; color: var(--moon);
         transition: border-color 0.25s;
       }
-      .p-card:hover .p-card-icon { border-color: rgba(201,164,84,0.55); }
+      .p-card:hover .p-card-icon { border-color: rgba(139,167,212,0.5); }
       .p-card-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem;
-        font-weight: 500;
-        color: var(--cream);
-        letter-spacing: 0.04em;
-        margin-bottom: 5px;
+        font-size: 1.2rem; font-weight: 500;
+        color: var(--cream); letter-spacing: 0.04em; margin-bottom: 5px;
       }
-      .p-card-desc {
-        font-size: 0.76rem;
-        color: var(--cream-3);
-        letter-spacing: 0.03em;
-      }
+      .p-card-desc { font-size: 0.76rem; color: var(--cream-3); letter-spacing: 0.03em; }
 
-      /* ── Section wrappers ── */
+      /* ── Section ── */
       .p-section {
         background: linear-gradient(160deg, var(--ink-3), var(--ink-2));
-        border: 1px solid var(--gold-dim);
-        border-radius: 24px;
-        padding: 28px;
-        margin-bottom: 28px;
-        position: relative;
-        overflow: hidden;
+        border: 1px solid var(--moon-dim);
+        border-radius: 24px; padding: 28px; margin-bottom: 28px;
+        position: relative; overflow: hidden;
       }
       .p-section::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.3), transparent);
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(139,167,212,0.26), transparent);
       }
       .p-section-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        font-weight: 400;
-        color: var(--cream);
-        letter-spacing: 0.05em;
+        font-size: 1.5rem; font-weight: 400;
+        color: var(--cream); letter-spacing: 0.05em;
         margin: 0 0 22px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        display: flex; align-items: center; gap: 12px;
       }
       .p-section-title::after {
-        content: '';
-        flex: 1; height: 1px;
-        background: linear-gradient(90deg, rgba(201,164,84,0.25), transparent);
+        content: ''; flex: 1; height: 1px;
+        background: linear-gradient(90deg, rgba(139,167,212,0.2), transparent);
       }
 
       /* ── Verse of the Day ── */
       .p-votd {
-        background: linear-gradient(150deg, var(--ink-3), var(--ink-2) 60%, rgba(201,164,84,0.04) 100%);
-        border: 1px solid rgba(201,164,84,0.22);
-        border-radius: 24px;
-        padding: 44px 36px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 28px;
+        background: linear-gradient(150deg, var(--ink-3), var(--ink-2) 60%, rgba(80,120,200,0.05) 100%);
+        border: 1px solid rgba(139,167,212,0.2);
+        border-radius: 24px; padding: 44px 36px;
+        text-align: center; position: relative; overflow: hidden; margin-bottom: 28px;
       }
       .p-votd::before, .p-votd::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.4), transparent);
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(139,167,212,0.35), transparent);
       }
       .p-votd::after {
         top: auto; bottom: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.15), transparent);
+        background: linear-gradient(90deg, transparent, rgba(139,167,212,0.12), transparent);
       }
-      .p-votd-ornament {
-        font-size: 0.6rem;
-        letter-spacing: 0.8em;
-        color: var(--gold-d);
-        margin-bottom: 16px;
-        display: block;
-      }
+      .p-votd-ornament { font-size: 0.6rem; letter-spacing: 0.8em; color: var(--moon-d); margin-bottom: 16px; display: block; }
       .p-votd-label {
-        font-family: 'Cormorant Garamond', serif;
-        font-style: italic;
-        font-size: 0.82rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--gold);
-        margin-bottom: 22px;
+        font-family: 'Cormorant Garamond', serif; font-style: italic;
+        font-size: 0.82rem; letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--moon); margin-bottom: 22px;
       }
       .p-votd-arabic {
         font-family: 'Amiri', serif;
         font-size: clamp(1.9rem, 4vw, 2.8rem);
-        line-height: 2.1;
-        color: var(--cream);
-        direction: rtl;
-        margin-bottom: 18px;
-        text-shadow: 0 0 30px rgba(201,164,84,0.12);
+        line-height: 2.1; color: var(--cream); direction: rtl; margin-bottom: 18px;
+        text-shadow: 0 0 30px rgba(100,150,220,0.1);
       }
-      .p-votd-ref {
-        font-size: 0.7rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--gold-d);
-        margin-bottom: 14px;
-      }
+      .p-votd-ref { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moon-d); margin-bottom: 14px; }
       .p-votd-trans {
-        font-family: 'Cormorant Garamond', serif;
-        font-style: italic;
-        font-size: 1.15rem;
-        color: var(--cream-2);
-        line-height: 1.9;
-        max-width: 560px;
-        margin: 0 auto 28px;
+        font-family: 'Cormorant Garamond', serif; font-style: italic;
+        font-size: 1.15rem; color: var(--cream-2); line-height: 1.9;
+        max-width: 560px; margin: 0 auto 28px;
       }
 
       /* ── Buttons ── */
       .p-btn-gold {
-        background: linear-gradient(135deg, var(--gold-d), var(--gold));
-        color: var(--ink);
-        border: none;
-        border-radius: 100px;
-        padding: 11px 28px;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.8rem;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        cursor: pointer;
+        background: linear-gradient(135deg, var(--moon-d), var(--moon));
+        color: #050810;
+        border: none; border-radius: 100px; padding: 11px 28px;
+        font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
+        letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
         transition: box-shadow 0.25s, transform 0.2s;
         display: inline-flex; align-items: center; gap: 7px;
       }
-      .p-btn-gold:hover {
-        box-shadow: 0 0 24px rgba(201,164,84,0.4);
-        transform: translateY(-1px);
-      }
+      .p-btn-gold:hover { box-shadow: 0 0 24px rgba(139,167,212,0.45); transform: translateY(-1px); }
       .p-btn-ghost {
-        background: transparent;
-        color: var(--cream-2);
-        border: 1px solid rgba(201,164,84,0.22);
-        border-radius: 100px;
-        padding: 9px 20px;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.8rem;
-        letter-spacing: 0.06em;
-        cursor: pointer;
-        transition: all 0.22s;
+        background: transparent; color: var(--cream-2);
+        border: 1px solid rgba(139,167,212,0.2); border-radius: 100px; padding: 9px 20px;
+        font-family: 'DM Sans', sans-serif; font-size: 0.8rem; letter-spacing: 0.06em;
+        cursor: pointer; transition: all 0.22s;
         display: inline-flex; align-items: center; gap: 7px;
       }
-      .p-btn-ghost:hover { border-color: var(--gold); color: var(--gold-l); }
+      .p-btn-ghost:hover { border-color: var(--moon); color: var(--moon-l); }
       .p-play-btn {
-        width: 64px; height: 64px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gold-d), var(--gold));
+        width: 64px; height: 64px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--moon-d), var(--moon));
         border: none; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        color: var(--ink);
-        box-shadow: 0 0 30px rgba(201,164,84,0.28);
+        color: #050810;
+        box-shadow: 0 0 30px rgba(100,150,220,0.25);
         transition: all 0.28s;
       }
-      .p-play-btn:hover { transform: scale(1.08); box-shadow: 0 0 40px rgba(201,164,84,0.5); }
+      .p-play-btn:hover { transform: scale(1.08); box-shadow: 0 0 42px rgba(100,150,220,0.45); }
       .p-play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
       .p-ctrl-btn {
-        width: 44px; height: 44px;
-        border-radius: 50%;
-        background: var(--ink-3);
-        border: 1px solid var(--gold-dim);
-        color: var(--cream-2);
-        cursor: pointer;
+        width: 44px; height: 44px; border-radius: 50%;
+        background: var(--ink-3); border: 1px solid var(--moon-dim);
+        color: var(--cream-2); cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         transition: all 0.2s;
       }
-      .p-ctrl-btn:hover { border-color: rgba(201,164,84,0.4); color: var(--gold-l); }
+      .p-ctrl-btn:hover { border-color: rgba(139,167,212,0.4); color: var(--moon-l); }
       .p-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
       /* ── Input / Select ── */
       .p-input, .p-select {
-        background: var(--ink-2);
-        border: 1px solid var(--gold-dim);
-        border-radius: 12px;
-        padding: 13px 18px;
-        color: var(--cream);
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.9rem;
-        width: 100%;
-        outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        appearance: none;
+        background: var(--ink-2); border: 1px solid var(--moon-dim);
+        border-radius: 12px; padding: 13px 18px; color: var(--cream);
+        font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%;
+        outline: none; transition: border-color 0.2s, box-shadow 0.2s; appearance: none;
       }
       .p-input::placeholder { color: var(--cream-4); }
       .p-input:focus, .p-select:focus {
-        border-color: rgba(201,164,84,0.5);
-        box-shadow: 0 0 0 3px rgba(201,164,84,0.07);
+        border-color: rgba(139,167,212,0.48);
+        box-shadow: 0 0 0 3px rgba(100,150,220,0.07);
       }
       .p-select option { background: var(--ink-2); color: var(--cream); }
       .p-select-wrap { position: relative; }
       .p-select-wrap::after {
-        content: '›';
-        position: absolute; right: 14px; top: 50%;
+        content: '›'; position: absolute; right: 14px; top: 50%;
         transform: translateY(-50%) rotate(90deg);
-        color: var(--gold-d); pointer-events: none;
-        font-size: 1.1rem;
+        color: var(--moon-d); pointer-events: none; font-size: 1.1rem;
       }
 
       /* ── Surah list ── */
       .p-surah-item {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.08);
-        border-radius: 12px;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-        width: 100%;
-        text-align: left;
-        margin-bottom: 6px;
+        background: var(--ink-2); border: 1px solid rgba(139,167,212,0.07);
+        border-radius: 12px; padding: 14px 18px;
+        display: flex; align-items: center; gap: 14px;
+        cursor: pointer; transition: all 0.2s;
+        width: 100%; text-align: left; margin-bottom: 6px;
       }
-      .p-surah-item:hover {
-        background: var(--ink-3);
-        border-color: rgba(201,164,84,0.3);
-        transform: translateX(3px);
-      }
+      .p-surah-item:hover { background: var(--ink-3); border-color: rgba(139,167,212,0.28); transform: translateX(3px); }
       .p-surah-num {
-        min-width: 34px; height: 34px;
-        border: 1px solid rgba(201,164,84,0.28);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.72rem;
-        color: var(--gold);
+        min-width: 34px; height: 34px; border: 1px solid rgba(139,167,212,0.25);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem; color: var(--moon);
       }
 
       /* ── Reciter Card ── */
       .p-reciter-card {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.1);
-        border-radius: 16px;
-        padding: 22px 16px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        transition: all 0.3s;
-        position: relative;
+        background: var(--ink-2); border: 1px solid rgba(139,167,212,0.09);
+        border-radius: 16px; padding: 22px 16px;
+        display: flex; flex-direction: column; align-items: center; text-align: center;
+        transition: all 0.3s; position: relative;
       }
-      .p-reciter-card:hover {
-        border-color: rgba(201,164,84,0.32);
-        transform: translateY(-4px);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      }
-      .p-reciter-img {
-        width: 70px; height: 70px;
-        border-radius: 50%;
-        border: 2px solid rgba(201,164,84,0.35);
-        margin-bottom: 12px;
-        object-fit: cover;
-      }
+      .p-reciter-card:hover { border-color: rgba(139,167,212,0.3); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.45); }
+      .p-reciter-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid rgba(139,167,212,0.3); margin-bottom: 12px; object-fit: cover; }
       .p-locked-badge {
         position: absolute; top: 10px; right: 10px;
-        font-size: 0.6rem; letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
         padding: 3px 10px;
-        background: rgba(201,164,84,0.12);
-        border: 1px solid rgba(201,164,84,0.22);
-        border-radius: 100px;
-        color: var(--gold);
+        background: rgba(139,167,212,0.1); border: 1px solid rgba(139,167,212,0.2);
+        border-radius: 100px; color: var(--moon);
       }
 
-      /* ── Progress bars ── */
-      .p-progress-bar {
-        height: 3px; background: var(--ink-4);
-        border-radius: 100px; overflow: hidden;
-        margin: 10px 0 6px;
-      }
-      .p-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--gold-d), var(--gold));
-        border-radius: 100px;
-        transition: width 0.7s ease-out;
-      }
+      /* ── Progress ── */
+      .p-progress-bar { height: 3px; background: var(--ink-4); border-radius: 100px; overflow: hidden; margin: 10px 0 6px; }
+      .p-progress-fill { height: 100%; background: linear-gradient(90deg, var(--moon-d), var(--moon)); border-radius: 100px; transition: width 0.7s ease-out; }
 
-      /* ── Achievement items ── */
-      .p-achievement {
-        display: flex; align-items: center; gap: 12px;
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-bottom: 8px;
-        border: 1px solid transparent;
-        transition: all 0.2s;
-      }
-      .p-achievement.achieved {
-        background: rgba(201,164,84,0.08);
-        border-color: rgba(201,164,84,0.2);
-      }
-      .p-achievement.locked {
-        background: var(--ink-2);
-        border-color: rgba(255,255,255,0.04);
-        opacity: 0.55;
-      }
+      /* ── Achievement ── */
+      .p-achievement { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid transparent; transition: all 0.2s; }
+      .p-achievement.achieved { background: rgba(139,167,212,0.07); border-color: rgba(139,167,212,0.18); }
+      .p-achievement.locked { background: var(--ink-2); border-color: rgba(255,255,255,0.04); opacity: 0.55; }
 
-      /* ── Verse display (reader) ── */
-      .p-verse-row {
-        border-left: 2px solid rgba(201,164,84,0.12);
-        padding: 18px 22px;
-        margin-bottom: 6px;
-        border-radius: 0 12px 12px 0;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .p-verse-row:hover { background: rgba(201,164,84,0.04); border-left-color: rgba(201,164,84,0.4); }
-      .p-verse-row.playing {
-        background: rgba(201,164,84,0.08) !important;
-        border-left-color: var(--gold) !important;
-        box-shadow: 0 0 20px rgba(201,164,84,0.06);
-      }
+      /* ── Verse row ── */
+      .p-verse-row { border-left: 2px solid rgba(139,167,212,0.1); padding: 18px 22px; margin-bottom: 6px; border-radius: 0 12px 12px 0; cursor: pointer; transition: all 0.2s; }
+      .p-verse-row:hover { background: rgba(139,167,212,0.04); border-left-color: rgba(139,167,212,0.38); }
+      .p-verse-row.playing { background: rgba(100,150,220,0.08) !important; border-left-color: var(--moon) !important; box-shadow: 0 0 20px rgba(100,150,220,0.06); }
 
       /* ── Notification ── */
       .p-notif {
-        position: fixed; bottom: 24px;
-        left: 50%; transform: translateX(-50%);
-        background: var(--ink-3);
-        border: 1px solid rgba(201,164,84,0.25);
-        border-radius: 14px;
-        padding: 14px 22px;
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        background: var(--ink-3); border: 1px solid rgba(139,167,212,0.22);
+        border-radius: 14px; padding: 14px 22px;
         display: flex; align-items: center; gap: 12px;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-        z-index: 9999;
-        min-width: 280px;
-        animation: fadeInUp 0.35s ease;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.55); z-index: 9999;
+        min-width: 280px; animation: fadeInUp 0.35s ease;
       }
-      .p-notif.success { border-color: rgba(100,200,100,0.3); }
+      .p-notif.success { border-color: rgba(80,180,120,0.3); }
       .p-notif.error   { border-color: rgba(200,80,80,0.32); }
 
-      /* ── Player panel ── */
-      .p-player {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.18);
-        border-radius: 20px;
-        padding: 26px;
-        margin-bottom: 20px;
-      }
+      /* ── Player ── */
+      .p-player { background: var(--ink-2); border: 1px solid rgba(139,167,212,0.15); border-radius: 20px; padding: 26px; margin-bottom: 20px; }
 
-      /* ── Quiz answer btn ── */
+      /* ── Quiz ── */
       .p-quiz-btn {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.1);
-        border-radius: 12px;
-        padding: 15px 20px;
-        width: 100%;
-        text-align: left;
-        color: var(--cream);
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-bottom: 8px;
-        display: block;
+        background: var(--ink-2); border: 1px solid rgba(139,167,212,0.09);
+        border-radius: 12px; padding: 15px 20px; width: 100%;
+        text-align: left; color: var(--cream);
+        font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+        cursor: pointer; transition: all 0.2s; margin-bottom: 8px; display: block;
       }
-      .p-quiz-btn:hover:not(:disabled) {
-        background: var(--ink-3);
-        border-color: rgba(201,164,84,0.32);
-      }
-      .p-quiz-btn.correct {
-        background: rgba(80,170,80,0.12);
-        border-color: rgba(80,170,80,0.4);
-        color: #9ee09e;
-      }
-      .p-quiz-btn.incorrect {
-        background: rgba(200,60,60,0.12);
-        border-color: rgba(200,60,60,0.35);
-        color: #e09e9e;
-      }
+      .p-quiz-btn:hover:not(:disabled) { background: var(--ink-3); border-color: rgba(139,167,212,0.3); }
+      .p-quiz-btn.correct  { background: rgba(70,160,110,0.12); border-color: rgba(70,160,110,0.4); color: #8eddb2; }
+      .p-quiz-btn.incorrect{ background: rgba(200,60,60,0.1);  border-color: rgba(200,60,60,0.32); color: #e09e9e; }
       .p-quiz-btn:disabled { opacity: 0.75; cursor: not-allowed; }
 
       /* ── Prayer row ── */
-      .p-prayer-row {
-        display: flex; align-items: center;
-        justify-content: space-between;
-        padding: 15px 20px;
-        border-radius: 12px;
-        margin-bottom: 8px;
-        background: var(--ink-2);
-        border: 1px solid rgba(255,255,255,0.04);
-        transition: background 0.2s;
-      }
-      .p-prayer-row.next-prayer {
-        background: rgba(201,164,84,0.08);
-        border-color: rgba(201,164,84,0.25);
-      }
+      .p-prayer-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-radius: 12px; margin-bottom: 8px; background: var(--ink-2); border: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
+      .p-prayer-row.next-prayer { background: rgba(100,140,220,0.08); border-color: rgba(139,167,212,0.24); }
 
       /* ── Misc ── */
-      .gold-line {
-        height: 1px; margin: 24px 0;
-        background: linear-gradient(90deg, transparent, rgba(201,164,84,0.28), transparent);
-      }
-      .p-label {
-        font-size: 0.7rem; letter-spacing: 0.12em;
-        text-transform: uppercase; color: var(--gold-d);
-        margin-bottom: 10px; display: block;
-      }
+      .gold-line { height: 1px; margin: 24px 0; background: linear-gradient(90deg, transparent, rgba(139,167,212,0.24), transparent); }
+      .p-label { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moon-d); margin-bottom: 10px; display: block; }
       .font-arabic { font-family: 'Amiri', serif; }
-      .p-score-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: rgba(201,164,84,0.1);
-        border: 1px solid rgba(201,164,84,0.22);
-        border-radius: 100px;
-        padding: 6px 16px;
-        font-size: 0.85rem; color: var(--gold-l);
-      }
+      .p-score-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(139,167,212,0.09); border: 1px solid rgba(139,167,212,0.2); border-radius: 100px; padding: 6px 16px; font-size: 0.85rem; color: var(--moon-l); }
 
-      /* ── Reciter picker row ── */
-      .p-reciter-pick {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.1);
-        border-radius: 14px;
-        padding: 14px;
-        display: flex; flex-direction: column;
-        align-items: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-align: center;
-      }
-      .p-reciter-pick.active {
-        border-color: rgba(201,164,84,0.5);
-        background: rgba(201,164,84,0.07);
-      }
-      .p-reciter-pick:hover { border-color: rgba(201,164,84,0.3); }
+      /* ── Reciter pick ── */
+      .p-reciter-pick { background: var(--ink-2); border: 1px solid rgba(139,167,212,0.09); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s; text-align: center; }
+      .p-reciter-pick.active { border-color: rgba(139,167,212,0.48); background: rgba(100,140,220,0.07); }
+      .p-reciter-pick:hover { border-color: rgba(139,167,212,0.28); }
 
-      /* Scrollbar */
+      /* ── Scrollbar ── */
       .custom-scrollbar::-webkit-scrollbar { width: 3px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: var(--ink-2); }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gold-d); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--moon-d); border-radius: 4px; }
 
-      /* Animations */
+      /* ── Animations ── */
       @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
       @keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
       .animate-fade-in-down { animation: fadeInDown 0.6s ease forwards; }
       @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
       .animate-fade-in-up { animation: fadeInUp 0.4s ease forwards; }
-
-      /* Spinner */
       @keyframes spin { to { transform: rotate(360deg); } }
-      .p-spinner {
-        width: 22px; height: 22px;
-        border: 2px solid rgba(201,164,84,0.25);
-        border-top-color: var(--gold);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
+      .p-spinner { width: 22px; height: 22px; border: 2px solid rgba(139,167,212,0.2); border-top-color: var(--moon); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
-      /* Deen buddy chat */
-      .p-chat-bubble-user {
-        background: rgba(201,164,84,0.1);
-        border: 1px solid rgba(201,164,84,0.2);
-        border-radius: 18px 18px 4px 18px;
-        padding: 12px 18px;
-        max-width: 78%;
-        margin-left: auto;
-        font-size: 0.88rem;
-        color: var(--cream-2);
-        line-height: 1.6;
-      }
-      .p-chat-bubble-ai {
-        background: var(--ink-2);
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 4px 18px 18px 18px;
-        padding: 14px 18px;
-        max-width: 88%;
-        font-size: 0.88rem;
-        color: var(--cream);
-        line-height: 1.7;
-      }
-      .p-chat-input-row {
-        display: flex; gap: 10px; align-items: center;
-        padding-top: 14px;
-        border-top: 1px solid rgba(201,164,84,0.1);
-        margin-top: 16px;
-      }
-      
-      /* Bookmarks */
-      .p-bookmark-row {
-        background: var(--ink-2);
-        border: 1px solid rgba(201,164,84,0.09);
-        border-radius: 14px;
-        padding: 18px 20px;
-        margin-bottom: 10px;
-        transition: all 0.2s;
-      }
-      .p-bookmark-row:hover {
-        border-color: rgba(201,164,84,0.28);
-        background: var(--ink-3);
-      }
+      /* ── Chat bubbles ── */
+      .p-chat-bubble-user { background: rgba(100,140,220,0.1); border: 1px solid rgba(139,167,212,0.18); border-radius: 18px 18px 4px 18px; padding: 12px 18px; max-width: 78%; margin-left: auto; font-size: 0.88rem; color: var(--cream-2); line-height: 1.6; }
+      .p-chat-bubble-ai { background: var(--ink-2); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px 18px 18px 18px; padding: 14px 18px; max-width: 88%; font-size: 0.88rem; color: var(--cream); line-height: 1.7; }
+      .p-chat-input-row { display: flex; gap: 10px; align-items: center; padding-top: 14px; border-top: 1px solid rgba(139,167,212,0.09); margin-top: 16px; }
+
+      /* ── Bookmarks ── */
+      .p-bookmark-row { background: var(--ink-2); border: 1px solid rgba(139,167,212,0.08); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; transition: all 0.2s; }
+      .p-bookmark-row:hover { border-color: rgba(139,167,212,0.26); background: var(--ink-3); }
     `;
     document.head.appendChild(style);
     return () => {
@@ -1064,11 +802,11 @@ const ReciterCard = ({ reciter, onSelectReciter, points, isUnlocked, onUnlock, s
 // ProgressCard component to display individual user progress metrics.
 const ProgressCard = ({ title, value, unit, icon: Icon, progressBar, progressPercent, milestoneText }) => (
   <div className="p-reciter-card" style={{ padding: '26px 20px' }}>
-    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(201,164,84,0.12), rgba(201,164,84,0.04))', border: '1px solid rgba(201,164,84,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px', color: 'var(--gold)' }}>
+    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(139,167,212,0.12), rgba(139,167,212,0.04))', border: '1px solid rgba(139,167,212,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px', color: 'var(--moon)' }}>
       {Icon && <Icon size={22} strokeWidth={1.5} />}
     </div>
     <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem', color: 'var(--cream-2)', marginBottom: '8px', letterSpacing: '0.04em' }}>{title}</p>
-    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '2rem', fontWeight: 500, color: 'var(--gold-l)', lineHeight: 1 }}>{value}</p>
+    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '2rem', fontWeight: 500, color: 'var(--moon-l)', lineHeight: 1 }}>{value}</p>
     <p style={{ fontSize: '0.72rem', color: 'var(--cream-4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '4px' }}>{unit}</p>
     {progressBar && (
       <div style={{ width: '100%', marginTop: '14px' }}>
@@ -1085,13 +823,13 @@ const ProgressCard = ({ title, value, unit, icon: Icon, progressBar, progressPer
 const AchievementsCard = ({ achievements }) => (
   <div className="p-reciter-card" style={{ alignItems: 'stretch', padding: '22px' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-      <Award size={18} style={{ color: 'var(--gold)' }} strokeWidth={1.5} />
+      <Award size={18} style={{ color: 'var(--moon)' }} strokeWidth={1.5} />
       <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--cream)', letterSpacing: '0.05em' }}>Achievements</span>
     </div>
     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
       {achievements.map((achievement) => (
         <li key={achievement.id} className={`p-achievement ${achievement.achieved ? 'achieved' : 'locked'}`}>
-          <span style={{ color: achievement.achieved ? 'var(--gold)' : 'var(--cream-4)', flexShrink: 0 }}>{achievement.icon}</span>
+          <span style={{ color: achievement.achieved ? 'var(--moon)' : 'var(--cream-4)', flexShrink: 0 }}>{achievement.icon}</span>
           <div>
             <p style={{ fontSize: '0.85rem', color: achievement.achieved ? 'var(--cream)' : 'var(--cream-3)', fontWeight: 500 }}>{achievement.title}</p>
             <p style={{ fontSize: '0.72rem', color: 'var(--cream-4)' }}>{achievement.description}</p>
@@ -1131,7 +869,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
       {/* Reciters */}
       <div className="p-section">
         <div className="p-section-title">
-          <Headphones size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+          <Headphones size={16} style={{ color: 'var(--moon)', flexShrink: 0 }} />
           Available Reciters
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
@@ -1152,7 +890,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
       {/* Progress */}
       <div className="p-section">
         <div className="p-section-title">
-          <BarChart size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+          <BarChart size={16} style={{ color: 'var(--moon)', flexShrink: 0 }} />
           Your Progress
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
@@ -1190,7 +928,7 @@ const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHo
 
   return (
     <div className="p-section animate-fade-in">
-      <div className="p-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+      <div className="p-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)' }}>
         <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', letterSpacing: '0.05em', margin: 0 }}>Select a Surah</h2>
         <div style={{ width: '80px' }}></div>
@@ -1211,7 +949,7 @@ const SurahSelector = ({ onSelectSurah, onBackToHome }) => { // Added onBackToHo
                 <span className="p-surah-num">{surah.id}</span>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: 'var(--cream)', fontSize: '0.92rem', fontWeight: 500, marginBottom: '2px' }}>{surah.englishName}</p>
-                  <p className="font-arabic" style={{ fontSize: '1.1rem', color: 'var(--gold-l)' }}>{surah.name}</p>
+                  <p className="font-arabic" style={{ fontSize: '1.1rem', color: 'var(--moon-l)' }}>{surah.name}</p>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--cream-4)', letterSpacing: '0.06em' }}>{surah.numberOfVerses}v</span>
               </button>
@@ -1452,18 +1190,18 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)', flexWrap: 'wrap' }}>
         <button onClick={onBackToSurahList} className="p-btn-ghost"><ArrowLeft size={14} /> Back</button>
         <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.6rem', fontWeight: 400, color: 'var(--cream)', flex: 1, textAlign: 'center', margin: 0 }}>
-          {selectedSurahMeta?.englishName} <span className="font-arabic" style={{ fontSize: '1.8rem', color: 'var(--gold-l)' }}>{selectedSurahMeta?.name}</span>
+          {selectedSurahMeta?.englishName} <span className="font-arabic" style={{ fontSize: '1.8rem', color: 'var(--moon-l)' }}>{selectedSurahMeta?.name}</span>
         </h2>
         <button onClick={handlePrevSurah} disabled={selectedSurahId === 1} className="p-ctrl-btn"><ChevronLeft size={18} /></button>
         <button onClick={handleNextSurah} disabled={selectedSurahId === quranData.surahs.length} className="p-ctrl-btn"><ChevronRight size={18} /></button>
       </div>
 
       {/* Font and Script Controls */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', padding: '14px 18px', background: 'var(--ink-2)', border: '1px solid rgba(201,164,84,0.1)', borderRadius: '14px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', padding: '14px 18px', background: 'var(--ink-2)', border: '1px solid rgba(139,167,212,0.1)', borderRadius: '14px', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="p-label" style={{ margin: 0 }}>Font</span>
           <select value={selectedFont} onChange={handleFontFamilyChange} className="p-select" style={{ width: 'auto', padding: '6px 12px' }}>
@@ -1473,7 +1211,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="p-label" style={{ margin: 0 }}>Size</span>
           <button onClick={() => handleFontSizeChange('decrease')} className="p-ctrl-btn" style={{ width: '32px', height: '32px' }}>−</button>
-          <span style={{ color: 'var(--gold)', fontSize: '0.85rem', minWidth: '24px', textAlign: 'center' }}>{fontSize.replace('text-', '')}</span>
+          <span style={{ color: 'var(--moon)', fontSize: '0.85rem', minWidth: '24px', textAlign: 'center' }}>{fontSize.replace('text-', '')}</span>
           <button onClick={() => handleFontSizeChange('increase')} className="p-ctrl-btn" style={{ width: '32px', height: '32px' }}>+</button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1492,11 +1230,11 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
               <p className={`font-arabic ${fontSize} ${fontFamilies.find(f => f.name === selectedFont)?.className || 'font-arabic'}`} style={{ textAlign: 'right', direction: 'rtl', lineHeight: 2, color: 'var(--cream)', flex: 1 }}>
-                {verse.arabic} <span style={{ fontSize: '0.75rem', color: 'var(--gold-d)', opacity: 0.9 }}>({verse.id})</span>
+                {verse.arabic} <span style={{ fontSize: '0.75rem', color: 'var(--moon-d)', opacity: 0.9 }}>({verse.id})</span>
               </p>
               <button
                 onClick={() => onToggleBookmark(selectedSurahId, verse.id)}
-                style={{ marginLeft: '12px', background: 'none', border: 'none', cursor: 'pointer', color: bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? 'var(--gold)' : 'var(--cream-4)', padding: '4px', flexShrink: 0, transition: 'color 0.2s' }}
+                style={{ marginLeft: '12px', background: 'none', border: 'none', cursor: 'pointer', color: bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? 'var(--moon)' : 'var(--cream-4)', padding: '4px', flexShrink: 0, transition: 'color 0.2s' }}
                 title="Toggle Bookmark"
               >
                 <Bookmark size={18} fill={bookmarkedVerses.some(b => b.surahId === selectedSurahId && b.verseId === verse.id) ? "currentColor" : "none"} strokeWidth={1.5} />
@@ -1608,10 +1346,10 @@ const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
         <div className="w-10"></div> {/* Spacer */}
       </div>
 
-      <div ref={chatContainerRef} className="custom-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "16px", background: "var(--ink-2)", borderRadius: "14px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "12px", border: "1px solid rgba(201,164,84,0.08)" }}>
+      <div ref={chatContainerRef} className="custom-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "16px", background: "var(--ink-2)", borderRadius: "14px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "12px", border: "1px solid rgba(139,167,212,0.08)" }}>
         {chatHistory.length === 0 && !isLoadingResponse ? (
           <div style={{ textAlign: "center", padding: "32px 0", color: "var(--cream-3)" }}>
-            <MessageSquareText size={48} style={{ color: "var(--gold-d)", display: "block", margin: "0 auto 16px" }} />
+            <MessageSquareText size={48} style={{ color: "var(--moon-d)", display: "block", margin: "0 auto 16px" }} />
             <p>Coming Soon Inshallah")</p>
             <p className="text-xs mt-4 text-yellow-300">Disclaimer: This AI aims to provide guidance based on the Hanafi Madhab but is not a substitute for a qualified human scholar. Always consult with knowledgeable individuals for important religious matters.</p>
           </div>
@@ -1624,7 +1362,7 @@ const DeenBuddyPage = ({ onBackToHome, showNotification }) => {
           <div
 className={message.role === 'user' ? 'p-chat-bubble-user' : 'p-chat-bubble-ai'}
           >
-            <p style={{ fontSize: "0.7rem", color: "var(--gold-d)", marginBottom: "6px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{message.role === 'user' ? 'You' : 'AI Guide'}</p>
+            <p style={{ fontSize: "0.7rem", color: "var(--moon-d)", marginBottom: "6px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{message.role === 'user' ? 'You' : 'AI Guide'}</p>
             <p style={{ fontSize: "0.88rem" }}>{message.parts[0].text}</p>
           </div>
         </div>
@@ -1633,7 +1371,7 @@ className={message.role === 'user' ? 'p-chat-bubble-user' : 'p-chat-bubble-ai'}
     {isLoadingResponse && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div className="p-chat-bubble-ai animate-pulse">
-              <p style={{ fontSize: '0.7rem', color: 'var(--gold-d)', marginBottom: '6px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>AI Guide</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--moon-d)', marginBottom: '6px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>AI Guide</p>
               <p style={{ fontSize: '0.88rem' }}>Thinking…</p>
             </div>
           </div>
@@ -2148,7 +1886,7 @@ export default function App() {
           <p className="p-tagline">Your Daily Companion for Quranic Reflection</p>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
             <span className="p-points-badge">
-              <Star size={13} style={{ color: 'var(--gold)' }} />
+              <Star size={13} style={{ color: 'var(--moon)' }} />
               {userProgress.points} points
             </span>
           </div>
@@ -2293,7 +2031,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
   return (
     <div className="p-section animate-fade-in">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)' }}>
         <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Listen</h2>
         <div style={{ width: '72px' }}></div>
@@ -2309,7 +2047,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
               onClick={() => { setActiveReciterId(r.id); setIsPlaying(false); audioRef.current.pause(); audioRef.current.src = ''; }}
               className={`p-reciter-pick${activeReciterId === r.id ? ' active' : ''}`}
             >
-              <img src={r.imageUrl} alt={r.englishName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid rgba(201,164,84,0.3)', marginBottom: '8px', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/56x56/1b2236/c9a454?text=R'; }} />
+              <img src={r.imageUrl} alt={r.englishName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid rgba(139,167,212,0.3)', marginBottom: '8px', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/56x56/1b2236/c9a454?text=R'; }} />
               <p style={{ fontSize: '0.72rem', color: 'var(--cream-2)', lineHeight: 1.3 }}>{r.englishName}</p>
             </button>
           ))}
@@ -2332,7 +2070,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
       <div className="p-player" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem', color: 'var(--cream)' }}>
-            {selectedSurah?.englishName} <span className="font-arabic" style={{ fontSize: '1.5rem', color: 'var(--gold-l)' }}>{selectedSurah?.name}</span>
+            {selectedSurah?.englishName} <span className="font-arabic" style={{ fontSize: '1.5rem', color: 'var(--moon-l)' }}>{selectedSurah?.name}</span>
           </p>
           <p style={{ fontSize: '0.75rem', color: 'var(--cream-3)', marginTop: '4px', letterSpacing: '0.04em' }}>
             {isLoadingVerses ? 'Loading…' : verses.length > 0 ? `Verse ${(verses[currentVerseIndex]?.id ?? 1)} of ${verses.length} · ${activeReciter.englishName}` : ''}
@@ -2376,7 +2114,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
                   className={idx === currentVerseIndex ? 'p-verse-row playing' : 'p-verse-row'}
                   style={{ width: '100%', textAlign: 'right', direction: 'rtl', fontFamily: "'Amiri', serif", fontSize: '1.15rem', lineHeight: 2, cursor: 'pointer', background: 'none', border: 'none' }}
                 >
-                  <span style={{ float: 'left', fontSize: '0.7rem', color: 'var(--gold-d)', fontFamily: "'DM Sans', sans-serif", direction: 'ltr', marginTop: '12px' }}>{v.id}</span>
+                  <span style={{ float: 'left', fontSize: '0.7rem', color: 'var(--moon-d)', fontFamily: "'DM Sans', sans-serif", direction: 'ltr', marginTop: '12px' }}>{v.id}</span>
                   {v.text}
                 </button>
               </li>
@@ -2504,7 +2242,7 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
     <div className="p-section animate-fade-in">
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)' }}>
         <button onClick={() => setCurrentPage('home')} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Practice Recitation</h2>
         <div style={{ width: '72px' }}></div>
@@ -2693,8 +2431,8 @@ const PrayerTimesPage = ({ onBackToHome }) => {
           <button onClick={handleNextDay} className="p-ctrl-btn"><ChevronRight size={20} /></button>
         </div>
         {prayerTimes && prayerTimes.nextPrayer && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(201,164,84,0.08)', border: '1px solid rgba(201,164,84,0.22)', borderRadius: '100px', padding: '10px 22px' }}>
-            <Clock9 size={18} style={{ color: 'var(--gold)' }} />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(139,167,212,0.08)', border: '1px solid rgba(139,167,212,0.22)', borderRadius: '100px', padding: '10px 22px' }}>
+            <Clock9 size={18} style={{ color: 'var(--moon)' }} />
             <span style={{ color: 'var(--cream)', fontSize: '0.88rem', letterSpacing: '0.03em' }}>Next: <strong>{prayerTimes.nextPrayer.name}</strong> in {prayerTimes.timeToNextPrayer}</span>
           </div>
         )}
@@ -2704,10 +2442,10 @@ const PrayerTimesPage = ({ onBackToHome }) => {
         {prayerTimes && prayerTimes.times.map((prayer) => (
           <div key={prayer.name} className={`p-prayer-row${prayerTimes.nextPrayer?.name === prayer.name ? ' next-prayer' : ''}`}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ color: 'var(--gold)', opacity: 0.8 }}>{prayer.icon}</span>
+              <span style={{ color: 'var(--moon)', opacity: 0.8 }}>{prayer.icon}</span>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--cream)' }}>{prayer.name}</span>
             </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: prayerTimes.nextPrayer?.name === prayer.name ? 'var(--gold-l)' : 'var(--cream-2)' }}>{format(prayer.time, 'h:mm a')}</span>
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: prayerTimes.nextPrayer?.name === prayer.name ? 'var(--moon-l)' : 'var(--cream-2)' }}>{format(prayer.time, 'h:mm a')}</span>
           </div>
         ))}
         {!prayerTimes && (
@@ -2863,7 +2601,7 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
 
   return (
     <div className="p-section animate-fade-in">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(201,164,84,0.1)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)' }}>
         <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Quran Quiz</h2>
         <div style={{ width: '72px' }}></div>
@@ -2890,7 +2628,7 @@ const QuizPage = ({ onBackToHome, updateUserProgress, showNotification }) => {
           </div>
 
           {currentQuestion ? (
-            <div style={{ background: 'var(--ink-2)', border: '1px solid rgba(201,164,84,0.12)', borderRadius: '16px', padding: '26px' }}>
+            <div style={{ background: 'var(--ink-2)', border: '1px solid rgba(139,167,212,0.12)', borderRadius: '16px', padding: '26px' }}>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.25rem', color: 'var(--cream)', marginBottom: '22px', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                 {currentQuestion.question}
               </p>
