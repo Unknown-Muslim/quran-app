@@ -480,10 +480,6 @@ const quranData = {
     { id: 113, name: 'الفلق', englishName: 'Al-Falaq', numberOfVerses: 5 },
     { id: 114, name: 'الناس', englishName: 'An-Nas', numberOfVerses: 6 }
   ],
-  verseOfTheDay: {
-    arabic: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا',
-    translation: 'And whoever fears Allah – He will make for him a way out.',
-  },
 };
 
 // Reciter data, all set to unlocked for simplicity as per previous request.
@@ -840,9 +836,188 @@ const AchievementsCard = ({ achievements }) => (
   </div>
 );
 
+
+
+// ─── VotdPlayer ───────────────────────────────────────────────────────────────
+// Small self-contained audio player for the verse of the day
+const VotdPlayer = ({ surah, verse }) => {
+  const [playing, setPlaying] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const audioRef = React.useRef(null);
+
+  React.useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Reset player when verse changes
+  React.useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setPlaying(false);
+    }
+  }, [surah, verse]);
+
+  const handlePlay = async () => {
+    if (!surah || !verse) return;
+
+    // If already playing, pause
+    if (playing && audioRef.current) {
+      audioRef.current.pause();
+      setPlaying(false);
+      return;
+    }
+
+    // If audio already loaded, just play
+    if (audioRef.current) {
+      audioRef.current.play();
+      setPlaying(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Fetch audio URL from alquran.cloud (Mishary Al-Afasy edition)
+      const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar.alafasy`);
+      const data = await res.json();
+      if (data.code !== 200) throw new Error('audio fetch failed');
+
+      const audioUrl = data.data.audio;
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => setPlaying(false);
+      audio.onerror = () => { setPlaying(false); setLoading(false); };
+
+      await audio.play();
+      setPlaying(true);
+    } catch (e) {
+      console.error('VOTD audio error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className="p-play-btn"
+      style={{ margin: '0 auto' }}
+      onClick={handlePlay}
+      title={playing ? 'Pause' : 'Play verse'}
+    >
+      {loading
+        ? <div className="p-spinner" style={{ borderTopColor: '#050810', borderColor: 'rgba(5,8,16,0.3)' }} />
+        : playing
+          ? <Pause size={24} fill="currentColor" />
+          : <Play size={24} fill="currentColor" />
+      }
+    </button>
+  );
+};
+
+// ─── Curated verse pool ───────────────────────────────────────────────────────
+// 60 handpicked references {s: surahNumber, v: verseNumber, label: "Surah · Verse"}
+const VERSE_POOL = [
+  {s:2,v:286,label:"Al-Baqarah · 2:286"},{s:2,v:255,label:"Al-Baqarah · 2:255"},
+  {s:2,v:45,label:"Al-Baqarah · 2:45"},{s:2,v:153,label:"Al-Baqarah · 2:153"},
+  {s:2,v:186,label:"Al-Baqarah · 2:186"},{s:3,v:173,label:"Āl-ʿImrān · 3:173"},
+  {s:3,v:200,label:"Āl-ʿImrān · 3:200"},{s:3,v:139,label:"Āl-ʿImrān · 3:139"},
+  {s:4,v:36,label:"An-Nisāʾ · 4:36"},{s:5,v:35,label:"Al-Māʾidah · 5:35"},
+  {s:6,v:162,label:"Al-Anʿām · 6:162"},{s:7,v:156,label:"Al-Aʿrāf · 7:156"},
+  {s:8,v:46,label:"Al-Anfāl · 8:46"},{s:9,v:51,label:"At-Tawbah · 9:51"},
+  {s:10,v:62,label:"Yūnus · 10:62"},{s:11,v:88,label:"Hūd · 11:88"},
+  {s:13,v:28,label:"Ar-Raʿd · 13:28"},{s:14,v:7,label:"Ibrāhīm · 14:7"},
+  {s:15,v:9,label:"Al-Ḥijr · 15:9"},{s:16,v:97,label:"An-Naḥl · 16:97"},
+  {s:17,v:44,label:"Al-Isrāʾ · 17:44"},{s:18,v:10,label:"Al-Kahf · 18:10"},
+  {s:20,v:14,label:"Ṭāhā · 20:14"},{s:21,v:87,label:"Al-Anbiyāʾ · 21:87"},
+  {s:22,v:46,label:"Al-Ḥajj · 22:46"},{s:23,v:1,label:"Al-Muʾminūn · 23:1"},
+  {s:24,v:35,label:"An-Nūr · 24:35"},{s:25,v:63,label:"Al-Furqān · 25:63"},
+  {s:27,v:62,label:"An-Naml · 27:62"},{s:29,v:45,label:"Al-ʿAnkabūt · 29:45"},
+  {s:29,v:69,label:"Al-ʿAnkabūt · 29:69"},{s:30,v:21,label:"Ar-Rūm · 30:21"},
+  {s:31,v:17,label:"Luqmān · 31:17"},{s:33,v:41,label:"Al-Aḥzāb · 33:41"},
+  {s:35,v:34,label:"Fāṭir · 35:34"},{s:36,v:82,label:"Yāsīn · 36:82"},
+  {s:39,v:10,label:"Az-Zumar · 39:10"},{s:39,v:53,label:"Az-Zumar · 39:53"},
+  {s:40,v:60,label:"Ghāfir · 40:60"},{s:41,v:30,label:"Fuṣṣilat · 41:30"},
+  {s:42,v:19,label:"Ash-Shūrā · 42:19"},{s:47,v:7,label:"Muḥammad · 47:7"},
+  {s:49,v:13,label:"Al-Ḥujurāt · 49:13"},{s:51,v:56,label:"Adh-Dhāriyāt · 51:56"},
+  {s:55,v:13,label:"Ar-Raḥmān · 55:13"},{s:57,v:3,label:"Al-Ḥadīd · 57:3"},
+  {s:58,v:7,label:"Al-Mujādilah · 58:7"},{s:62,v:10,label:"Al-Jumuʿah · 62:10"},
+  {s:65,v:2,label:"Aṭ-Ṭalāq · 65:2"},{s:65,v:3,label:"Aṭ-Ṭalāq · 65:3"},
+  {s:66,v:8,label:"At-Taḥrīm · 66:8"},{s:67,v:2,label:"Al-Mulk · 67:2"},
+  {s:67,v:3,label:"Al-Mulk · 67:3"},{s:73,v:20,label:"Al-Muzzammil · 73:20"},
+  {s:84,v:6,label:"Al-Inshiqāq · 84:6"},{s:87,v:14,label:"Al-Aʿlā · 87:14"},
+  {s:90,v:10,label:"Al-Balad · 90:10"},{s:93,v:11,label:"Aḍ-Ḍuḥā · 93:11"},
+  {s:94,v:5,label:"Ash-Sharḥ · 94:5"},{s:103,v:3,label:"Al-ʿAṣr · 103:3"},
+];
+
+// Returns today's verse reference — deterministic, changes daily at midnight
+function getTodaysVerse() {
+  const dayIndex = Math.floor(Date.now() / 86_400_000); // days since epoch
+  return VERSE_POOL[dayIndex % VERSE_POOL.length];
+}
+
+// ─── useDailyVerse hook ────────────────────────────────────────────────────────
+function useDailyVerse() {
+  const [verse, setVerse] = React.useState(null);   // {arabic, translation, label}
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
+
+  React.useEffect(() => {
+    const ref = getTodaysVerse();
+    const cacheKey = `votd_${Math.floor(Date.now() / 86_400_000)}`;
+
+    // Try localStorage cache first
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setVerse(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+    } catch (_) {}
+
+    // Fetch both editions in one call from alquran.cloud
+    const url = `https://api.alquran.cloud/v1/ayah/${ref.s}:${ref.v}/editions/quran-uthmani,en.asad`;
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if (data.code !== 200) throw new Error('API error');
+        const [arEdition, enEdition] = data.data;
+        const result = {
+          arabic: arEdition.text,
+          translation: enEdition.text,
+          label: ref.label,
+          surah: ref.s,
+          verse: ref.v,
+        };
+        try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch (_) {}
+        setVerse(result);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback to a hardcoded verse if network fails
+        setVerse({
+          arabic: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا',
+          translation: 'And whoever fears Allah – He will make for him a way out.',
+          label: 'Aṭ-Ṭalāq · 65:2', surah: 65, verse: 2,
+        });
+        setLoading(false);
+        setError(true);
+      });
+  }, []);
+
+  return { verse, loading, error };
+}
+
 // HomeDashboard component, serving as the main landing page of the app.
 const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters, handleUnlockReciter, showNotification, lastReadPosition, onContinueReading, onSelectReciterForListen }) => {
-  const [verseOfTheDay, setVerseOfTheDay] = useState(quranData.verseOfTheDay);
+  const { verse: verseOfTheDay, loading: votdLoading } = useDailyVerse();
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
@@ -858,12 +1033,19 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
       <div className="p-votd">
         <span className="p-votd-ornament">✦ &nbsp; ✦ &nbsp; ✦</span>
         <div className="p-votd-label">Verse of the Day</div>
-        <div className="p-votd-arabic">{verseOfTheDay.arabic}</div>
-        <div className="p-votd-ref">At-Talaq · 65:2</div>
-        <div className="p-votd-trans">"{verseOfTheDay.translation}"</div>
-        <button className="p-play-btn" style={{ margin: '0 auto' }}>
-          <Play size={24} fill="currentColor" />
-        </button>
+
+        {votdLoading ? (
+          <div style={{ padding: '32px 0', display: 'flex', justifyContent: 'center' }}>
+            <div className="p-spinner" style={{ width: 28, height: 28 }} />
+          </div>
+        ) : (
+          <>
+            <div className="p-votd-arabic">{verseOfTheDay?.arabic}</div>
+            <div className="p-votd-ref">{verseOfTheDay?.label}</div>
+            <div className="p-votd-trans">"{verseOfTheDay?.translation}"</div>
+            <VotdPlayer surah={verseOfTheDay?.surah} verse={verseOfTheDay?.verse} />
+          </>
+        )}
       </div>
 
       {/* Reciters */}
