@@ -483,16 +483,130 @@ const quranData = {
 };
 
 // Reciter data, all set to unlocked for simplicity as per previous request.
-const recitersData = {
-  featured: [
-    { id: 'alafasy', name: 'مشاري العفاسي', englishName: 'Mishary Al-Afasy', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=M.A', alquranCloudId: 'ar.alafasy', cost: 0, unlocked: true },
-    { id: 'abdulbaset', name: 'عبد الباسط عبد الصمد', englishName: 'Abdul Basit Abdus Samad', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=A.B.S', alquranCloudId: 'ar.abdulbasit', cost: 0, unlocked: true },
-  ],
-  free: [
-    { id: 'minshawi', name: 'محمد صديق المنشاوي', englishName: 'Muhammad al-Minshawi', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=M.M', alquranCloudId: 'ar.minshawi', cost: 0, unlocked: true },
-    { id: 'shuraim', name: 'سعود الشريم', englishName: 'Saud Al-Shuraim', imageUrl: 'https://placehold.co/80x80/6EE7B7/047857?text=S.S', alquranCloudId: 'ar.shuraim', cost: 0, unlocked: true },
-  ]
-};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOW TO ADD A NEW RECITER — step by step
+//
+// 1. Find the reciter's audio edition identifier:
+//    • Islamic Network CDN: visit https://api.alquran.cloud/v1/edition?format=audio&language=ar
+//      and copy the "identifier" field  (e.g. "ar.alafasy")
+//    • everyayah.com: visit https://everyayah.com  and find the folder name
+//      in the URL of any MP3 link  (e.g. "Khalid_Hussary_128kbps")
+//
+// 2. Add a new entry to the recitersData array below:
+//    {
+//      id: 'any-unique-id',            // you choose — must be unique
+//      name: 'Arabic name',            // shown on the reciter card
+//      englishName: 'English name',    // shown as the card label
+//      style: 'Murattal',              // recitation style label
+//      imageUrl: 'https://...',        // photo — or placehold.co for a placeholder
+//      audioEdition: 'ar.alafasy',     // edition/folder from step 1
+//      audioSource: 'islamicnetwork',  // 'islamicnetwork' or 'everyayah'
+//      alquranCloudId: 'ar.alafasy',   // used for verse-text fetching (can be same)
+//    }
+//
+// 3. Done — getVerseAudioUrl() builds the correct CDN URL automatically.
+// ─────────────────────────────────────────────────────────────────────────────
+const recitersData = [
+  // ── cdn.islamic.network reciters ──────────────────────────────────────────
+  // URL pattern: https://cdn.islamic.network/quran/audio/128/{audioEdition}/{globalAyah}.mp3
+  {
+    id: 'alafasy',
+    name: 'مشاري راشد العفاسي',
+    englishName: 'Mishary Al-Afasy',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=MA',
+    audioEdition: 'ar.alafasy',
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.alafasy',
+  },
+  {
+    id: 'abdulbasit',
+    name: 'عبد الباسط عبد الصمد',
+    englishName: 'Abdul Basit (Murattal)',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=AB',
+    audioEdition: 'ar.abdulbasitmurattal',   // ← correct edition ID (not ar.abdulbasit)
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.abdulbasitmurattal',
+  },
+  {
+    id: 'husary',
+    name: 'محمود خليل الحصري',
+    englishName: 'Mahmoud Khalil Al-Hussary',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=MH',
+    audioEdition: 'ar.husary',
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.husary',
+  },
+  {
+    id: 'minshawi',
+    name: 'محمد صديق المنشاوي',
+    englishName: 'Mohamed Al-Minshawi',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=MM',
+    audioEdition: 'ar.minshawi',
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.minshawi',
+  },
+  {
+    id: 'shaatree',
+    name: 'أبو بكر الشاطري',
+    englishName: 'Abu Bakr Al-Shaatree',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=AS',
+    audioEdition: 'ar.shaatree',
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.shaatree',
+  },
+  {
+    id: 'mahermuaiqly',
+    name: 'ماهر المعيقلي',
+    englishName: 'Maher Al-Muaiqly',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=MM',
+    audioEdition: 'ar.mahermuaiqly',
+    audioSource: 'islamicnetwork',
+    alquranCloudId: 'ar.mahermuaiqly',
+  },
+  // ── everyayah.com reciters ────────────────────────────────────────────────
+  // URL pattern: https://everyayah.com/data/{audioEdition}/{globalAyah padded to 6 digits}.mp3
+  {
+    id: 'khalid-hussary',
+    name: 'خالد الحصري',
+    englishName: 'Sheikh Khalid Al-Hussary',
+    style: 'Murattal',
+    imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=KH',
+    audioEdition: 'Khalid_Hussary_128kbps',  // folder name on everyayah.com
+    audioSource: 'everyayah',
+    alquranCloudId: 'ar.husary',              // fallback for text fetching
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audio URL helpers — builds a direct CDN link, no API call needed per verse.
+//
+// Every verse in the Quran has a "global ayah number" from 1 to 6,236.
+//   Al-Fatiha 1:1  = global 1
+//   Al-Baqarah 2:1 = global 8   (Fatiha has 7 verses, so 7 + 1 = 8)
+// CDN servers index their MP3s by this number, so we compute it locally.
+// ─────────────────────────────────────────────────────────────────────────────
+function getGlobalAyah(surahId, verseId) {
+  let total = 0;
+  for (let i = 0; i < surahId - 1; i++) total += quranData.surahs[i].numberOfVerses;
+  return total + verseId;
+}
+
+function getVerseAudioUrl(reciter, surahId, verseId) {
+  const globalAyah = getGlobalAyah(surahId, verseId);
+  if (reciter.audioSource === 'everyayah') {
+    // everyayah.com uses a zero-padded 6-digit number, e.g. global 8 → "000008"
+    return `https://everyayah.com/data/${reciter.audioEdition}/${String(globalAyah).padStart(6, '0')}.mp3`;
+  }
+  // cdn.islamic.network — plain integer
+  return `https://cdn.islamic.network/quran/audio/128/${reciter.audioEdition}/${globalAyah}.mp3`;
+}
 
 // Achievement definitions for user progress tracking.
 const achievementsData = [
@@ -1055,7 +1169,7 @@ const HomeDashboard = ({ setCurrentView, points, userProgress, unlockedReciters,
           Available Reciters
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
-          {[...recitersData.featured, ...recitersData.free].map((reciter) => (
+          {recitersData.map((reciter) => (
             <ReciterCard
               key={reciter.id}
               reciter={reciter}
@@ -1256,7 +1370,7 @@ const QuranReader = ({ selectedSurahId, onBackToSurahList, onSurahChange, onVers
   // Callback to play verse audio and update last read position.
   const playVerseAudio = useCallback(async (verseId) => {
     // Use the passed selected reciter, or fallback to the first featured reciter
-    const reciterToUse = selectedReciterAlquranCloudId || recitersData.featured[0].alquranCloudId;
+    const reciterToUse = selectedReciterAlquranCloudId || recitersData[0].alquranCloudId;
 
     if (!reciterToUse) {
         showNotification("Please select a reciter from the Home page or Listen page first.", 'error');
@@ -1607,14 +1721,14 @@ export default function App() {
     bookmarkedVerses: [], // { surahId: number, verseId: number, arabicText: string }
     lastReadPosition: null, // { surahId: number, verseId: number }
     achievements: achievementsData.map(a => ({ ...a, achieved: false })), // Initialize with all achievements as not achieved
-    unlockedReciters: recitersData.featured.map(r => r.id), // All featured reciters are unlocked by default
+    unlockedReciters: recitersData.map(r => r.id), // All featured reciters are unlocked by default
   });
 
   // Reciter State for Listen Page
-  const [selectedReciterId, setSelectedReciterId] = useState(recitersData.featured[0].id);
-  const [selectedReciterName, setSelectedReciterName] = useState(recitersData.featured[0].name);
-  const [selectedReciterEnglishName, setSelectedReciterEnglishName] = useState(recitersData.featured[0].englishName);
-  const [selectedReciterAlquranCloudId, setSelectedReciterAlquranCloudId] = useState(recitersData.featured[0].alquranCloudId);
+  const [selectedReciterId, setSelectedReciterId] = useState(recitersData[0].id);
+  const [selectedReciterName, setSelectedReciterName] = useState(recitersData[0].name);
+  const [selectedReciterEnglishName, setSelectedReciterEnglishName] = useState(recitersData[0].englishName);
+  const [selectedReciterAlquranCloudId, setSelectedReciterAlquranCloudId] = useState(recitersData[0].alquranCloudId);
 
   // --- Notification Management --- // MOVED THIS UP!
   const showNotification = useCallback((message, type = 'info') => {
@@ -1708,7 +1822,7 @@ export default function App() {
         const parsedBookmarkedVerses = data.bookmarkedVerses ? JSON.parse(data.bookmarkedVerses) : [];
         const parsedAchievements = data.achievements ? JSON.parse(data.achievements) : achievementsData.map(a => ({ ...a, achieved: false }));
         const parsedLastReadPosition = data.lastReadPosition ? JSON.parse(data.lastReadPosition) : null;
-        const parsedUnlockedReciters = data.unlockedReciters ? JSON.parse(data.unlockedReciters) : recitersData.featured.map(r => r.id);
+        const parsedUnlockedReciters = data.unlockedReciters ? JSON.parse(data.unlockedReciters) : recitersData.map(r => r.id);
 
         setUserProgress({
           points: data.points || 0,
@@ -1731,7 +1845,7 @@ export default function App() {
           bookmarkedVerses: [],
           lastReadPosition: null,
           achievements: achievementsData.map(a => ({ ...a, achieved: false })),
-          unlockedReciters: recitersData.featured.map(r => r.id),
+          unlockedReciters: recitersData.map(r => r.id),
         });
       }
     }, (error) => {
@@ -2097,118 +2211,127 @@ export default function App() {
 // ============================================================
 // ListenPage — Pick a reciter & surah and stream audio
 // ============================================================
-const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, selectedReciterEnglishName, selectedReciterAlquranCloudId, showNotification }) => {
-  const allReciters = [...recitersData.featured, ...recitersData.free];
-
-  const [activeReciterId, setActiveReciterId]     = useState(selectedReciterId || allReciters[0].id);
+// ─────────────────────────────────────────────────────────────────────────────
+// HOW THE AUDIO ENGINE WORKS (for future reference):
+//
+//   1. On surah select → fetch Arabic verse texts from api.alquran.cloud
+//      (one call, text only — no audio yet).
+//   2. On Play → call getVerseAudioUrl(reciter, surahId, verseId)
+//      which builds a direct CDN MP3 URL with NO network request.
+//      e.g. Mishary · Al-Baqarah v1 → global ayah 8
+//           → https://cdn.islamic.network/quran/audio/128/ar.alafasy/8.mp3
+//   3. Set that URL as the <audio> src → plays instantly.
+//   4. audio.onended fires → auto-advance to next verse.
+//
+// TO ADD A NEW RECITER: see the comment above recitersData.
+// ─────────────────────────────────────────────────────────────────────────────
+const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
+  const [activeReciterId, setActiveReciterId]     = useState(selectedReciterId || recitersData[0].id);
   const [selectedSurahId, setSelectedSurahId]     = useState(1);
   const [verses, setVerses]                       = useState([]);
   const [isLoadingVerses, setIsLoadingVerses]     = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
   const [isPlaying, setIsPlaying]                 = useState(false);
   const [isLoadingAudio, setIsLoadingAudio]       = useState(false);
-  const audioRef = useRef(new Audio());
+  const [audioError, setAudioError]               = useState(false);
+  const [audioDuration, setAudioDuration]         = useState(0);
+  const [audioProgress, setAudioProgress]         = useState(0);
+  const audioRef    = useRef(new Audio());
+  const verseListRef = useRef(null);
 
-  const activeReciter = allReciters.find(r => r.id === activeReciterId) || allReciters[0];
+  const activeReciter = recitersData.find(r => r.id === activeReciterId) || recitersData[0];
   const selectedSurah = quranData.surahs.find(s => s.id === selectedSurahId);
 
-  // Fetch verse texts for selected surah
+  // ── Fetch Arabic verse texts when surah changes ───────────────────────────
   useEffect(() => {
-    const fetchVerses = async () => {
+    const ctrl = new AbortController();
+    (async () => {
       setIsLoadingVerses(true);
-      setVerses([]);
-      setIsPlaying(false);
-      setCurrentVerseIndex(0);
-      audioRef.current.pause();
-      audioRef.current.src = '';
+      setVerses([]); setIsPlaying(false);
+      setCurrentVerseIndex(0); setAudioProgress(0);
+      audioRef.current.pause(); audioRef.current.src = '';
       try {
-        const res = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/quran-uthmani`);
+        const res  = await fetch(`https://api.alquran.cloud/v1/surah/${selectedSurahId}/quran-uthmani`, { signal: ctrl.signal });
         const data = await res.json();
-        if (data.code === 200 && data.data) {
-          setVerses(data.data.ayahs.map(a => ({ id: a.numberInSurah, text: a.text })));
-        } else {
-          showNotification('Could not load surah verses.', 'error');
-        }
-      } catch {
-        showNotification('Network error loading surah.', 'error');
-      } finally {
-        setIsLoadingVerses(false);
-      }
-    };
-    fetchVerses();
+        if (data.code === 200) setVerses(data.data.ayahs.map(a => ({ id: a.numberInSurah, text: a.text })));
+        else showNotification('Could not load surah text.', 'error');
+      } catch (e) { if (e.name !== 'AbortError') showNotification('Network error.', 'error'); }
+      finally { setIsLoadingVerses(false); }
+    })();
+    return () => ctrl.abort();
   }, [selectedSurahId]);
 
-  // Cleanup audio on unmount
+  // ── Wire up audio time/duration listeners ─────────────────────────────────
   useEffect(() => {
     const audio = audioRef.current;
-    return () => { audio.pause(); audio.src = ''; };
+    const onTime = () => setAudioProgress(audio.currentTime);
+    const onDur  = () => setAudioDuration(audio.duration || 0);
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('durationchange', onDur);
+    return () => {
+      audio.pause(); audio.src = '';
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('durationchange', onDur);
+    };
   }, []);
 
-  const playVerse = useCallback(async (verseIndex) => {
+  // ── Reset when reciter changes ────────────────────────────────────────────
+  useEffect(() => {
+    setIsPlaying(false); setAudioProgress(0); setAudioError(false);
+    audioRef.current.pause(); audioRef.current.src = '';
+  }, [activeReciterId]);
+
+  // ── Auto-scroll verse list to the playing verse ───────────────────────────
+  useEffect(() => {
+    if (!verseListRef.current) return;
+    const el = verseListRef.current.children[currentVerseIndex];
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [currentVerseIndex]);
+
+  // ── Core play — builds CDN URL directly, zero API call per verse ──────────
+  const playVerse = useCallback((verseIndex) => {
     const verse = verses[verseIndex];
     if (!verse) return;
-    setIsLoadingAudio(true);
+    setIsLoadingAudio(true); setAudioError(false); setAudioProgress(0);
     audioRef.current.pause();
-    audioRef.current.src = '';
-    try {
-      const res = await fetch(
-        `https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verse.id}/${activeReciter.alquranCloudId}`
-      );
-      const data = await res.json();
-      if (data.code === 200 && data.data?.audio) {
-        audioRef.current.src = data.data.audio;
-        audioRef.current.load();
-        await audioRef.current.play();
-        setIsPlaying(true);
-        setCurrentVerseIndex(verseIndex);
-        audioRef.current.onended = () => {
-          const next = verseIndex + 1;
-          if (next < verses.length) {
-            playVerse(next);
-          } else {
-            setIsPlaying(false);
-            showNotification('Surah complete!', 'success');
-          }
-        };
-      } else {
-        showNotification('Audio not available for this verse.', 'error');
-        setIsPlaying(false);
-      }
-    } catch {
-      showNotification('Could not load audio. Check your connection.', 'error');
-      setIsPlaying(false);
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  }, [verses, selectedSurahId, activeReciter]);
+
+    const url = getVerseAudioUrl(activeReciter, selectedSurahId, verse.id);
+    audioRef.current.src = url;
+    audioRef.current.load();
+
+    audioRef.current.oncanplay = () => {
+      audioRef.current.play()
+        .then(() => { setIsPlaying(true); setCurrentVerseIndex(verseIndex); setIsLoadingAudio(false); })
+        .catch(() => { setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true); });
+    };
+
+    audioRef.current.onerror = () => {
+      setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true);
+      showNotification('Audio unavailable — try another reciter.', 'error');
+    };
+
+    audioRef.current.onended = () => {
+      const next = verseIndex + 1;
+      if (next < verses.length) playVerse(next);
+      else { setIsPlaying(false); setAudioProgress(0); showNotification(`${selectedSurah?.englishName || 'Surah'} complete ✦`, 'success'); }
+    };
+  }, [verses, selectedSurahId, activeReciter, selectedSurah]);
 
   const handlePlayPause = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      if (audioRef.current.src && audioRef.current.paused) {
-        audioRef.current.play();
-        setIsPlaying(true);
-      } else {
-        playVerse(currentVerseIndex);
-      }
-    }
+    if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+    else if (audioRef.current.src && !audioError) { audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {}); }
+    else playVerse(currentVerseIndex);
   };
 
-  const handlePrev = () => {
-    const prev = Math.max(0, currentVerseIndex - 1);
-    playVerse(prev);
+  const handlePrev = () => { if (currentVerseIndex > 0) playVerse(currentVerseIndex - 1); };
+  const handleNext = () => { if (currentVerseIndex < verses.length - 1) playVerse(currentVerseIndex + 1); };
+  const handleSeek = (e) => {
+    if (!audioDuration) return;
+    const t = (e.nativeEvent.offsetX / e.currentTarget.offsetWidth) * audioDuration;
+    audioRef.current.currentTime = t; setAudioProgress(t);
   };
 
-  const handleNext = () => {
-    const next = Math.min(verses.length - 1, currentVerseIndex + 1);
-    playVerse(next);
-  };
-
-  const handleVerseClick = (idx) => {
-    playVerse(idx);
-  };
+  const progressPct = audioDuration > 0 ? (audioProgress / audioDuration) * 100 : 0;
 
   return (
     <div className="p-section animate-fade-in">
@@ -2216,31 +2339,37 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(139,167,212,0.1)' }}>
         <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 400, color: 'var(--cream)', margin: 0 }}>Listen</h2>
-        <div style={{ width: '72px' }}></div>
+        <div style={{ width: '72px' }} />
       </div>
 
-      {/* Reciter picker */}
+      {/* ── Reciter picker ── */}
       <div style={{ marginBottom: '24px' }}>
         <span className="p-label">Choose Reciter</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
-          {allReciters.map(r => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px' }}>
+          {recitersData.map(r => (
             <button
               key={r.id}
-              onClick={() => { setActiveReciterId(r.id); setIsPlaying(false); audioRef.current.pause(); audioRef.current.src = ''; }}
+              onClick={() => setActiveReciterId(r.id)}
               className={`p-reciter-pick${activeReciterId === r.id ? ' active' : ''}`}
             >
-              <img src={r.imageUrl} alt={r.englishName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid rgba(139,167,212,0.3)', marginBottom: '8px', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/56x56/1b2236/c9a454?text=R'; }} />
-              <p style={{ fontSize: '0.72rem', color: 'var(--cream-2)', lineHeight: 1.3 }}>{r.englishName}</p>
+              <img
+                src={r.imageUrl}
+                alt={r.englishName}
+                style={{ width: '52px', height: '52px', borderRadius: '50%', border: `2px solid ${activeReciterId === r.id ? 'rgba(139,167,212,0.6)' : 'rgba(139,167,212,0.2)'}`, marginBottom: '8px', objectFit: 'cover', transition: 'border-color 0.2s' }}
+                onError={e => { e.target.src = 'https://placehold.co/52x52/0d1427/8ba7d4?text=R'; }}
+              />
+              <p style={{ fontSize: '0.7rem', color: activeReciterId === r.id ? 'var(--moon-l)' : 'var(--cream-2)', lineHeight: 1.35, marginBottom: '2px', fontWeight: activeReciterId === r.id ? 500 : 400 }}>{r.englishName}</p>
+              <p style={{ fontSize: '0.6rem', color: 'var(--cream-4)', letterSpacing: '0.05em' }}>{r.style}</p>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Surah picker */}
+      {/* ── Surah picker ── */}
       <div style={{ marginBottom: '24px' }}>
         <span className="p-label">Choose Surah</span>
         <div className="p-select-wrap">
-          <select value={selectedSurahId} onChange={e => setSelectedSurahId(Number(e.target.value))} className="p-select">
+          <select value={selectedSurahId} onChange={e => { setSelectedSurahId(Number(e.target.value)); }} className="p-select">
             {quranData.surahs.map(s => (
               <option key={s.id} value={s.id}>{s.id}. {s.englishName} — {s.name}</option>
             ))}
@@ -2248,55 +2377,94 @@ const ListenPage = ({ onBackToHome, selectedReciterId, selectedReciterName, sele
         </div>
       </div>
 
-      {/* Player */}
+      {/* ── Player card ── */}
       <div className="p-player" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem', color: 'var(--cream)' }}>
-            {selectedSurah?.englishName} <span className="font-arabic" style={{ fontSize: '1.5rem', color: 'var(--moon-l)' }}>{selectedSurah?.name}</span>
+
+        {/* Now playing info */}
+        <div style={{ textAlign: 'center', width: '100%' }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem', color: 'var(--cream)', marginBottom: '4px' }}>
+            {selectedSurah?.englishName}&nbsp;
+            <span className="font-arabic" style={{ fontSize: '1.4rem', color: 'var(--moon-l)' }}>{selectedSurah?.name}</span>
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--cream-3)', marginTop: '4px', letterSpacing: '0.04em' }}>
-            {isLoadingVerses ? 'Loading…' : verses.length > 0 ? `Verse ${(verses[currentVerseIndex]?.id ?? 1)} of ${verses.length} · ${activeReciter.englishName}` : ''}
+          <p style={{ fontSize: '0.72rem', color: 'var(--cream-3)', letterSpacing: '0.04em' }}>
+            {isLoadingVerses
+              ? 'Loading…'
+              : verses.length > 0
+                ? `Verse ${verses[currentVerseIndex]?.id ?? 1} of ${verses.length} · ${activeReciter.englishName}`
+                : activeReciter.englishName}
           </p>
         </div>
-        {verses.length > 0 && !isLoadingVerses && (
-          <p className="font-arabic" style={{ fontSize: '1.9rem', lineHeight: 2, color: 'var(--cream)', direction: 'rtl', textAlign: 'right', width: '100%', padding: '0 8px' }}>
-            {verses[currentVerseIndex]?.text}
-          </p>
-        )}
-        {isLoadingVerses && <p style={{ color: 'var(--cream-3)', fontSize: '0.85rem' }}>Loading surah…</p>}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px' }}>
-          <button onClick={handlePrev} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === 0} className="p-ctrl-btn">
+        {/* Arabic verse display */}
+        <div style={{ width: '100%', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {isLoadingVerses
+            ? <div className="p-spinner" style={{ width: 24, height: 24 }} />
+            : verses.length > 0
+              ? <p className="font-arabic" style={{ fontSize: '2rem', lineHeight: 2.1, color: 'var(--cream)', direction: 'rtl', textAlign: 'right', width: '100%', padding: '0 8px', transition: 'opacity 0.3s' }}>
+                  {verses[currentVerseIndex]?.text}
+                </p>
+              : null}
+        </div>
+
+        {/* Progress bar — click to seek */}
+        {verses.length > 0 && (
+          <div
+            onClick={handleSeek}
+            style={{ width: '100%', height: '4px', background: 'var(--ink-4)', borderRadius: '100px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+          >
+            <div style={{ height: '100%', width: `${progressPct}%`, background: 'linear-gradient(90deg, var(--moon-d), var(--moon))', borderRadius: '100px', transition: 'width 0.4s linear' }} />
+          </div>
+        )}
+
+        {/* Playback controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={handlePrev} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === 0} className="p-ctrl-btn" title="Previous verse">
             <ChevronLeft size={20} />
           </button>
-          <button onClick={handlePlayPause} disabled={isLoadingAudio || verses.length === 0 || isLoadingVerses} className="p-play-btn">
-            {isLoadingAudio ? (
-              <div className="p-spinner" />
-            ) : isPlaying ? (
-              <Pause size={24} fill="currentColor" />
-            ) : (
-              <Play size={24} fill="currentColor" />
-            )}
+
+          <button
+            onClick={handlePlayPause}
+            disabled={verses.length === 0 || isLoadingVerses}
+            className="p-play-btn"
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isLoadingAudio
+              ? <div className="p-spinner" style={{ borderTopColor: '#050810', borderColor: 'rgba(5,8,16,0.25)' }} />
+              : isPlaying
+                ? <Pause size={24} fill="currentColor" />
+                : <Play size={24} fill="currentColor" />}
           </button>
-          <button onClick={handleNext} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === verses.length - 1} className="p-ctrl-btn">
-            <ChevronRight size={24} />
+
+          <button onClick={handleNext} disabled={isLoadingAudio || verses.length === 0 || currentVerseIndex === verses.length - 1} className="p-ctrl-btn" title="Next verse">
+            <ChevronRight size={20} />
           </button>
         </div>
+
+        {/* Audio error message */}
+        {audioError && (
+          <p style={{ fontSize: '0.75rem', color: '#e09e9e', textAlign: 'center' }}>
+            Audio unavailable for this verse — tap another verse or switch reciter
+          </p>
+        )}
       </div>
 
-      {/* Verse list */}
+      {/* ── Verse list ── */}
       {verses.length > 0 && (
-        <div>
-          <span className="p-label">All Verses — tap to jump</span>
-          <ul className="custom-scrollbar" style={{ maxHeight: '280px', overflowY: 'auto', listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ marginTop: '20px' }}>
+          <span className="p-label">All Verses — tap any to jump</span>
+          <ul
+            ref={verseListRef}
+            className="custom-scrollbar"
+            style={{ maxHeight: '320px', overflowY: 'auto', listStyle: 'none', margin: 0, padding: '2px', display: 'flex', flexDirection: 'column', gap: '3px' }}
+          >
             {verses.map((v, idx) => (
               <li key={v.id}>
                 <button
-                  onClick={() => handleVerseClick(idx)}
+                  onClick={() => playVerse(idx)}
                   className={idx === currentVerseIndex ? 'p-verse-row playing' : 'p-verse-row'}
-                  style={{ width: '100%', textAlign: 'right', direction: 'rtl', fontFamily: "'Amiri', serif", fontSize: '1.15rem', lineHeight: 2, cursor: 'pointer', background: 'none', border: 'none' }}
+                  style={{ width: '100%', textAlign: 'right', direction: 'rtl', fontFamily: "'Amiri', serif", fontSize: '1.1rem', lineHeight: 2, cursor: 'pointer', background: 'none', border: 'none' }}
                 >
-                  <span style={{ float: 'left', fontSize: '0.7rem', color: 'var(--moon-d)', fontFamily: "'DM Sans', sans-serif", direction: 'ltr', marginTop: '12px' }}>{v.id}</span>
+                  <span style={{ float: 'left', fontSize: '0.65rem', color: idx === currentVerseIndex ? 'var(--moon)' : 'var(--moon-d)', fontFamily: "'DM Sans', sans-serif", direction: 'ltr', marginTop: '14px', minWidth: '22px' }}>{v.id}</span>
                   {v.text}
                 </button>
               </li>
