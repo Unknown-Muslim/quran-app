@@ -517,7 +517,7 @@ const recitersData = [
     style: 'Mujawwad',
     imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=AB',
     audioEdition: 'ar.abdulbasitmujawwad',  // confirmed edition on alquran.cloud
-    audioSource: 'api',
+    audioSource: 'islamicnetwork',
     alquranCloudId: 'ar.abdulbasitmujawwad',
   },
   {
