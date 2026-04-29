@@ -526,8 +526,8 @@ const recitersData = [
     englishName: 'Abdul Basit (Murattal)',
     style: 'Murattal',
     imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=AB',
-    audioEdition: 'ar.abdulbasitmurattal',   // ← correct edition ID (not ar.abdulbasit)
-    audioSource: 'islamicnetwork',
+    audioEdition: 'ar.abdulbasitmurattal',   // edition ID on alquran.cloud API
+    audioSource: 'api',   // fetches audio URL from api.alquran.cloud (guaranteed correct)
     alquranCloudId: 'ar.abdulbasitmurattal',
   },
   {
@@ -599,14 +599,19 @@ function getGlobalAyah(surahId, verseId) {
 }
 
 function getVerseAudioUrl(reciter, surahId, verseId) {
-  const globalAyah = getGlobalAyah(surahId, verseId);
   if (reciter.audioSource === 'everyayah') {
-    // everyayah.com uses a zero-padded 6-digit number, e.g. global 8 → "000008"
-    return `https://everyayah.com/data/${reciter.audioEdition}/${String(globalAyah).padStart(6, '0')}.mp3`;
+    // everyayah.com format: {surah padded to 3 digits}{verse padded to 3 digits}.mp3
+    // e.g. Al-Baqarah 2:255 → "002255.mp3"  (NOT the global ayah number)
+    const s = String(surahId).padStart(3, '0');
+    const v = String(verseId).padStart(3, '0');
+    return `https://everyayah.com/data/${reciter.audioEdition}/${s}${v}.mp3`;
   }
-  // cdn.islamic.network — plain integer
+  // cdn.islamic.network — indexed by global ayah number (1-6236)
+  const globalAyah = getGlobalAyah(surahId, verseId);
   return `https://cdn.islamic.network/quran/audio/128/${reciter.audioEdition}/${globalAyah}.mp3`;
 }
+// Note: reciters with audioSource === 'api' are handled separately in playVerse
+// — they fetch the audio URL from api.alquran.cloud on demand.
 
 // Achievement definitions for user progress tracking.
 const achievementsData = [
@@ -2288,33 +2293,68 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [currentVerseIndex]);
 
-  // ── Core play — builds CDN URL directly, zero API call per verse ──────────
+  // ── Core play ─────────────────────────────────────────────────────────────
+  // Handles three audio sources:
+  //   'islamicnetwork' — builds CDN URL locally (instant, no API call)
+  //   'everyayah'      — builds everyayah.com URL locally (instant, no API call)
+  //   'api'            — fetches audio URL from alquran.cloud per verse
+  //                      (one extra network hop but guaranteed correct link)
   const playVerse = useCallback((verseIndex) => {
     const verse = verses[verseIndex];
     if (!verse) return;
     setIsLoadingAudio(true); setAudioError(false); setAudioProgress(0);
     audioRef.current.pause();
 
-    const url = getVerseAudioUrl(activeReciter, selectedSurahId, verse.id);
-    audioRef.current.src = url;
-    audioRef.current.load();
+    // Shared function that receives the final MP3 url and starts playback
+    const doPlay = (url) => {
+      audioRef.current.src = url;
+      audioRef.current.load();
 
-    audioRef.current.oncanplay = () => {
-      audioRef.current.play()
-        .then(() => { setIsPlaying(true); setCurrentVerseIndex(verseIndex); setIsLoadingAudio(false); })
-        .catch(() => { setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true); });
+      audioRef.current.oncanplay = () => {
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            setCurrentVerseIndex(verseIndex);
+            setIsLoadingAudio(false);
+          })
+          .catch(() => { setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true); });
+      };
+
+      audioRef.current.onerror = () => {
+        setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true);
+        showNotification('Audio unavailable — try another reciter.', 'error');
+      };
+
+      audioRef.current.onended = () => {
+        const next = verseIndex + 1;
+        if (next < verses.length) playVerse(next);
+        else {
+          setIsPlaying(false); setAudioProgress(0);
+          showNotification(`${selectedSurah?.englishName || 'Surah'} complete ✦`, 'success');
+        }
+      };
     };
 
-    audioRef.current.onerror = () => {
-      setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true);
-      showNotification('Audio unavailable — try another reciter.', 'error');
-    };
-
-    audioRef.current.onended = () => {
-      const next = verseIndex + 1;
-      if (next < verses.length) playVerse(next);
-      else { setIsPlaying(false); setAudioProgress(0); showNotification(`${selectedSurah?.englishName || 'Surah'} complete ✦`, 'success'); }
-    };
+    if (activeReciter.audioSource === 'api') {
+      // Abdul Basit Murattal — fetch the audio URL from the API, then play
+      fetch(`https://api.alquran.cloud/v1/ayah/${selectedSurahId}:${verse.id}/${activeReciter.audioEdition}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.code === 200 && data.data?.audio) {
+            doPlay(data.data.audio);
+          } else {
+            setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true);
+            showNotification('Audio unavailable for this verse.', 'error');
+          }
+        })
+        .catch(() => {
+          setIsLoadingAudio(false); setIsPlaying(false); setAudioError(true);
+          showNotification('Network error loading audio.', 'error');
+        });
+    } else {
+      // islamicnetwork & everyayah — URL built locally, no round-trip needed
+      doPlay(getVerseAudioUrl(activeReciter, selectedSurahId, verse.id));
+    }
   }, [verses, selectedSurahId, activeReciter, selectedSurah]);
 
   const handlePlayPause = () => {
