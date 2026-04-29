@@ -490,18 +490,8 @@ const quranData = {
 // 1. Find the reciter's audio edition identifier:
 //    • Islamic Network CDN: visit https://api.alquran.cloud/v1/edition?format=audio&language=ar
 //      and copy the "identifier" field  (e.g. "ar.alafasy")
-//    • everyayah.com: visit https://everyayah.com  and find the folder name
-//      in the URL of any MP3 link  (e.g. "Khalid_Hussary_128kbps")
-//
-// 2. Add a new entry to the recitersData array below:
-//    {
-//      id: 'any-unique-id',            // you choose — must be unique
-//      name: 'Arabic name',            // shown on the reciter card
-//      englishName: 'English name',    // shown as the card label
-//      style: 'Murattal',              // recitation style label
-//      imageUrl: 'https://...',        // photo — or placehold.co for a placeholder
-//      audioEdition: 'ar.alafasy',     // edition/folder from step 1
-//      audioSource: 'islamicnetwork',  // 'islamicnetwork' or 'everyayah'
+//    • audioSource options: 'islamicnetwork' (CDN, instant) or 'api' (alquran.cloud, per-verse fetch)
+//      audioSource: 'islamicnetwork',  // use 'api' if the reciter isn't on the CDN
 //      alquranCloudId: 'ar.alafasy',   // used for verse-text fetching (can be same)
 //    }
 //
@@ -523,12 +513,12 @@ const recitersData = [
   {
     id: 'abdulbasit',
     name: 'عبد الباسط عبد الصمد',
-    englishName: 'Abdul Basit (Murattal)',
-    style: 'Murattal',
+    englishName: 'Abdul Basit (Mujawwad)',
+    style: 'Mujawwad',
     imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=AB',
-    audioEdition: 'ar.abdulbasitmurattal',   // edition ID on alquran.cloud API
-    audioSource: 'api',   // fetches audio URL from api.alquran.cloud (guaranteed correct)
-    alquranCloudId: 'ar.abdulbasitmurattal',
+    audioEdition: 'ar.abdulbasitmujawwad',  // confirmed edition on alquran.cloud
+    audioSource: 'api',
+    alquranCloudId: 'ar.abdulbasitmujawwad',
   },
   {
     id: 'husary',
@@ -570,17 +560,19 @@ const recitersData = [
     audioSource: 'islamicnetwork',
     alquranCloudId: 'ar.mahermuaiqly',
   },
-  // ── everyayah.com reciters ────────────────────────────────────────────────
-  // URL pattern: https://everyayah.com/data/{audioEdition}/{globalAyah padded to 6 digits}.mp3
+  // ── api.alquran.cloud reciters (fetches audio URL per verse from API) ─────
+  // audioSource: 'api'
+  // Used when a reciter isn't on the Islamic Network CDN — the API call
+  // returns a guaranteed working audio URL from alquran.cloud's own servers.
   {
     id: 'khalid-hussary',
     name: 'خالد الحصري',
-    englishName: 'Sheikh Khalid Al-Hussary',
-    style: 'Murattal',
+    englishName: 'Al-Hussary (Mujawwad)',
+    style: 'Mujawwad',
     imageUrl: 'https://placehold.co/80x80/0d1427/c2d5ee?text=KH',
-    audioEdition: 'Khalid_Hussary_128kbps',  // folder name on everyayah.com
-    audioSource: 'everyayah',
-    alquranCloudId: 'ar.husary',              // fallback for text fetching
+    audioEdition: 'ar.husarymujawwad',  // confirmed edition on alquran.cloud
+    audioSource: 'api',
+    alquranCloudId: 'ar.husarymujawwad',
   },
 ];
 
@@ -599,19 +591,13 @@ function getGlobalAyah(surahId, verseId) {
 }
 
 function getVerseAudioUrl(reciter, surahId, verseId) {
-  if (reciter.audioSource === 'everyayah') {
-    // everyayah.com format: {surah padded to 3 digits}{verse padded to 3 digits}.mp3
-    // e.g. Al-Baqarah 2:255 → "002255.mp3"  (NOT the global ayah number)
-    const s = String(surahId).padStart(3, '0');
-    const v = String(verseId).padStart(3, '0');
-    return `https://everyayah.com/data/${reciter.audioEdition}/${s}${v}.mp3`;
-  }
-  // cdn.islamic.network — indexed by global ayah number (1-6236)
+  // cdn.islamic.network — indexed by global ayah number (1–6236)
+  // This is the default CDN source; reciters with audioSource === 'api'
+  // don't use this function — they fetch the URL from api.alquran.cloud instead.
   const globalAyah = getGlobalAyah(surahId, verseId);
   return `https://cdn.islamic.network/quran/audio/128/${reciter.audioEdition}/${globalAyah}.mp3`;
 }
-// Note: reciters with audioSource === 'api' are handled separately in playVerse
-// — they fetch the audio URL from api.alquran.cloud on demand.
+// Note: reciters with audioSource === 'api' are handled separately in playVerse.
 
 // Achievement definitions for user progress tracking.
 const achievementsData = [
@@ -2296,7 +2282,6 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
   // ── Core play ─────────────────────────────────────────────────────────────
   // Handles three audio sources:
   //   'islamicnetwork' — builds CDN URL locally (instant, no API call)
-  //   'everyayah'      — builds everyayah.com URL locally (instant, no API call)
   //   'api'            — fetches audio URL from alquran.cloud per verse
   //                      (one extra network hop but guaranteed correct link)
   const playVerse = useCallback((verseIndex) => {
@@ -2352,7 +2337,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
           showNotification('Network error loading audio.', 'error');
         });
     } else {
-      // islamicnetwork & everyayah — URL built locally, no round-trip needed
+      // islamicnetwork — URL built locally, no round-trip needed
       doPlay(getVerseAudioUrl(activeReciter, selectedSurahId, verse.id));
     }
   }, [verses, selectedSurahId, activeReciter, selectedSurah]);
@@ -2406,7 +2391,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
       </div>
 
       {/* ── Surah picker ── */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '16px' }}>
         <span className="p-label">Choose Surah</span>
         <div className="p-select-wrap">
           <select value={selectedSurahId} onChange={e => { setSelectedSurahId(Number(e.target.value)); }} className="p-select">
@@ -2416,6 +2401,39 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
           </select>
         </div>
       </div>
+
+      {/* ── Jump to verse ── */}
+      {verses.length > 0 && (
+        <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="p-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Jump to verse</span>
+          <input
+            type="number"
+            min="1"
+            max={verses.length}
+            placeholder={`1 – ${verses.length}`}
+            className="p-input"
+            style={{ width: '100px', padding: '8px 12px', textAlign: 'center' }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                const v = Math.min(Math.max(1, Number(e.target.value)), verses.length);
+                if (!isNaN(v)) { playVerse(v - 1); e.target.value = ''; }
+              }
+            }}
+          />
+          <button
+            className="p-btn-ghost"
+            style={{ fontSize: '0.75rem', padding: '8px 16px', whiteSpace: 'nowrap' }}
+            onClick={e => {
+              const input = e.currentTarget.previousSibling;
+              const v = Math.min(Math.max(1, Number(input.value)), verses.length);
+              if (!isNaN(v) && input.value) { playVerse(v - 1); input.value = ''; }
+            }}
+          >
+            Go <ChevronRight size={13} />
+          </button>
+          <span style={{ fontSize: '0.7rem', color: 'var(--cream-4)' }}>or tap any verse below</span>
+        </div>
+      )}
 
       {/* ── Player card ── */}
       <div className="p-player" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}>
@@ -2491,7 +2509,7 @@ const ListenPage = ({ onBackToHome, selectedReciterId, showNotification }) => {
       {/* ── Verse list ── */}
       {verses.length > 0 && (
         <div style={{ marginTop: '20px' }}>
-          <span className="p-label">All Verses — tap any to jump</span>
+          <span className="p-label">All Verses</span>
           <ul
             ref={verseListRef}
             className="custom-scrollbar"
