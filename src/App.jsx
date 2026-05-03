@@ -8,12 +8,6 @@ import { Analytics } from '@vercel/analytics/react';
 // NEW: Import Vercel Speed Insights component for performance monitoring
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
-// NEW: Firebase Imports
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore'; // Correct import statement
-
-
 // ─── Premium Style Injection ─────────────────────────────────────────────────
 const PremiumStyles = () => {
   React.useEffect(() => {
