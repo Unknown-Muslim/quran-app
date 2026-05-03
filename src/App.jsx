@@ -8,6 +8,12 @@ import { Analytics } from '@vercel/analytics/react';
 // NEW: Import Vercel Speed Insights component for performance monitoring
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
+// NEW: Firebase Imports
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore'; // Correct import statement
+
+
 // ─── Premium Style Injection ─────────────────────────────────────────────────
 const PremiumStyles = () => {
   React.useEffect(() => {
@@ -308,8 +314,14 @@ const PremiumStyles = () => {
       .p-quiz-btn:disabled { opacity: 0.75; cursor: not-allowed; }
 
       /* ── Prayer row ── */
-      .p-prayer-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-radius: 12px; margin-bottom: 8px; background: var(--ink-2); border: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
-      .p-prayer-row.next-prayer { background: rgba(100,140,220,0.08); border-color: rgba(139,167,212,0.24); }
+      .p-prayer-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-radius: 16px; margin-bottom: 8px; background: linear-gradient(135deg, var(--ink-3), var(--ink-2)); border: 1px solid rgba(139,167,212,0.07); transition: all 0.25s; position: relative; overflow: hidden; }
+      .p-prayer-row::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(139,167,212,0.1), transparent); }
+      .p-prayer-row.next-prayer { background: linear-gradient(135deg, rgba(74,106,156,0.22), rgba(100,140,220,0.12)); border-color: rgba(139,167,212,0.38); box-shadow: 0 8px 32px rgba(100,140,220,0.1), inset 0 0 30px rgba(100,140,220,0.04); }
+      .p-prayer-row.next-prayer::before { background: linear-gradient(90deg, transparent, rgba(139,167,212,0.4), transparent); }
+      .p-prayer-row.passed { opacity: 0.45; }
+      .p-prayer-countdown-hero { background: linear-gradient(160deg, rgba(74,106,156,0.18), rgba(20,40,90,0.4)); border: 1px solid rgba(139,167,212,0.28); border-radius: 24px; padding: 36px 28px; text-align: center; margin-bottom: 24px; position: relative; overflow: hidden; }
+      .p-prayer-countdown-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(139,167,212,0.5), transparent); }
+      .p-hijri-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; background: rgba(139,167,212,0.08); border: 1px solid rgba(139,167,212,0.18); border-radius: 100px; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--moon); margin-bottom: 20px; font-family: 'DM Sans', sans-serif; }
 
       /* ── Misc ── */
       .gold-line { height: 1px; margin: 24px 0; background: linear-gradient(90deg, transparent, rgba(139,167,212,0.24), transparent); }
@@ -749,80 +761,9 @@ const fontSizes = [
 ];
 
 
-// Utility for basic prayer time calculation (Hanafi for Asr).
-// This uses mock data and does not perform actual astronomical calculations.
-function getPrayerTimes(latitude, longitude, date = new Date()) {
-  const times = {
-    Fajr: null,
-    Sunrise: null,
-    Dhuhr: null,
-    Asr: null, // Hanafi method for Asr
-    Maghrib: null,
-    Isha: null,
-  };
+// Prayer times are fetched live from the Aladhan API inside PrayerTimesPage.
+// method=1 (University of Islamic Sciences, Karachi) + school=1 (Hanafi Asr)
 
-  const now = new Date(date);
-  now.setSeconds(0);
-  now.setMilliseconds(0);
-
-  // Mock times for a typical day to ensure functionality
-  const fajrTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0);
-  const sunriseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 30);
-  const dhuhrTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 13, 0);
-  const asrTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0); // Hanafi later Asr
-  const maghribTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 30);
-  const ishaTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0);
-
-  times.Fajr = fajrTime;
-  times.Sunrise = sunriseTime;
-  times.Dhuhr = dhuhrTime;
-  times.Asr = asrTime;
-  times.Maghrib = maghribTime;
-  times.Isha = ishaTime;
-
-  const prayerArray = [
-    { name: 'Fajr', time: times.Fajr, icon: <Sun size={24} className="text-yellow-300" /> },
-    { name: 'Sunrise', time: times.Sunrise, icon: <Cloud size={24} className="text-orange-300" /> },
-    { name: 'Dhuhr', time: times.Dhuhr, icon: <Sun size={24} className="text-yellow-500" /> },
-    { name: 'Asr', time: times.Asr, icon: <Cloud size={24} className="text-orange-500" /> },
-    { name: 'Maghrib', time: times.Maghrib, icon: <Moon size={24} className="text-purple-300" /> },
-    { name: 'Isha', time: times.Isha, icon: <Moon size={24} className="text-purple-500" /> },
-  ];
-
-  let nextPrayer = null;
-  let timeToNextPrayer = '';
-
-  // Determine the next upcoming prayer time
-  for (let i = 0; i < prayerArray.length; i++) {
-    const prayer = prayerArray[i];
-    if (now < prayer.time) {
-      nextPrayer = prayer;
-      const diffSeconds = differenceInSeconds(prayer.time, now);
-      const hours = Math.floor(diffSeconds / 3600);
-      const minutes = Math.floor((diffSeconds % 3600) / 60);
-      const seconds = diffSeconds % 60;
-      timeToNextPrayer = `${hours}h ${minutes}m ${seconds}s`;
-      break;
-    }
-  }
-
-  // If all prayers for today have passed, set next prayer to Fajr of next day
-  if (!nextPrayer && prayerArray.length > 0) {
-      const tomorrowFajr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, prayerArray[0].time.getHours(), prayerArray[0].time.getMinutes());
-      nextPrayer = { ...prayerArray[0], time: tomorrowFajr };
-      const diffSeconds = differenceInSeconds(nextPrayer.time, now);
-      const hours = Math.floor(diffSeconds / 3600);
-      const minutes = Math.floor((diffSeconds % 3600) / 60);
-      const seconds = diffSeconds % 60;
-      timeToNextPrayer = `${hours}h ${minutes}m ${seconds}s`;
-  }
-
-  return {
-    times: prayerArray,
-    nextPrayer,
-    timeToNextPrayer,
-  };
-}
 
 // NotificationMessage component for displaying temporary messages to the user.
 const NotificationMessage = ({ message, type, onClose }) => {
@@ -2759,91 +2700,302 @@ const PracticePage = ({ setCurrentPage, surahs, showNotification, incrementVerse
 };
 
 const PrayerTimesPage = ({ onBackToHome }) => {
-  const [location, setLocation] = useState({ latitude: null, longitude: null });
-  const [prayerTimes, setPrayerTimes] = useState(null);
+  const [coords, setCoords] = useState(null);
+  const [timings, setTimings] = useState(null);
+  const [hijriDate, setHijriDate] = useState(null);
+  const [locationName, setLocationName] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [nextPrayer, setNextPrayer] = useState(null);
+  const [countdown, setCountdown] = useState('');
 
+  // Prayer display order & metadata
+  const PRAYERS = [
+    { key: 'Fajr',    label: 'Fajr',    arabic: 'الفجر',   icon: <Sun size={18} />,   isCount: true  },
+    { key: 'Sunrise', label: 'Sunrise', arabic: 'الشروق',  icon: <Cloud size={18} />, isCount: false },
+    { key: 'Dhuhr',   label: 'Dhuhr',   arabic: 'الظهر',   icon: <Sun size={18} />,   isCount: true  },
+    { key: 'Asr',     label: 'Asr',     arabic: 'العصر',   icon: <Cloud size={18} />, isCount: true  },
+    { key: 'Maghrib', label: 'Maghrib', arabic: 'المغرب',  icon: <Moon size={18} />,  isCount: true  },
+    { key: 'Isha',    label: 'Isha',    arabic: 'العشاء',  icon: <Moon size={18} />,  isCount: true  },
+  ];
+
+  // Countable prayers (for next-prayer logic — exclude Sunrise)
+  const COUNTABLE = PRAYERS.filter(p => p.isCount).map(p => p.key);
+
+  // ── Step 1: get geolocation ──────────────────────────────────────────────────
   useEffect(() => {
-    // Attempt to get user's current location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Fallback to a default location if geolocation fails
-          setLocation({ latitude: 53.72, longitude: -1.86 }); // Default to Halifax, UK
-        }
+        pos => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        ()  => setCoords({ lat: 51.5074, lng: -0.1278 }) // London fallback
       );
     } else {
-      // Browser doesn't support Geolocation, use default
-      setLocation({ latitude: 53.72, longitude: -1.86 }); // Default to Halifax, UK
+      setCoords({ lat: 51.5074, lng: -0.1278 });
     }
   }, []);
 
+  // ── Step 2: fetch from Aladhan API with localStorage cache ───────────────────
   useEffect(() => {
-    if (location.latitude && location.longitude) {
-      const times = getPrayerTimes(location.latitude, location.longitude, currentDate);
-      setPrayerTimes(times);
-    }
-  }, [location, currentDate]);
+    if (!coords) return;
+    const dateStr = format(currentDate, 'dd-MM-yyyy'); // Aladhan date format
+    const cacheKey = `nurul_pt_${coords.lat.toFixed(3)}_${coords.lng.toFixed(3)}_${dateStr}`;
 
-  const handlePrevDay = () => {
-    setCurrentDate(prevDate => addDays(prevDate, -1));
+    const doFetch = async () => {
+      setLoading(true);
+      setError(null);
+
+      // Check cache first
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const p = JSON.parse(cached);
+          setTimings(p.timings);
+          setHijriDate(p.hijri);
+          setLocationName(p.locationName || '');
+          setLoading(false);
+          return;
+        }
+      } catch (_) {}
+
+      // Fetch fresh from Aladhan  (method=1 Karachi/UISC, school=1 Hanafi Asr)
+      try {
+        const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${coords.lat}&longitude=${coords.lng}&method=1&school=1`;
+        const res  = await fetch(url);
+        const data = await res.json();
+        if (data.code === 200) {
+          const t    = data.data.timings;
+          const hijri = data.data.date.hijri;
+          const meta  = data.data.meta;
+          // Try to build a readable location label from timezone
+          const tz = meta.timezone || '';
+          const cityGuess = tz.includes('/') ? tz.split('/').pop().replace(/_/g,' ') : '';
+
+          setTimings(t);
+          setHijriDate(hijri);
+          setLocationName(cityGuess);
+
+          // Cache for today (24 h is fine since times only change ~1 min/day)
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({ timings: t, hijri, locationName: cityGuess }));
+          } catch (_) {}
+        } else {
+          setError('Could not load prayer times. Please try again.');
+        }
+      } catch (e) {
+        setError('Network error — check your connection.');
+      }
+      setLoading(false);
+    };
+
+    doFetch();
+  }, [coords, currentDate]);
+
+  // ── Step 3: live countdown (updates every second) ───────────────────────────
+  useEffect(() => {
+    if (!timings) return;
+
+    const tick = () => {
+      const now  = new Date();
+      let found  = null;
+
+      for (const key of COUNTABLE) {
+        const [h, m] = timings[key].split(':').map(Number);
+        const pt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+        if (now < pt) {
+          const diff = Math.floor((pt - now) / 1000);
+          found = { key, diff };
+          break;
+        }
+      }
+
+      // After Isha, roll to tomorrow's Fajr
+      if (!found) {
+        const [h, m] = timings['Fajr'].split(':').map(Number);
+        const tFajr  = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, h, m, 0);
+        const diff   = Math.floor((tFajr - now) / 1000);
+        found = { key: 'Fajr', diff };
+      }
+
+      const hrs  = Math.floor(found.diff / 3600);
+      const mins = Math.floor((found.diff % 3600) / 60);
+      const secs = found.diff % 60;
+      setNextPrayer(found.key);
+      setCountdown(
+        `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`
+      );
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [timings]);
+
+  // Helper: parse "HH:MM" → Date on currentDate
+  const toDateObj = (hhmm) => {
+    if (!hhmm) return null;
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = new Date(currentDate);
+    d.setHours(h, m, 0, 0);
+    return d;
   };
 
-  const handleNextDay = () => {
-    setCurrentDate(prevDate => addDays(prevDate, 1));
+  // Has this prayer already passed today?
+  const hasPassed = (key) => {
+    if (!timings) return false;
+    const now = new Date();
+    const sameDay = format(currentDate,'yyyy-MM-dd') === format(now,'yyyy-MM-dd');
+    if (!sameDay) return false;
+    return toDateObj(timings[key]) < now;
   };
+
+  const nextPrayerMeta = PRAYERS.find(p => p.key === nextPrayer);
+  const hijriStr = hijriDate
+    ? `${hijriDate.day} ${hijriDate.month.en} ${hijriDate.year} AH`
+    : '';
 
   return (
     <div className="p-section animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={onBackToHome}
-          className="p-btn-ghost"
-        >
-          <Home size={20} className="mr-2" />
-          Home
-        </button>
-        <h2 style={{ fontFamily: "\'Cormorant Garamond\', serif", fontSize: "1.7rem", fontWeight: 400, color: "var(--cream)", margin: 0 }}>Prayer Times</h2>
-        <div className="w-10"></div> {/* Spacer */}
+      {/* ── Header ── */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'28px', paddingBottom:'18px', borderBottom:'1px solid rgba(139,167,212,0.1)' }}>
+        <button onClick={onBackToHome} className="p-btn-ghost"><Home size={14} /> Home</button>
+        <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:'1.7rem', fontWeight:400, color:'var(--cream)', margin:0 }}>Prayer Times</h2>
+        <div style={{ width:'72px' }} />
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <p style={{ color: 'var(--cream-2)', marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}>
-          {format(currentDate, 'EEEE, MMMM d, yyyy')}
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '18px' }}>
-          <button onClick={handlePrevDay} className="p-ctrl-btn"><ChevronLeft size={20} /></button>
-          <button onClick={handleNextDay} className="p-ctrl-btn"><ChevronRight size={20} /></button>
-        </div>
-        {prayerTimes && prayerTimes.nextPrayer && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'rgba(139,167,212,0.08)', border: '1px solid rgba(139,167,212,0.22)', borderRadius: '100px', padding: '10px 22px' }}>
-            <Clock9 size={18} style={{ color: 'var(--moon)' }} />
-            <span style={{ color: 'var(--cream)', fontSize: '0.88rem', letterSpacing: '0.03em' }}>Next: <strong>{prayerTimes.nextPrayer.name}</strong> in {prayerTimes.timeToNextPrayer}</span>
+      {/* ── Date row ── */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'14px', marginBottom:'22px' }}>
+        <button onClick={() => setCurrentDate(d => addDays(d,-1))} className="p-ctrl-btn"><ChevronLeft size={18} /></button>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:'1.15rem', color:'var(--cream)', letterSpacing:'0.04em' }}>
+            {format(currentDate,'EEEE, MMMM d, yyyy')}
           </div>
-        )}
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {prayerTimes && prayerTimes.times.map((prayer) => (
-          <div key={prayer.name} className={`p-prayer-row${prayerTimes.nextPrayer?.name === prayer.name ? ' next-prayer' : ''}`}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ color: 'var(--moon)', opacity: 0.8 }}>{prayer.icon}</span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', color: 'var(--cream)' }}>{prayer.name}</span>
+          {hijriStr && (
+            <div style={{ fontSize:'0.74rem', color:'var(--moon)', letterSpacing:'0.08em', marginTop:'4px' }}>
+              {hijriStr}
             </div>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: prayerTimes.nextPrayer?.name === prayer.name ? 'var(--moon-l)' : 'var(--cream-2)' }}>{format(prayer.time, 'h:mm a')}</span>
-          </div>
-        ))}
-        {!prayerTimes && (
-          <p style={{ color: 'var(--cream-3)', textAlign: 'center', padding: '24px 0' }}>Loading prayer times…</p>
-        )}
+          )}
+        </div>
+        <button onClick={() => setCurrentDate(d => addDays(d,1))} className="p-ctrl-btn"><ChevronRight size={18} /></button>
       </div>
+
+      {/* ── Countdown hero ── */}
+      {!loading && !error && nextPrayer && (
+        <div className="p-prayer-countdown-hero">
+          {/* subtle glow */}
+          <div style={{ position:'absolute', top:'-40px', left:'50%', transform:'translateX(-50%)', width:'200px', height:'120px', background:'radial-gradient(ellipse, rgba(100,140,220,0.12), transparent 70%)', pointerEvents:'none' }} />
+
+          {locationName && (
+            <div style={{ fontSize:'0.72rem', color:'var(--moon-d)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:'14px' }}>
+              <Clock size={11} style={{ display:'inline', marginRight:'5px', verticalAlign:'middle' }} />
+              {locationName}
+              {' · '}Hanafi · Karachi Method
+            </div>
+          )}
+
+          <div style={{ fontFamily:"'Cormorant Garamond', serif", fontStyle:'italic', fontSize:'0.85rem', color:'var(--moon)', letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:'8px' }}>
+            next prayer
+          </div>
+
+          <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:'clamp(1.6rem,5vw,2.4rem)', fontWeight:400, color:'var(--cream)', letterSpacing:'0.08em', marginBottom:'4px' }}>
+            {nextPrayer}
+          </div>
+
+          {nextPrayerMeta && (
+            <div style={{ fontFamily:"'Amiri', serif", fontSize:'1.2rem', color:'var(--moon-d)', marginBottom:'18px' }}>
+              {nextPrayerMeta.arabic}
+            </div>
+          )}
+
+          <div style={{ fontFamily:"'DM Sans', monospace", fontSize:'clamp(2rem,7vw,3.2rem)', fontWeight:300, color:'var(--moon-l)', letterSpacing:'0.05em', lineHeight:1 }}>
+            {countdown}
+          </div>
+        </div>
+      )}
+
+      {/* ── Loading / Error ── */}
+      {loading && (
+        <div style={{ textAlign:'center', padding:'48px 0', color:'var(--cream-3)', fontFamily:"'Cormorant Garamond', serif", fontStyle:'italic', fontSize:'1.05rem' }}>
+          Locating & fetching prayer times…
+        </div>
+      )}
+      {error && (
+        <div style={{ textAlign:'center', padding:'24px', background:'rgba(200,80,80,0.07)', border:'1px solid rgba(200,80,80,0.2)', borderRadius:'16px', color:'#e09e9e', fontSize:'0.9rem', marginBottom:'20px' }}>
+          {error}
+        </div>
+      )}
+
+      {/* ── Prayer rows ── */}
+      {!loading && timings && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+          {PRAYERS.map(prayer => {
+            const isNext   = prayer.key === nextPrayer;
+            const passed   = hasPassed(prayer.key);
+            const timeStr  = timings[prayer.key]
+              ? format(toDateObj(timings[prayer.key]), 'h:mm a')
+              : '—';
+
+            return (
+              <div
+                key={prayer.key}
+                className={`p-prayer-row${isNext ? ' next-prayer' : ''}${passed && !isNext ? ' passed' : ''}`}
+              >
+                {/* Left side */}
+                <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                  <div style={{
+                    width:'38px', height:'38px', borderRadius:'50%',
+                    background: isNext
+                      ? 'linear-gradient(135deg, rgba(139,167,212,0.25), rgba(139,167,212,0.08))'
+                      : 'rgba(139,167,212,0.06)',
+                    border:`1px solid ${isNext ? 'rgba(139,167,212,0.45)' : 'rgba(139,167,212,0.14)'}`,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    color: isNext ? 'var(--moon-l)' : 'var(--moon-d)',
+                    flexShrink:0,
+                  }}>
+                    {prayer.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:'1.15rem', color: isNext ? 'var(--cream)' : 'var(--cream-2)', letterSpacing:'0.04em' }}>
+                      {prayer.label}
+                    </div>
+                    <div style={{ fontFamily:"'Amiri', serif", fontSize:'0.9rem', color:'var(--moon-d)', lineHeight:1 }}>
+                      {prayer.arabic}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side */}
+                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                  <span style={{
+                    fontFamily:"'Cormorant Garamond', serif",
+                    fontSize:'1.25rem',
+                    fontWeight: isNext ? 500 : 400,
+                    color: isNext ? 'var(--moon-l)' : passed ? 'var(--cream-4)' : 'var(--cream-2)',
+                    letterSpacing:'0.02em',
+                  }}>
+                    {timeStr}
+                  </span>
+                  {isNext && (
+                    <span style={{ fontSize:'0.62rem', letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--moon)', background:'rgba(139,167,212,0.1)', border:'1px solid rgba(139,167,212,0.25)', borderRadius:'100px', padding:'3px 10px' }}>
+                      Next
+                    </span>
+                  )}
+                  {passed && !isNext && (
+                    <span style={{ fontSize:'0.62rem', color:'var(--cream-4)', letterSpacing:'0.06em' }}>✓</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Footer note ── */}
+      {!loading && timings && (
+        <div style={{ textAlign:'center', marginTop:'22px', fontSize:'0.7rem', color:'var(--cream-4)', letterSpacing:'0.06em' }}>
+          Hanafi madhab · University of Islamic Sciences, Karachi · Times update daily
+        </div>
+      )}
     </div>
   );
 };
