@@ -15,9 +15,9 @@ body {
 }
 
 /* Tailwind CSS Directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* Custom font for Arabic text */
 /* You might need to import a specific Arabic font if 'font-arabic' isn't globally defined.
